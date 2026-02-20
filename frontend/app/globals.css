@@ -1,5 +1,19 @@
 @import "tailwindcss";
 
+* {
+  font-family: 'Poppins', sans-serif;
+}
+
 body {
   background-color: white;
+}
+
+.title-box {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.title-box > h1 {
+  font-family: 'Bree Serif', sans-serif;
 }
