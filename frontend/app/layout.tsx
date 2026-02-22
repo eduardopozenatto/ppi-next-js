@@ -16,7 +16,6 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <div className="title-box">
-          <h1>LabControl</h1>
         </div>
         {children}
       </body>
