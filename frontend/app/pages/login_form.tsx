@@ -14,11 +14,11 @@ export function LoginForm () {
                     </div>
                 
                     <form action="" className="flex flex-col mt-10 gap-5">
-                        <input type="email" placeholder="Digite seu email: " className="border-gray-300 border-solid border-2 rounded-lg py-2 pl-3"/>
-                        <input type="password" placeholder="Insira sua senha: " className="border-gray-300 border-solid border-2 rounded-lg py-2"/>
+                        <Input type='email' placeholder='Digite seu email: '></Input>
+                        <Input type='password' placeholder='Insira sua senha: ' ClassName=''></Input>
                     </form> 
 
-                    <a href="#">Esqueceu sua senha?</a>
+                    <a href="#" className='self-end mt-1 hover:underline transition-all duration-1000 ease-in-out'>Esqueceu sua senha?</a>
 
                     <div>
                     <a href="#">Entrar</a>
