@@ -6,6 +6,7 @@ type LinkProps = {
     target?: string;
     type?: string;
     className?: string;
+    content: string;
 
 }
 
@@ -15,6 +16,7 @@ export default function Link ({
     target,
     type,
     className,
+    content,
 
 }: LinkProps) {
     return (
@@ -25,6 +27,6 @@ export default function Link ({
             type={type}
             className= {twMerge("", className)}
 
-        ></a>
+        >{content}</a>
     )
 }
