@@ -41,13 +41,15 @@ export function ButtonLink ({
 
 }: LinkProps) {
     return (
-        <a 
-            href={href}
-            rel={rel}
-            target={target}
-            type={type}
-            className= {twMerge("text-white bg-blue-300 px-7 py-4 rounded-2xl max-sm:text-[10px]", className)}
+        <div>
+            <a 
+                href={href}
+                rel={rel}
+                target={target}
+                type={type}
+                className= {twMerge("text-white bg-blue-300 px-7 py-4 rounded-2xl", className)}
 
-        >{content}</a>
+            >{content}</a>
+        </div>
     )
 }

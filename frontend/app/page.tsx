@@ -1,8 +1,8 @@
 import Image from "next/image";
-import { LoginForm } from './pages/login_form';
+import { LoginPage } from './pages/login_page';
 
 export default function Home() {
   return (
-    <LoginForm></LoginForm>
+    <LoginPage></LoginPage>
   );
 }
