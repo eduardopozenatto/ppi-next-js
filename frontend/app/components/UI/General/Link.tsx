@@ -1,3 +1,4 @@
+import { MouseEventHandler } from "react";
 import { twMerge } from "tailwind-merge";
 
 type LinkProps = {
@@ -7,6 +8,7 @@ type LinkProps = {
     type?: string;
     className?: string;
     content?: string;
+    onClick?: MouseEventHandler;
 
 }
 
@@ -17,6 +19,7 @@ export function Link ({
     type,
     className,
     content,
+    onClick
 
 }: LinkProps) {
     return (
@@ -25,6 +28,7 @@ export function Link ({
             rel={rel}
             target={target}
             type={type}
+            onClick={onClick}
             className= {twMerge("text-blue-300 hover:underline", className)}
 
         >{content}</a>
@@ -38,6 +42,8 @@ export function ButtonLink({
   type,
   className,
   content,
+  onClick
+
 }: LinkProps) {
   return (
     <a
@@ -45,6 +51,7 @@ export function ButtonLink({
       rel={rel}
       target={target}
       type={type}
+      onClick={onClick}
       className={twMerge(
         "inline-block text-white bg-blue-300 rounded-[14px] px-5 py-3 text-2xl hover:opacity-[0.7] 1s transition-opacity max-md:text-2xl flex-nowrap",
         className
