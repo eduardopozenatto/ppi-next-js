@@ -30,7 +30,7 @@ export default function Input ({
 
 }: /* definindo o tipo do input com o tipo criado acima */ InputProps) {
     return (
-        <div className="flex flex-1">
+        <div className="flex w-full">
             {/* label opcional para inserir junto ao input */}
             {label && <label>{label}</label>}
             <input 
@@ -41,7 +41,7 @@ export default function Input ({
                 placeholder={placeholder}
                 name={name}
                 // utilizando o twMerge para juntar as classes definidas com as classes individuais (as individuais tem mais prioridade)
-                className={twMerge("flex-1 border-solid border-2 rounded-lg border-gray-300 hover:border-gray-400 focus:outline-none focus-visible:border-blue-400  py-2 px-4 transition-all duration-300 ease", ClassName)}
+                className={twMerge("flex-1 border-solid border-2 rounded-lg border-gray-300 hover:border-gray-400 focus:outline-none focus-visible:border-blue-400  py-2 px-4 transition-all duration-300 ease flex-nowrap", ClassName)}
             />
         </div>
     )
