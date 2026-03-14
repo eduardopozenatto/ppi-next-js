@@ -46,7 +46,7 @@ export function ButtonLink({
       target={target}
       type={type}
       className={twMerge(
-        "inline-block text-white bg-blue-300 rounded-[7px] px-5 py-3 text-3xl",
+        "inline-block text-white bg-blue-300 rounded-[7px] px-5 py-3 text-3xl hover:opacity-[0.7] 1s transition-opacity max-md:text-2xl",
         className
       )}
     >
