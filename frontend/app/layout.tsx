@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "./src/globals.css";
 import { Poppins } from "next/font/google";
 
 const poppins = Poppins({
@@ -21,8 +21,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={poppins.className}>
       <body>
-        <div className="title-box pop">
-        </div>
         {children}
       </body>
     </html>

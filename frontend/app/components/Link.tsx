@@ -31,25 +31,26 @@ export function Link ({
     )
 }
 
-export function ButtonLink ({
-    href = "#",
-    rel,
-    target,
-    type,
-    className,
-    content,
-
+export function ButtonLink({
+  href = "#",
+  rel,
+  target,
+  type,
+  className,
+  content,
 }: LinkProps) {
-    return (
-        <div>
-            <a 
-                href={href}
-                rel={rel}
-                target={target}
-                type={type}
-                className= {twMerge("text-white bg-blue-300 px-7 py-4 rounded-2xl", className)}
-
-            >{content}</a>
-        </div>
-    )
+  return (
+    <a
+      href={href}
+      rel={rel}
+      target={target}
+      type={type}
+      className={twMerge(
+        "inline-block text-white bg-blue-300 rounded-[7px] px-5 py-3 text-3xl",
+        className
+      )}
+    >
+      {content}
+    </a>
+  );
 }

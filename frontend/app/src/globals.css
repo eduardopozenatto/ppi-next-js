@@ -1,15 +1,12 @@
 @import "tailwindcss";
-@tailwind utilities;
 
 *,
 *::before,
 *::after {
-  margin: 0;
-  padding: 0;
   box-sizing: border-box;
   font-family: 'Poppins', sans-serif;
 }
 
 @theme {
-  --background-image-hero: url('/bg-image.jpg');
+  --p-button: 3px;
 }
