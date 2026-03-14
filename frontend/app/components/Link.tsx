@@ -25,7 +25,7 @@ export default function Link ({
             rel={rel}
             target={target}
             type={type}
-            className= {twMerge("", className)}
+            className= {twMerge("text-blue-300 hover:underline", className)}
 
         >{content}</a>
     )
