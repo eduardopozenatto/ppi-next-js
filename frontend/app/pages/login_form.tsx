@@ -1,4 +1,5 @@
-import Input from '../components/Input'
+import Input from '../components/Input';
+import Link from '../components/Link';
 
 export function LoginForm () {
     return (
@@ -15,17 +16,17 @@ export function LoginForm () {
                 
                     <form action="" className="flex flex-col mt-10 gap-5">
                         <Input type='email' placeholder='Digite seu email: '></Input>
-                        <Input type='password' placeholder='Insira sua senha: ' ClassName=''></Input>
+                        <Input type='password' placeholder='Insira sua senha: '></Input>
                     </form> 
 
-                    <a href="#" className='self-end mt-1 hover:underline transition-all duration-1000 ease-in-out'>Esqueceu sua senha?</a>
+                    <Link content='Esqueceu a senha?' className='text-end mt-2'></Link>
 
                     <div>
                     <a href="#">Entrar</a>
                     </div>
 
                     <div>
-                        <p>não possui cadastro? <a href="#">Clique aqui</a></p>
+                        <p>não possui cadastro? <Link content='Clique aqui' className=''></Link></p>
                     </div>
                  </div>
             </section>
