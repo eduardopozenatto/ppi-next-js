@@ -1,6 +1,6 @@
 export default function LoginTitle () {
   return (
-      <section className="flex flex-col w-fit justify-center items-center lg:self-start lg:mt-25">
+      <section className="flex flex-col w-fit justify-center items-center lg:self-start lg:mt-25 max-h-[500px]">
         <div className="flex-wrap ">
           <h1 className="text-5xl lg:text-8xl bg-[linear-gradient()] font-semibold flex-wrap">
             Lab Control
