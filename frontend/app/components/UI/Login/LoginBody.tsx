@@ -1,15 +1,23 @@
 import LoginForm from "./LoginForm";
 import EntryButton from "./LoginEntryButton";
 import LoginHeader from "./LoginHeader";
+import FormCard from "../General/FormCard";
 
-export default function LoginBody () {
+function UpperLogin () {
   return (
-    <section className="flex flex-col rounded-2xl bg-white shadow-lg gap-10 lg:gap-20 lg:py-8 lg:px-20 px-10 py-3 items-center w-full max-w-[600px] h-full">
-      <div className="flex flex-col gap-10 w-full h-full">
+    <div className="flex flex-col gap-10 w-full h-full">
         <LoginHeader></LoginHeader>
         <LoginForm></LoginForm>
       </div>
-      <EntryButton></EntryButton>
-    </section>
+  )
+}
+
+export default function LoginBody () {
+  return (
+    <>
+    <FormCard content={[<UpperLogin key={0}/>, <EntryButton key={1}/>]}>
+      
+    </FormCard>
+    </>
   );
 }
