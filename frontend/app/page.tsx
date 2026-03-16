@@ -1,5 +1,5 @@
-import Image from "next/image";
-import EntryPage from './pages/EntryPage';
+import EntryPage from './EntryPage/entrypage';
+// import Recovery from "./EntryPage/Recovery";
 
 export default function Home() {
   return (
