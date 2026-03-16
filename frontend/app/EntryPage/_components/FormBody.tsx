@@ -12,7 +12,7 @@ function MainFormSection ({mode, setMode}: setModeProps) {
   return (
     <div className="flex flex-col gap-10 w-full h-full">
         <Header mode={mode} setMode={setMode} />
-        <Form mode={mode} />
+        <Form mode={mode} setMode={setMode}/>
       </div>
   )
 }
@@ -21,7 +21,7 @@ export default function FormBody () {
     const [mode, setMode] = useState<Mode>('login'); 
 
   return (
-    <>
+    <div>
 
     <FormCard 
       content={[
@@ -39,6 +39,6 @@ export default function FormBody () {
       ]} 
       />
 
-    </>
+    </div>
   );
 }

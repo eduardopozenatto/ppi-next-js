@@ -1,5 +1,5 @@
 import { SmButtonLink } from "../../../components/Button/Button";
-import { Link } from "../../../components/Link/Link";
+import { SmLink } from "../../../components/Link/Link";
 
 import { modeProps } from "../../../components/Props/props";
 
@@ -12,11 +12,11 @@ export default function EntryButton ({mode}: modeProps){
           {
            mode == 'login' ? (
             <>
-              Não possui cadastro? {<Link content="Clique aqui"/>}
+              Não possui cadastro? {<SmLink content="Clique aqui"/>}
             </>
           ) : (
             <>
-           Já possui cadastro? {<Link content="Clique aqui" />}
+           Já possui cadastro? {<SmLink content="Clique aqui" />}
             </>
           )}
 

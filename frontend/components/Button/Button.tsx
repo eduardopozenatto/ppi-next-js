@@ -19,7 +19,7 @@ export function ButtonLink({
       type={type}
       onClick={onClick}
       className={twMerge(
-        "inline-block text-white bg-blue-300 rounded-[14px] px-5 py-3 text-2xl hover:opacity-[0.7] 1s transition-opacity max-md:text-2xl flex-nowrap",
+        "inline-block text-white bg-blue-300 rounded-[14px] px-5 py-3 text-xl hover:opacity-[0.7] 1s transition-opacity max-md:text-lg flex-nowrap",
         className
       )}
     >
@@ -43,7 +43,7 @@ export function SmButtonLink({
         target={target}
         type={type}
         className={twMerge(
-          "inline text-white text-center text-md md:text-2xl bg-blue-300 rounded-[14px] px-5 py-3 w-50 hover:opacity-[0.7] 1s transition-opacity flex-nowrap",
+          "inline text-white text-center text-md md:text-xl bg-blue-300 rounded-[14px] px-5 py-3 w-50 hover:opacity-[0.7] 1s transition-opacity flex-nowrap",
           className
         )}
       >

@@ -1,7 +1,8 @@
 import { twMerge } from "tailwind-merge";
 import { LinkProps } from "../Props/props";
+import Link from "next/link";
 
-export function Link ({
+export function SmLink ({
     href = "#",
     rel,
     target,
@@ -12,14 +13,15 @@ export function Link ({
 
 }: LinkProps) {
     return (
-        <a 
-            href={href}
-            rel={rel}
-            target={target}
-            type={type}
-            onClick={onClick}
-            className= {twMerge("text-blue-300 hover:underline", className)}
-
-        >{content}</a>
+        <Link 
+        href={href}
+        rel={rel}
+        target={target}
+        type={type}
+        onClick={onClick}
+        className= {twMerge("text-blue-300 hover:underline", className)}
+        >
+        {content}
+        </Link>
     )
 }

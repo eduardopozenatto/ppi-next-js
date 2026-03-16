@@ -1,5 +1,5 @@
-import Title from "./_components/Title";
-import FormBody from "./_components/FormBody";
+import Title from "../EntryPage/_components/Title";
+import FormBody from "../EntryPage/_components/FormBody";
 
 export default function ForgotPassword () {
   return (

@@ -1,6 +1,8 @@
+'use client'
+
 import Input from '../../../components/Input/Input';
-import { Link } from '../../../components/Link/Link';
-import { modeProps } from '../../../components/Props/props';
+import { SmLink } from '../../../components/Link/Link';
+import { setModeProps } from '../../../components/Props/props';
 
 interface InputItem {
   type: string;
@@ -24,7 +26,7 @@ const input_groups: Record<'login' | 'register' | 'recovery', InputItem[]> = {
     ],
   };
 
-export default function Form ({ mode }: modeProps) {
+export default function Form ({mode, setMode}: setModeProps) {
 
   const inputs = input_groups[mode];
 
@@ -41,11 +43,12 @@ export default function Form ({ mode }: modeProps) {
         ))}
       </form>
 
-      <Link
+      <SmLink
         content="Esqueceu sua senha?"
         href="#"
+        onClick={() => {setMode('recovery')}}
         className={ mode == 'login' ? "mt-2 text-center md:text-end" : "hidden"}
-      ></Link>
+      />
     </section>
   );
 };
