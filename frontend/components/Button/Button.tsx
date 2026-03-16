@@ -1,39 +1,5 @@
-import { MouseEventHandler } from "react";
+import { LinkProps } from "../Props/props";
 import { twMerge } from "tailwind-merge";
-
-type LinkProps = {
-    href?: string;
-    rel?: string;
-    target?: string;
-    type?: string;
-    className?: string;
-    content?: string;
-    onClick?: MouseEventHandler;
-
-}
-
-export function Link ({
-    href = "#",
-    rel,
-    target,
-    type,
-    className,
-    content,
-    onClick
-
-}: LinkProps) {
-    return (
-        <a 
-            href={href}
-            rel={rel}
-            target={target}
-            type={type}
-            onClick={onClick}
-            className= {twMerge("text-blue-300 hover:underline", className)}
-
-        >{content}</a>
-    )
-}
 
 export function ButtonLink({
   href = "#",

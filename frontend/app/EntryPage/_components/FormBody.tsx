@@ -1,13 +1,11 @@
 "use client"
-
-import Form from "./Form";
-import EntryButton from "../General/EntryButton";
-import { Header } from "../General/Header";
-import FormCard from "../General/FormCard";
 import { useState } from "react";
+import {Mode, setModeProps} from '../../../components/Props/props';
 
-import {Mode, setModeProps} from '../../_props/props';
-
+import { Header } from "./Header";
+import Form from "./Form";
+import EntryButton from "./EntryButton";
+import FormCard from "../../../components/Body/FormCard";
 
 function MainFormSection ({mode, setMode}: setModeProps) {
 

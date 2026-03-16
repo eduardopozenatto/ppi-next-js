@@ -1,6 +1,6 @@
-import Input from '../General/Input';
-import { Link } from '../General/Link';
-import { modeProps } from '@/app/_props/props';
+import Input from '../../../components/Input/Input';
+import { Link } from '../../../components/Link/Link';
+import { modeProps } from '../../../components/Props/props';
 
 interface InputItem {
   type: string;

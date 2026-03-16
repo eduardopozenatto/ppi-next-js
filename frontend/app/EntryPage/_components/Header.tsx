@@ -1,7 +1,7 @@
 "use client"
 
-import { ButtonLink } from "./Link";
-import { setModeProps } from "@/app/_props/props";
+import { ButtonLink } from "../../../components/Button/Button";
+import { setModeProps } from "../../../components/Props/props";
 
 
 export function Header({mode, setMode}: setModeProps) {

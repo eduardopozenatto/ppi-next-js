@@ -1,5 +1,5 @@
-import FormBody from '../components/EntryPage/FormBody';
-import Title from '../components/General/Title';
+import FormBody from './_components/FormBody';
+import Title from './_components/Title';
 
 
 export default function EntryPage() {

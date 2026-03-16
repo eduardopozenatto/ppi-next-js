@@ -1,7 +1,7 @@
-import { SmButtonLink } from "./Link";
-import { Link } from "./Link";
+import { SmButtonLink } from "../../../components/Button/Button";
+import { Link } from "../../../components/Link/Link";
 
-import { modeProps } from "@/app/_props/props";
+import { modeProps } from "../../../components/Props/props";
 
 export default function EntryButton ({mode}: modeProps){
   return (
