@@ -15,10 +15,14 @@ You can test the frontend following the instructions of the **instalation** sect
 
 ``cd ppi-next-js/frontend``
 
-*Install all npm dependencies:*
+*Install pnpm package manager:*
 
-``npm install``
+``npm install -g pnpm``
 
-*And run this project in localhost:*
+*Install all pnpm dependencies:*
 
-``npm run dev``
+``pnpm install``
+
+*Now, you can run this project in localhost using:*
+
+``pnpm dev``
