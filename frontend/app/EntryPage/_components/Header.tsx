@@ -8,17 +8,17 @@ export function Header({mode, setMode}: setModeProps) {
   const classes = "bg-white text-gray-500 md:inline";
 
   return (
-    <div className="flex justify-evenly gap-5 mt-5 self-center w-full items-center">
+    <div className="flex justify-evenly gap-5 mt-5 w-full items-center">
       <ButtonLink 
-        content={mode == 'recovery' ? 'Recuperar senha' : 'Login'} 
+        content="Login" 
         onClick={() => {setMode('login')}} 
-        className={mode == 'register' ? classes : "max-w-40 text-center"} 
+        className={mode == 'recovery' ? "max-w-50" : mode == 'register' ? classes : "max-w-40 text-center"} 
       />
 
       <ButtonLink
         content="Cadastre-se"
         onClick={() => {setMode('register')}}
-        className={mode == 'register' ? "w-auto text-center" : classes}
+        className={mode == 'recovery' ? "hidden" : mode == 'register' ? "w-auto text-center" : classes}
       />
     </div>
   );

@@ -18,10 +18,11 @@ function MainFormSection ({mode, setMode}: setModeProps) {
 }
 
 export default function FormBody () {
-    const [mode, setMode] = useState<Mode>('login'); 
+  const [mode, setMode] = useState<Mode>('login'); 
+  
 
   return (
-    <div>
+    <div className="">
 
     <FormCard 
       content={[
@@ -33,6 +34,7 @@ export default function FormBody () {
 
         <EntryButton 
           mode={mode} 
+          setMode={setMode}
           key={1}
         />
         
