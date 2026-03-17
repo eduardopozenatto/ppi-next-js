@@ -22,3 +22,19 @@ export type LinkProps = {
     onClick?: MouseEventHandler;
 
 }
+
+export interface permissionProps {
+  id?: bigint,
+  verItens: boolean,
+  pedirEmprestimos: true,
+  VerNotificacoes: true,
+  VerEstoque: true,
+  GerarRelatorios: true,
+  AprovEmprestimos: true,
+  CriarItens: true,
+  GerenciarItens: true,
+  GerenciarUsuarios: true,
+  GerenciarTag: true,
+  GerenciarCat: true,
+  GerenciarPermissoes: true,
+}
