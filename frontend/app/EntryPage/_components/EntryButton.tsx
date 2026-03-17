@@ -1,24 +1,27 @@
 import { SmButtonLink } from "../../../components/Button/Button";
 import { SmLink } from "../../../components/Link/Link";
 
-import { modeProps } from "../../../components/Props/props";
+import { setModeProps } from "../../../components/Props/props";
 
-export default function EntryButton ({mode}: modeProps){
+export default function EntryButton ({mode, setMode}:setModeProps) {
+
+const contentValue = {
+    login: 'Não possui cadastro? ',
+    register: 'Já possui cadastro? ',
+    recovery: 'Sabe a senha? ',
+
+  }
+  
+  const verifyMode = () => {
+    return mode == 'login' ? setMode('register') : setMode('login');
+  }
+
   return (
     <div className="flex flex-col items-center gap-3 mt-10 mb-3">
-      <SmButtonLink content="Entrar" />
+      <SmButtonLink content={mode == 'recovery' ? "Enviar" : "Entrar"} />
       <div>
         <p>
-          {
-           mode == 'login' ? (
-            <>
-              Não possui cadastro? {<SmLink content="Clique aqui"/>}
-            </>
-          ) : (
-            <>
-           Já possui cadastro? {<SmLink content="Clique aqui" />}
-            </>
-          )}
+          {<> {contentValue[mode]} {<SmLink content="Clique aqui" onClick={verifyMode}/>} </>}
 
         </p>
       </div>

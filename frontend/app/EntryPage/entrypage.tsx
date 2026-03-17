@@ -1,7 +1,6 @@
 import FormBody from './_components/FormBody';
 import Title from './_components/Title';
 
-
 export default function EntryPage() {
   return (
     <section className="flex justify-center items-center bg-linear-to-br from-white via-blue-100 to-blue-200 h-screen">
