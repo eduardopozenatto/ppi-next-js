@@ -33,6 +33,10 @@ export default function Form ({mode, setMode}: setModeProps) {
   return (
     <section className="flex flex-col w-full">
 
+      <div className='mb-7 text-center text-gray-500'>
+        {mode == 'recovery' && <><p>Digite seu e-mail no campo abaixo para receber seu código de recuperação: </p></>}
+      </div>
+
       <form action="" className="flex flex-col gap-5">
         {inputs.map((item, index) => (
           <Input 
@@ -45,9 +49,8 @@ export default function Form ({mode, setMode}: setModeProps) {
 
       <SmLink
         content="Esqueceu sua senha?"
-        href="#"
         onClick={() => {setMode('recovery')}}
-        className={ mode == 'login' ? "mt-2 text-center md:text-end" : "hidden"}
+        className={ mode == 'login' ? "mt-2 text-end" : "hidden"}
       />
     </section>
   );
