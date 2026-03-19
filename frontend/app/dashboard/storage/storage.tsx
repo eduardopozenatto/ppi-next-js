@@ -1,4 +1,5 @@
-import SearchTab from "./_components/search"
+import SearchTab from "./_components/search";
+import Items from "./_components/items";
 
 export default function Storage() {
   return (
@@ -10,7 +11,12 @@ export default function Storage() {
         </div>
 
         <SearchTab></SearchTab>
+        <div>
+          <Items />
+        </div>
       </div>
+
+      
 
     </section>
   )
