@@ -6,7 +6,7 @@ import Image from "next/image";
 import { ShowCat } from "./ShowCat";
 
 export default function SearchTab() {
-  const [isActive, setIsActive] = useState(true);
+  const [isActive, setIsActive] = useState(false);
 
   function handleActive() {
     setIsActive(!isActive)
@@ -14,7 +14,7 @@ export default function SearchTab() {
 
   return (
     <section className="flex flex-col h-auto">
-      <div className="grid grid-cols-[1fr_200px] gap-8">
+      <div className="grid grid-cols-[minmax(300px,1fr)_200px] gap-8">
         <div className="">
           <Input type="text" placeholder="Buscar por nome ou descrição..." ClassName="focus-visible:border-gray-400 "/>
         </div>
@@ -25,7 +25,7 @@ export default function SearchTab() {
         </div>
       </div>
 
-      {isActive && <div className=" absolute top-45 flex self-end w-50 h-auto border-2 justify-center border-gray-300 mt-3 rounded-md">
+      {isActive && <div className="absolute top-45 flex self-end w-50 h-auto border-2 justify-center border-gray-300 mt-3 rounded-md">
         <ShowCat />
       </div>}
     </section>
