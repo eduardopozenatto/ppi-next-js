@@ -8,4 +8,4 @@ export const storageData = {
   }
 }
 
-export const categories = ["categoria1", "categoria2",];
+export const categories = ["sensores", "Multimetros digitais",];
