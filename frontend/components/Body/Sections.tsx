@@ -1,8 +1,9 @@
 import ButtonSection from "../Button/ButtonSection";
 import { userData } from "@/app/_data/userData";
+import Image from "next/image";
 
 function IsAdmin() {
-  return userData.tag === 'laboratorista';
+  return userData.tag.name === 'laboratorista';
 
 }
 
@@ -30,13 +31,38 @@ export default function Sections() {
       </div>
 
       <div className="flex flex-col">
-        <hr className="w-[80%] self-center text-gray-400"></hr>
-        <div className="mb-20 ml-4">
-          <ButtonSection type="config"/>
-          <ButtonSection type="carshop"/>
+        <div className="flex flex-col gap-2">
+          <hr className="w-[80%] self-center text-gray-400"></hr>
+          <div className=" ml-4 mb-10">
+            <ButtonSection type="config" className="self-center"/>
+            <ButtonSection type="carshop"/>
+          </div>
+          <div>
+        </div>
+        
+        <div className="flex flex-col mb-5 justify-center hover:bg-blue-100 rounded-2xl items-center mx-7">
+        
+          <div className="flex items-center gap-2 mr-4">
+            <div className="flex items-center hover:bg-blue-200 p-2 py-3 rounded-lg">
+              <Image 
+              src='/buttonIcons/exit-account.svg'
+              alt="icon"
+              width={25}
+              height={25}
+              />
+            </div>
+
+            <div className="">
+              <ButtonSection type="user" className="hover:text-gray-500"/>
+              <p className={userData.tag.color}>{userData.tag.name}</p>
+            </div>
+          </div>
         </div>
       </div>
     
+      </div>
+
+      
     </div>
   )
 }
