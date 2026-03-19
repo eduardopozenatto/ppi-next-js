@@ -1,6 +1,12 @@
 export const userData = {
   id: 0,
-  tag: 'laboratorista',
+  name: 'carlos',
+  email: 'carlos@gmail.com',
+  password: '1234',
+  tag: {
+    name: 'laboratorista',
+    color: 'text-blue-800',
+  },
   userPermissions: {
     verItens: true,
     pedirEmprestimos: true,
