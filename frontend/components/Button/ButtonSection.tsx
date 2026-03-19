@@ -1,5 +1,6 @@
 import { twMerge } from "tailwind-merge";
 import Image from "next/image";
+import { userData } from "@/app/_data/userData";
 
 type ButtonSectionProps = {
   type?: keyof typeof typeList,
@@ -44,6 +45,10 @@ const typeList = {
     content: "Carrinho",
     src: '/buttonIcons/carshop.svg',
   },
+  user: {
+    content: userData.name,
+    src: '/buttonIcons/exit-account.svg'
+  }
 };
 
 export default function ButtonSection ({type, className}: ButtonSectionProps) {
@@ -53,9 +58,13 @@ export default function ButtonSection ({type, className}: ButtonSectionProps) {
   return (
     <div className="hover:bg-blue-100 px-3 rounded-lg justify-center items-center w-fit">
       <div className="flex flex-row w-fit">
-        {item && (
+        {item && item !== typeList.user ? (
           <Image src={item.src} alt="Icon" width={20} height={10}/>
-        )}
+        ) :
+        (
+        <></>
+        )
+        }
         <p className={twMerge("text-gray-600 hover:text-black rounded-lg w-fit pl-2 py-2", className)}>{content}</p>
       </div>
     </div>
