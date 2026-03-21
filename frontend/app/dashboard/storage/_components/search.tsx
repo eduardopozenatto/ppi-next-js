@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from "react";
-import Input from "../../../../components/Input/Input";
+import { Input } from "../../../../components/Input/Input";
 import Image from "next/image";
 import { ShowCat } from "./ShowCat";
 
