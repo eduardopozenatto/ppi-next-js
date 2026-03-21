@@ -1,47 +1,37 @@
-import React from "react";
-// utilização do tailwind-merge para deixar o componente flexível permitindo sobrescrever suas classes conforme necessário
+"use client";
+import React, { useId } from "react";
 import { twMerge } from "tailwind-merge";
 
-// tipo da função Input, com todos os valores necessários para o input
-
-// o ? na frente de cada variável significa que ela é opcional, e não obrigatória, 
-// o que possibilita omitir certas propriedades desnecessárias
-
-type InputProps = {
+export interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
     label?: string;
-    type?: React.HTMLInputTypeAttribute;
-    value?: string;
-    onChange?: (e:React.ChangeEvent<HTMLInputElement>) => void;
-    placeholder?: string;
-    name?: string;
-    ClassName?: string;
-};
+    className?: string;
+}
 
-// Função com a entrada dos valores do input
-
-export default function Input ({
+export function Input({
     label,
+    className,
     type = "text",
-    value,
-    onChange,
-    placeholder,
-    name,
-    ClassName,
+    id,
+    ...props
+}: InputProps) {
+    const generatedId = useId();
+    const inputId = id ?? generatedId;
 
-}: /* definindo o tipo do input com o tipo criado acima */ InputProps) {
     return (
-        <div className="flex w-full">
-            {/* label opcional para inserir junto ao input */}
-            {label && <label>{label}</label>}
-            <input 
-            // input com suas propriedades
-                type={type} 
-                value={value}
-                onChange={onChange}
-                placeholder={placeholder}
-                name={name}
-                // utilizando o twMerge para juntar as classes definidas com as classes individuais (as individuais tem mais prioridade)
-                className={twMerge("flex-1 border-solid border-2 rounded-lg border-gray-300 hover:border-gray-400 focus:outline-none focus-visible:border-blue-400  py-2 px-4 transition-all duration-300 ease w-full", ClassName)}
+        <div className="flex w-full flex-col gap-1.5">
+            {label && (
+                <label htmlFor={inputId} className="text-sm font-medium text-gray-700">
+                    {label}
+                </label>
+            )}
+            <input
+                id={inputId}
+                type={type}
+                className={twMerge(
+                    "w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-base transition-all duration-200 ease-in-out placeholder:text-gray-400 hover:border-gray-400 focus:border-azure-500 focus:outline-none focus:ring-2 focus:ring-azure-500/20 disabled:cursor-not-allowed disabled:opacity-50",
+                    className
+                )}
+                {...props}
             />
         </div>
     )
