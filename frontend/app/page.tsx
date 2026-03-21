@@ -12,7 +12,7 @@ export default function Home() {
       { 
         mode === 'recovery' ? 
         <Recovery /> :
-        <EntryPage mode={mode} setMode={setMode}/>
+        <EntryPage/>
       }
     </div>
   );
