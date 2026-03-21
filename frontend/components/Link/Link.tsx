@@ -1,8 +1,19 @@
 import { twMerge } from "tailwind-merge";
-import { LinkProps } from "../Props/props";
 import Link from "next/link";
+import { MouseEventHandler } from "react";
 
-export function SmLink ({
+export type LinkProps = {
+    href?: string;
+    rel?: string;
+    target?: string;
+    type?: string;
+    className?: string;
+    content?: string;
+    onClick?: MouseEventHandler;
+
+}
+
+export function SmallLink ({
     href = "#",
     rel,
     target,
