@@ -1,15 +1,15 @@
 'use client'
 
-import Input from '../../../components/Input/Input';
-import { SmLink } from '../../../components/Link/Link';
-import { setModeProps } from '../../../components/Props/props';
+import Input from '@/components/Input/Input';
+import { SmallLink } from '@/components/Link/Link';
+import { Mode } from '../../types';
 
 interface InputItem {
   type: string;
   placeholder: string;
 }
 
-const input_groups: Record<'login' | 'register' | 'recovery', InputItem[]> = {
+const input_groups: Record<Mode, InputItem[]> = {
     login: [
         {type: "email", placeholder: "Digite seu email: "},
         {type: "password", placeholder: "Insira sua senha: "},
@@ -26,15 +26,15 @@ const input_groups: Record<'login' | 'register' | 'recovery', InputItem[]> = {
     ],
   };
 
-export default function Form ({mode, setMode}: setModeProps) {
+export default function Form({ mode = 'login', setMode = () => {} }: { mode?: Mode, setMode?: (mode: Mode) => void }) {
 
-  const inputs = input_groups[mode];
+  const inputs = input_groups[mode] || [];
 
   return (
     <section className="flex flex-col w-full">
 
-      <div className='mb-7 text-center text-gray-500'>
-        {mode == 'recovery' && <><p>Digite seu e-mail no campo abaixo para receber seu código de recuperação: </p></>}
+      <div className="mb-7 text-center text-gray-500">
+        {mode === 'recovery' && <p>Digite seu e-mail no campo abaixo para receber seu código de recuperação:</p>}
       </div>
 
       <form action="" className="flex flex-col gap-5">
@@ -47,10 +47,10 @@ export default function Form ({mode, setMode}: setModeProps) {
         ))}
       </form>
 
-      <SmLink
+      <SmallLink
         content="Esqueceu sua senha?"
         onClick={() => {setMode('recovery')}}
-        className={ mode == 'login' ? "mt-2 text-end" : "hidden"}
+        className={mode === 'login' ? "mt-2 text-end" : "hidden"}
       />
     </section>
   );
