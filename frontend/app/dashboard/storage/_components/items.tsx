@@ -1,6 +1,6 @@
 import { itemsData } from "@/app/_data/itemsData";
 import Image from "next/image";
-import { ButtonLink, SmButtonLink } from "@/components/Button/Button";
+import { SmallButtonLink, ButtonLink } from "@/components/Button/Link";
 
 export default function Items() {
   return (
@@ -10,13 +10,10 @@ export default function Items() {
         
         <div className="flex flex-col gap-4">
           <div className="flex justify-end"> 
-          <SmButtonLink content="Disponível"></SmButtonLink>
-          
-          
-        </div>
+            <SmallButtonLink content="Disponível" />
+          </div>
           <div>
-
-            <p key={key} className="text-md font-semibold text-gray-500">{item.name}</p>
+            <p className="text-md font-semibold text-gray-500">{item.name}</p>
             <p className="text-sm text-gray-400 font-semibold">{item.category}</p>
           </div>
 
