@@ -1,29 +1,32 @@
-import { SmButtonLink } from "../../../components/Button/Button";
-import { SmLink } from "../../../components/Link/Link";
+import { SmallButtonLink } from "@/components/Button/Link";
+import { SmallLink } from "@/components/Link/Link";
+import { Mode } from "../../types";
 
-import { setModeProps } from "../../../components/Props/props";
+type EntryButtonProps = {
+  mode?: Mode;
+  setMode?: (mode: Mode) => void;
+};
 
-export default function EntryButton ({mode, setMode}:setModeProps) {
-
-const contentValue = {
-    login: 'Não possui cadastro? ',
-    register: 'Já possui cadastro? ',
-    recovery: 'Sabe a senha? ',
-
-  }
+export default function EntryButton({ mode = 'login', setMode = () => {} }: EntryButtonProps) {
+  const contentValue = {
+    login: 'Não possui cadastro?',
+    register: 'Já possui cadastro?',
+    recovery: 'Sabe a senha?',
+  };
   
-  const verifyMode = () => {
-    return mode == 'login' ? setMode('register') : setMode('login');
-  }
+  const toggleMode = () => {
+    setMode(mode === 'login' ? 'register' : 'login');
+  };
 
   return (
-    <div className="flex flex-col items-center gap-3 mt-10 mb-3">
-      <SmButtonLink content={mode == 'recovery' ? "Enviar" : "Entrar"} />
-      <div>
-        <p>
-          {<> {contentValue[mode]} {<SmLink content="Clique aqui" onClick={verifyMode}/>} </>}
-
-        </p>
+    <div className="flex flex-col items-center gap-4 mt-8 mb-4 w-full">
+      <SmallButtonLink content={mode === 'recovery' ? 'Enviar' : 'Entrar'} />
+      <div className="text-sm text-gray-600 flex items-center gap-1 mt-2">
+        <span>{contentValue[mode]}</span>
+        <SmallLink 
+          content="Clique aqui" 
+          onClick={toggleMode} 
+        />
       </div>
     </div>
   );
