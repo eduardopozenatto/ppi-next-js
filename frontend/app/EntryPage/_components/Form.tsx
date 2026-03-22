@@ -1,6 +1,6 @@
 'use client'
 
-import Input from '@/components/Input/Input';
+import { Input } from '@/components/Input/Input';
 import { SmallLink } from '@/components/Link/Link';
 import { Mode } from '../../types';
 
