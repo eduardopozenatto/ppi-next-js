@@ -1,16 +1,15 @@
 export interface TagPermissions {
-  viewItems: boolean;
-  requestLoans: boolean;
-  viewNotifications: boolean;
-  viewInventory: boolean;
-  generateReports: boolean;
-  approveLoans: boolean;
-  manageItems: boolean;
-  deleteItems: boolean;
-  manageUsers: boolean;
-  manageTags: boolean;
-  manageCategories: boolean;
-  managePermissions: boolean;
+  ver_itens: boolean;
+  pedir_emprestimos: boolean;
+  ver_notificacoes: boolean;
+  manipular_estoque: boolean;
+  gerar_relatorios: boolean;
+  aprovar_emprestimos: boolean;
+  gerenciar_itens: boolean;
+  gerenciar_usuarios: boolean;
+  gerenciar_roles: boolean;
+  gerenciar_categorias: boolean;
+  gerenciar_permissoes: boolean;
 }
 
 export interface Tag {
@@ -26,6 +25,8 @@ export interface Category {
   id: string;
   name: string;
   createdAt: string;
+  /** Quantidade de itens do estoque vinculados a esta categoria (mock) */
+  linkedItemsCount?: number;
 }
 
 export interface UserPermissionOverride {
