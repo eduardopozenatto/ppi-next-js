@@ -1,1 +1,1 @@
-export type Mode = 'login' | 'register' | 'recovery';
+export type Mode = "login" | "register";
