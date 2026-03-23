@@ -1,38 +1,42 @@
-import { twMerge } from "tailwind-merge";
+"use client";
+
 import Link from "next/link";
-import { MouseEventHandler } from "react";
+import type { MouseEventHandler, ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-export type LinkProps = {
-    href?: string;
-    rel?: string;
-    target?: string;
-    type?: string;
-    className?: string;
-    content?: string;
-    onClick?: MouseEventHandler;
-
+export interface LinkTextProps {
+  href?: string;
+  rel?: string;
+  target?: string;
+  className?: string;
+  content?: ReactNode;
+  onClick?: MouseEventHandler<HTMLAnchorElement | HTMLButtonElement>;
 }
 
-export function SmallLink ({
-    href = "#",
-    rel,
-    target,
-    type,
-    className,
-    content,
-    onClick
+const subtle =
+  "text-[var(--color-primary)] underline-offset-2 transition-colors hover:text-[var(--color-primary-hover)] hover:underline";
 
-}: LinkProps) {
+export function SmallLink({
+  href = "#",
+  rel,
+  target,
+  className,
+  content,
+  onClick,
+}: LinkTextProps) {
+  const merged = cn(subtle, className);
+
+  if (onClick && (!href || href === "#")) {
     return (
-        <Link 
-        href={href}
-        rel={rel}
-        target={target}
-        type={type}
-        onClick={onClick}
-        className= {twMerge("text-blue-300 hover:underline", className)}
-        >
+      <button type="button" onClick={onClick} className={merged}>
         {content}
-        </Link>
-    )
+      </button>
+    );
+  }
+
+  return (
+    <Link href={href} rel={rel} target={target} onClick={onClick} className={merged}>
+      {content}
+    </Link>
+  );
 }

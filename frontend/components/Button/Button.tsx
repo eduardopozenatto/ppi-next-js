@@ -1,53 +1,36 @@
-import { LinkProps } from "../Props/props";
-import { twMerge } from "tailwind-merge";
+"use client";
 
-export function ButtonLink({
-  href = "#",
-  rel,
-  target,
-  type,
-  className,
-  content,
-  onClick
+import { type ButtonHTMLAttributes, type ReactNode } from "react";
+import { cn } from "@/lib/utils";
 
-}: LinkProps) {
-  return (
-    <a
-      href={href}
-      rel={rel}
-      target={target}
-      type={type}
-      onClick={onClick}
-      className={twMerge(
-        "inline-block text-white max-w-75 bg-blue-300 rounded-[14px] px-5 py-3 text-xl hover:opacity-[0.7] 1s transition-opacity max-md:text-lg flex-nowrap",
-        className
-      )}
-    >
-      {content}
-    </a>
-  );
+export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  children: ReactNode;
+  variant?: "primary" | "secondary" | "ghost";
 }
 
-export function SmButtonLink({
-  href = "#",
-  rel,
-  target,
-  type,
+export function Button({
   className,
-  content,
-}: LinkProps) {
+  variant = "primary",
+  type = "button",
+  children,
+  ...props
+}: ButtonProps) {
   return (
-      <a
-        href={href}
-        rel={rel}
-        target={target}
-        type={type}
-        className={twMerge(
-          "inline text-white text-center text-md md:text-xl bg-blue-300 rounded-[14px] px-5 py-3 w-50 hover:opacity-[0.7] 1s transition-opacity flex-nowrap",
-          className
-        )}
-      >
-        {content}
-      </a>
-    );
+    <button
+      type={type}
+      className={cn(
+        "inline-flex w-full items-center justify-center rounded-xl px-4 py-3 text-base font-medium transition-[transform,box-shadow,background-color] duration-200 active:scale-[0.99] disabled:pointer-events-none disabled:opacity-50 sm:w-auto sm:min-w-[8rem]",
+        variant === "primary" &&
+          "bg-[var(--color-primary)] text-white shadow-sm hover:bg-[var(--color-primary-hover)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]",
+        variant === "secondary" &&
+          "border border-[var(--color-border-strong)] bg-[var(--color-bg)] text-[var(--color-text)] hover:bg-[var(--color-bg-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]",
+        variant === "ghost" &&
+          "text-[var(--color-text)] hover:bg-[var(--color-bg-subtle)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--color-primary)]",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
 }
