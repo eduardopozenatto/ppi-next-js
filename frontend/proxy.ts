@@ -1,9 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 
+/** Mantém pedidos sem redirecionamento forçado (auth é tratada na app). */
 export function proxy(request: NextRequest) {
-  return NextResponse.redirect(new URL('/dashboard', request.url))
+  void request;
+  return NextResponse.next();
 }
 
 export const config = {
-  matcher: '/'
-}
+  matcher: "/",
+};
