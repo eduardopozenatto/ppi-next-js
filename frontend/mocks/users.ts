@@ -4,9 +4,20 @@ import type { User } from "@/types/user";
 
 export const MOCK_ADMIN_USERS: User[] = [
   {
+    id: "admin-1",
+    name: "Prof. Eduardo Pozenatto",
+    email: "labcontrol.admin@gmail.com",
+    role: "admin",
+    matricula: "SIAPE-9876",
+    tagId: "tag-3",
+    phone: "(54) 99876-5432",
+    createdAt: "2024-01-10T00:00:00Z",
+    isActive: true,
+  },
+  {
     id: "user-1",
     name: "Carlos Silva",
-    email: "carlos@discente.uf.br",
+    email: "carlos.aluno.lab@gmail.com",
     role: "user",
     matricula: "2021001234",
     tagId: "tag-1",
@@ -31,16 +42,6 @@ export const MOCK_ADMIN_USERS: User[] = [
     matricula: "2022001122",
     tagId: "tag-2",
     createdAt: "2024-10-01T00:00:00Z",
-    isActive: true,
-  },
-  {
-    id: "admin-1",
-    name: "Prof. Eduardo (Laboratorista)",
-    email: "eduardo@siape.uf.br",
-    role: "admin",
-    matricula: "SIAPE-9876",
-    tagId: "tag-3",
-    createdAt: "2024-01-10T00:00:00Z",
     isActive: true,
   },
   {

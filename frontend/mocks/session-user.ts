@@ -6,8 +6,8 @@ import type { LabSessionUser } from "@/types/lab-session";
 /** Laboratorista — acesso completo a todos os módulos */
 export const MOCK_LABORATORISTA: LabSessionUser = {
   id: 1,
-  name: "Prof. Eduardo",
-  email: "laboratorista@labcontrol.com",
+  name: "Prof. Eduardo Pozenatto",
+  email: "labcontrol.admin@gmail.com",
   password: "1234",
   tag: {
     name: "laboratorista",
@@ -33,7 +33,7 @@ export const MOCK_LABORATORISTA: LabSessionUser = {
 export const MOCK_ESTAGIARIO: LabSessionUser = {
   id: 2,
   name: "Maria Santos",
-  email: "estagiario@labcontrol.com",
+  email: "maria.estagiaria@gmail.com",
   password: "1234",
   tag: {
     name: "estagiário",
@@ -59,7 +59,7 @@ export const MOCK_ESTAGIARIO: LabSessionUser = {
 export const MOCK_ALUNO: LabSessionUser = {
   id: 3,
   name: "Carlos Silva",
-  email: "aluno@labcontrol.com",
+  email: "carlos.aluno.lab@gmail.com",
   password: "1234",
   tag: {
     name: "aluno",

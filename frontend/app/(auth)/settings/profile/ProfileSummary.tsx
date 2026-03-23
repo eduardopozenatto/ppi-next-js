@@ -4,11 +4,21 @@ import { useState } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Button/Button";
+import { useToast } from "@/components/shared/Toast";
 
 // TODO: substituir por chamada real quando backend estiver pronto
 
+/** Aplica máscara de telefone brasileiro: (XX) XXXXX-XXXX */
+function formatPhone(value: string): string {
+  const digits = value.replace(/\D/g, "").slice(0, 11);
+  if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+  if (digits.length <= 7) return `(${digits.slice(0, 2)}) ${digits.slice(2)}`;
+  return `(${digits.slice(0, 2)}) ${digits.slice(2, 7)}-${digits.slice(7)}`;
+}
+
 export function ProfileSummary() {
   const { user } = useAuth();
+  const { addToast } = useToast();
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState("");
@@ -16,7 +26,6 @@ export function ProfileSummary() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   if (!user) return null;
@@ -40,8 +49,15 @@ export function ProfileSummary() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
     // TODO: POST /api/auth/profile
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+    addToast({
+      variant: "success",
+      title: "Perfil atualizado",
+      message: "Perfil atualizado com sucesso.",
+    });
+  }
+
+  function handlePhoneChange(value: string) {
+    setPhone(formatPhone(value));
   }
 
   const inputClass = (field: string) =>
@@ -72,7 +88,8 @@ export function ProfileSummary() {
 
       {/* Personal Info */}
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
-        <h3 className="mb-4 font-semibold text-[var(--color-text)]">Dados pessoais</h3>
+        <h3 className="mb-4 font-semibold text-[var(--color-text)]">Informações Pessoais</h3>
+        <p className="mb-4 text-sm text-[var(--color-text-subtle)]">Atualize as informações do seu perfil</p>
         <div className="space-y-4">
           <div>
             <label htmlFor="profile-name" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
@@ -99,7 +116,7 @@ export function ProfileSummary() {
               type="tel"
               placeholder="(54) 99123-4567"
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
+              onChange={(e) => handlePhoneChange(e.target.value)}
               className={inputClass("phone")}
             />
           </div>
@@ -108,11 +125,11 @@ export function ProfileSummary() {
 
       {/* Password */}
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
-        <h3 className="mb-4 font-semibold text-[var(--color-text)]">Alterar senha</h3>
+        <h3 className="mb-4 font-semibold text-[var(--color-text)]">Alteração de Senha</h3>
         <div className="space-y-4">
           <div>
             <label htmlFor="profile-current-pw" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-              Senha atual
+              Insira sua senha atual
             </label>
             <div className="relative">
               <input
@@ -136,7 +153,7 @@ export function ProfileSummary() {
 
           <div>
             <label htmlFor="profile-new-pw" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-              Nova senha
+              Digite sua nova senha
             </label>
             <input
               id="profile-new-pw"
@@ -150,7 +167,7 @@ export function ProfileSummary() {
 
           <div>
             <label htmlFor="profile-confirm-pw" className="mb-1 block text-sm font-medium text-[var(--color-text)]">
-              Repetir nova senha
+              Repita a senha
             </label>
             <input
               id="profile-confirm-pw"
@@ -167,11 +184,8 @@ export function ProfileSummary() {
       {/* Footer */}
       <div className="flex items-center gap-4">
         <Button type="button" onClick={handleSave}>
-          💾 Salvar alterações
+          Salvar alterações
         </Button>
-        {saved && (
-          <span className="text-sm font-medium text-[var(--color-success)]">Perfil atualizado com sucesso!</span>
-        )}
       </div>
     </div>
   );

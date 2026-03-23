@@ -8,6 +8,7 @@ export interface User {
   matricula?: string;
   tagId?: string;
   avatarUrl?: string;
+  phone?: string;
   createdAt: string;
   isActive: boolean;
 }

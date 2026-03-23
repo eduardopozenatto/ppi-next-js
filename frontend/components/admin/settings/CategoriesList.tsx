@@ -6,22 +6,21 @@ import { Category } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
 
-const PERMISSION_LABELS: Record<string, string> = {
-  viewItems: "Ver itens",
-  requestLoans: "Solicitar empréstimos",
-  viewNotifications: "Ver notificações",
-  viewInventory: "Ver estoque",
-  generateReports: "Gerar relatórios",
-  approveLoans: "Aprovar empréstimos",
-  manageItems: "Gerenciar itens",
-  deleteItems: "Excluir itens",
-  manageUsers: "Gerenciar usuários",
-  manageTags: "Gerenciar tags",
-  manageCategories: "Gerenciar categorias",
-  managePermissions: "Gerenciar permissões",
+export const PERMISSION_LABELS: Record<string, string> = {
+  ver_itens: "Visualizar itens",
+  pedir_emprestimos: "Solicitar empréstimos",
+  ver_notificacoes: "Ver notificações",
+  manipular_estoque: "Manipular estoque",
+  gerar_relatorios: "Gerar relatórios",
+  aprovar_emprestimos: "Aprovar empréstimos",
+  gerenciar_itens: "Gerenciar itens",
+  gerenciar_usuarios: "Gerenciar usuários",
+  gerenciar_roles: "Gerenciar tags",
+  gerenciar_categorias: "Gerenciar categorias",
+  gerenciar_permissoes: "Gerenciar permissões",
 };
 
-export { PERMISSION_LABELS };
+export { PERMISSION_LABELS as PERMISSION_LABELS_MAP };
 
 export function CategoriesList() {
   const { addToast } = useToast();
@@ -35,25 +34,67 @@ export function CategoriesList() {
     cat.name.toLowerCase().includes(search.toLowerCase())
   );
 
+  function isDuplicateName(name: string, excludeId?: string): boolean {
+    return categories.some(
+      (cat) =>
+        cat.name.toLowerCase() === name.trim().toLowerCase() &&
+        cat.id !== excludeId
+    );
+  }
+
   function handleSave() {
     if (!formModal) return;
-    if (!formModal.category.name.trim()) {
+    const trimmedName = formModal.category.name.trim();
+
+    if (!trimmedName) {
       setError("Nome é obrigatório");
       return;
     }
+
+    // Verificação de nome duplicado (case-insensitive)
+    if (isDuplicateName(trimmedName, formModal.category.id)) {
+      if (formModal.mode === "create") {
+        addToast({
+          variant: "error",
+          title: "Categoria duplicada",
+          message: `Você já possui uma categoria com o nome "${trimmedName}". Insira outro nome.`,
+        });
+      } else {
+        addToast({
+          variant: "error",
+          title: "Categoria duplicada",
+          message: "Já existe uma categoria com este nome.",
+        });
+      }
+      return;
+    }
+
     if (formModal.mode === "create") {
       const newCat: Category = {
         id: `cat-${Date.now()}`,
-        name: formModal.category.name.trim(),
+        name: trimmedName,
         createdAt: new Date().toISOString(),
+        linkedItemsCount: 0,
       };
       setCategories((prev) => [...prev, newCat]);
-      addToast({ variant: "success", title: "Categoria criada", message: `"${newCat.name}" foi adicionada com sucesso.` });
+      addToast({
+        variant: "success",
+        title: "Categoria criada",
+        message: `Categoria de itens "${newCat.name}" criada com sucesso.`,
+      });
     } else if (formModal.category.id) {
       setCategories((prev) =>
-        prev.map((c) => (c.id === formModal.category.id ? { ...c, name: formModal.category.name.trim() } : c))
+        prev.map((c) =>
+          c.id === formModal.category.id
+            ? { ...c, name: trimmedName }
+            : c
+        )
       );
-      addToast({ variant: "success", title: "Categoria editada", message: `"${formModal.category.name}" foi atualizada.` });
+      addToast({
+        variant: "success",
+        title: "Categoria atualizada",
+        message: `"${trimmedName}" atualizada com sucesso.`,
+      });
     }
     setFormModal(null);
     setError("");
@@ -61,8 +102,24 @@ export function CategoriesList() {
 
   function handleDelete() {
     if (!deleteModal) return;
+
+    // Verificação de itens vinculados
+    if (deleteModal.linkedItemsCount && deleteModal.linkedItemsCount > 0) {
+      addToast({
+        variant: "error",
+        title: "Exclusão bloqueada",
+        message: `Não é possível excluir "${deleteModal.name}" pois existem ${deleteModal.linkedItemsCount} item(ns) vinculado(s). Reatribua os itens antes de excluir.`,
+      });
+      setDeleteModal(null);
+      return;
+    }
+
     setCategories((prev) => prev.filter((c) => c.id !== deleteModal.id));
-    addToast({ variant: "success", title: "Categoria excluída", message: `"${deleteModal.name}" foi removida.` });
+    addToast({
+      variant: "success",
+      title: "Categoria excluída",
+      message: `"${deleteModal.name}" foi removida com sucesso.`,
+    });
     setDeleteModal(null);
   }
 
@@ -101,6 +158,9 @@ export function CategoriesList() {
                   <span className="font-medium text-[var(--color-text)]">{category.name}</span>
                   <span className="text-xs text-[var(--color-text-subtle)]">
                     Criada em {new Date(category.createdAt).toLocaleDateString("pt-BR")}
+                    {category.linkedItemsCount !== undefined && category.linkedItemsCount > 0 && (
+                      <> · {category.linkedItemsCount} item(ns)</>
+                    )}
                   </span>
                 </div>
               </div>
@@ -131,13 +191,13 @@ export function CategoriesList() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setFormModal(null)}>
           <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              {formModal.mode === "create" ? "Nova Categoria" : "Editar Categoria"}
+              {formModal.mode === "create" ? "Nova categoria" : "Editar categoria"}
             </h2>
             <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-              {formModal.mode === "create" ? "Adicione uma nova categoria de itens." : "Altere o nome da categoria."}
+              {formModal.mode === "create" ? "Crie uma nova categoria de itens." : "Edite uma categoria de itens existente."}
             </p>
             <div className="mt-4">
-              <label htmlFor="cat-name" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Nome *</label>
+              <label htmlFor="cat-name" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Nome da categoria *</label>
               <input
                 id="cat-name"
                 type="text"
@@ -153,7 +213,7 @@ export function CategoriesList() {
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => { setFormModal(null); setError(""); }}>Cancelar</Button>
-              <Button type="button" onClick={handleSave}>{formModal.mode === "create" ? "Criar" : "Salvar"}</Button>
+              <Button type="button" onClick={handleSave}>{formModal.mode === "create" ? "Salvar" : "Salvar"}</Button>
             </div>
           </div>
         </div>
@@ -165,12 +225,17 @@ export function CategoriesList() {
           <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Confirmar Exclusão</h2>
             <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
-              Tem certeza que deseja excluir a categoria &quot;{deleteModal.name}&quot;? Essa ação não pode ser desfeita.
+              Tem certeza que deseja excluir &quot;{deleteModal.name}&quot;? Essa ação não pode ser desfeita.
             </p>
+            {deleteModal.linkedItemsCount !== undefined && deleteModal.linkedItemsCount > 0 && (
+              <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
+                ⚠ Esta categoria possui {deleteModal.linkedItemsCount} item(ns) vinculado(s). A exclusão será bloqueada.
+              </p>
+            )}
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>Cancelar</Button>
               <button type="button" onClick={handleDelete} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">
-                Excluir Categoria
+                Excluir
               </button>
             </div>
           </div>

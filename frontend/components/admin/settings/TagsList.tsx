@@ -5,13 +5,14 @@ import { MOCK_TAGS } from "@/mocks/settings";
 import { Tag, TagPermissions } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
+import { useAuth } from "@/hooks/useAuth";
 import { PERMISSION_LABELS } from "./CategoriesList";
 
 const DEFAULT_PERMISSIONS: TagPermissions = {
-  viewItems: false, requestLoans: false, viewNotifications: false,
-  viewInventory: false, generateReports: false, approveLoans: false,
-  manageItems: false, deleteItems: false, manageUsers: false,
-  manageTags: false, manageCategories: false, managePermissions: false,
+  ver_itens: false, pedir_emprestimos: false, ver_notificacoes: false,
+  manipular_estoque: false, gerar_relatorios: false, aprovar_emprestimos: false,
+  gerenciar_itens: false, gerenciar_usuarios: false,
+  gerenciar_roles: false, gerenciar_categorias: false, gerenciar_permissoes: false,
 };
 
 const PRESET_COLORS = [
@@ -23,22 +24,50 @@ type FormTag = { id?: string; name: string; color: string; description: string; 
 
 export function TagsList() {
   const { addToast } = useToast();
+  const { user } = useAuth();
   const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
   const [search, setSearch] = useState("");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; tag: FormTag } | null>(null);
   const [deleteModal, setDeleteModal] = useState<Tag | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [hexInput, setHexInput] = useState("");
 
   const filtered = tags.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
 
+  /** Nome da tag do usuário logado */
+  const currentUserTagName = user?.tag?.name?.toLowerCase() ?? "";
+
+  function isDuplicateName(name: string, excludeId?: string): boolean {
+    return tags.some(
+      (t) => t.name.toLowerCase() === name.trim().toLowerCase() && t.id !== excludeId
+    );
+  }
+
   function openCreate() {
-    setFormModal({ mode: "create", tag: { name: "", color: PRESET_COLORS[0], description: "", permissions: { ...DEFAULT_PERMISSIONS } } });
+    const initialColor = PRESET_COLORS[0];
+    setFormModal({ mode: "create", tag: { name: "", color: initialColor, description: "", permissions: { ...DEFAULT_PERMISSIONS } } });
+    setHexInput(initialColor);
     setErrors({});
   }
 
   function openEdit(tag: Tag) {
     setFormModal({ mode: "edit", tag: { id: tag.id, name: tag.name, color: tag.color, description: tag.description, permissions: { ...tag.permissions } } });
+    setHexInput(tag.color);
     setErrors({});
+  }
+
+  function handleColorChange(color: string) {
+    if (!formModal) return;
+    setFormModal({ ...formModal, tag: { ...formModal.tag, color } });
+    setHexInput(color);
+  }
+
+  function handleHexInputChange(value: string) {
+    setHexInput(value);
+    // Auto-apply when valid hex
+    if (/^#[0-9a-fA-F]{6}$/.test(value) && formModal) {
+      setFormModal({ ...formModal, tag: { ...formModal.tag, color: value } });
+    }
   }
 
   function handleSave() {
@@ -49,13 +78,38 @@ export function TagsList() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
+    // Verificação de nome duplicado (case-insensitive)
+    if (isDuplicateName(formModal.tag.name, formModal.tag.id)) {
+      addToast({
+        variant: "error",
+        title: "Nome duplicado",
+        message: "Já existe uma tag com este nome.",
+      });
+      return;
+    }
+
+    // Aviso ao editar a própria tag do laboratorista logado
+    if (
+      formModal.mode === "edit" &&
+      formModal.tag.name.toLowerCase() === currentUserTagName
+    ) {
+      const confirm = window.confirm(
+        "Atenção: você está editando sua própria tag de acesso. As alterações serão aplicadas imediatamente. Deseja continuar?"
+      );
+      if (!confirm) return;
+    }
+
     if (formModal.mode === "create") {
       const newTag: Tag = { ...formModal.tag, id: `tag-${Date.now()}`, userCount: 0 };
       setTags((prev) => [...prev, newTag]);
       addToast({ variant: "success", title: "Tag criada", message: `"${newTag.name}" foi adicionada com sucesso.` });
     } else if (formModal.tag.id) {
       setTags((prev) => prev.map((t) => (t.id === formModal.tag.id ? { ...t, ...formModal.tag } as Tag : t)));
-      addToast({ variant: "success", title: "Tag editada", message: `"${formModal.tag.name}" foi atualizada.` });
+      addToast({
+        variant: "success",
+        title: "Tag atualizada",
+        message: `As permissões da tag "${formModal.tag.name}" foram atualizadas com sucesso.`,
+      });
     }
     setFormModal(null);
     setErrors({});
@@ -63,8 +117,20 @@ export function TagsList() {
 
   function handleDelete() {
     if (!deleteModal) return;
+
+    // Não pode excluir a própria tag
+    if (deleteModal.name.toLowerCase() === currentUserTagName) {
+      addToast({
+        variant: "error",
+        title: "Exclusão bloqueada",
+        message: "Você não pode excluir sua própria tag de acesso.",
+      });
+      setDeleteModal(null);
+      return;
+    }
+
     setTags((prev) => prev.filter((t) => t.id !== deleteModal.id));
-    addToast({ variant: "success", title: "Tag excluída", message: `"${deleteModal.name}" foi removida.` });
+    addToast({ variant: "success", title: "Tag excluída", message: `"${deleteModal.name}" foi removida com sucesso.` });
     setDeleteModal(null);
   }
 
@@ -142,6 +208,9 @@ export function TagsList() {
                           {PERMISSION_LABELS[key] || key}
                         </span>
                       ))}
+                    {Object.values(tag.permissions).every((v) => !v) && (
+                      <span className="text-[var(--color-text-subtle)] italic">Nenhuma permissão ativa</span>
+                    )}
                   </div>
                 </div>
               </div>
@@ -155,7 +224,7 @@ export function TagsList() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setFormModal(null)}>
           <div className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">
-              {formModal.mode === "create" ? "Nova Tag" : "Editar Tag"}
+              {formModal.mode === "create" ? "Nova tag" : "Editar tag"}
             </h2>
             <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
               {formModal.mode === "create" ? "Configure o perfil de acesso e suas permissões." : "Edite as configurações desta tag."}
@@ -183,12 +252,12 @@ export function TagsList() {
               {/* Color */}
               <div>
                 <label className="mb-2 block text-sm font-medium text-[var(--color-text)]">Cor</label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   {PRESET_COLORS.map((c) => (
                     <button
                       key={c}
                       type="button"
-                      onClick={() => setFormModal({ ...formModal, tag: { ...formModal.tag, color: c } })}
+                      onClick={() => handleColorChange(c)}
                       className={`h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 ${
                         formModal.tag.color === c ? "border-[var(--color-text)] scale-110 ring-2 ring-[var(--color-primary)] ring-offset-2" : "border-transparent"
                       }`}
@@ -196,6 +265,23 @@ export function TagsList() {
                       aria-label={`Selecionar cor ${c}`}
                     />
                   ))}
+                </div>
+                {/* Hex input */}
+                <div className="mt-3 flex items-center gap-3">
+                  <div
+                    className="h-8 w-8 shrink-0 rounded-full border border-[var(--color-border)]"
+                    style={{ backgroundColor: formModal.tag.color }}
+                    aria-hidden="true"
+                  />
+                  <input
+                    type="text"
+                    value={hexInput}
+                    onChange={(e) => handleHexInputChange(e.target.value)}
+                    placeholder="#000000"
+                    maxLength={7}
+                    className="w-28 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-sm font-mono text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                    aria-label="Código hexadecimal da cor"
+                  />
                 </div>
               </div>
 
@@ -215,6 +301,9 @@ export function TagsList() {
                     </label>
                   ))}
                 </div>
+                <p className="mt-2 text-xs text-[var(--color-text-subtle)]">
+                  É permitido salvar uma tag sem permissões ativas (ex.: tag de acesso bloqueado temporário).
+                </p>
               </div>
             </div>
 
@@ -233,16 +322,25 @@ export function TagsList() {
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Confirmar Exclusão</h2>
             <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
               Tem certeza que deseja excluir a tag &quot;{deleteModal.name}&quot;?
-              {(deleteModal.userCount ?? 0) > 0 && (
-                <span className="mt-1 block font-medium text-[var(--color-danger)]">
-                  ⚠ Esta tag possui {deleteModal.userCount} usuário(s) vinculado(s).
-                </span>
-              )}
             </p>
+            {(deleteModal.userCount ?? 0) > 0 && (
+              <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
+                ⚠ {deleteModal.userCount} usuário(s) utilizam esta tag. Ao excluir, eles ficarão sem tag base. Deseja continuar?
+              </p>
+            )}
+            {deleteModal.name.toLowerCase() === currentUserTagName && (
+              <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
+                🛡️ Esta é sua tag de acesso. A exclusão será bloqueada.
+              </p>
+            )}
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>Cancelar</Button>
-              <button type="button" onClick={handleDelete} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">
-                Excluir Tag
+              <button
+                type="button"
+                onClick={handleDelete}
+                className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+              >
+                {(deleteModal.userCount ?? 0) > 0 ? "Excluir mesmo assim" : "Excluir Tag"}
               </button>
             </div>
           </div>
