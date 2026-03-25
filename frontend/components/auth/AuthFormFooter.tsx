@@ -40,20 +40,33 @@ export function AuthFormFooter({
   function handleSubmit() {
     setError(null);
 
-    if (!email.trim()) {
-      setError("Informe o e-mail.");
-      return;
-    }
+      if (!email.trim()) {
+        setError("Informe o e-mail.");
+        return;
+      }
 
-    if (!password.trim()) {
-      setError("Informe a senha.");
-      return;
-    }
+      if (!password.trim()) {
+        setError("Informe a senha.");
+        return;
+      }
 
-    setLoading(true);
+      setLoading(true);
 
-    // Simulate a small delay for login
-    setTimeout(() => {
+    if (mode === 'login') {
+      // Simulate a small delay for login
+      setTimeout(() => {
+        const err = login(email, password);
+        if (err) {
+          setError(err);
+          setLoading(false);
+        } else {
+          router.push("/dashboard");
+        }
+      }, 300);
+
+
+    } else {
+      setTimeout(() => {
       const err = login(email, password);
       if (err) {
         setError(err);
@@ -62,12 +75,14 @@ export function AuthFormFooter({
         router.push("/dashboard");
       }
     }, 300);
+
+    }
   }
 
   return (
-    <div className="flex w-full flex-col items-center gap-4 border-t border-[var(--color-border)] pt-6">
+    <div className="flex w-full flex-col items-center gap-4 border-t border-(--color-border) pt-6">
       {error && (
-        <p className="w-full rounded-lg border border-[var(--color-danger)]/30 bg-red-50 px-4 py-2.5 text-center text-sm font-medium text-[var(--color-danger)] dark:bg-red-900/20">
+        <p className="w-full rounded-lg border border-(--color-danger)/30 bg-red-50 px-4 py-2.5 text-center text-sm font-medium text-(--color-danger) dark:bg-red-900/20">
           {error}
         </p>
       )}
@@ -80,7 +95,7 @@ export function AuthFormFooter({
       >
         {loading ? "Carregando..." : primaryLabel}
       </Button>
-      <div className="flex flex-wrap items-center justify-center gap-1 text-center text-sm text-[var(--color-text-subtle)]">
+      <div className="flex flex-wrap items-center justify-center gap-1 text-center text-sm text-(--color-text-subtle)">
         <span>{hint[mode]}</span>
         <SmallLink content="Clique aqui" onClick={toggleMode} className="text-sm font-semibold" />
       </div>
