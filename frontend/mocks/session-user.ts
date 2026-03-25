@@ -81,6 +81,34 @@ export const MOCK_ALUNO: LabSessionUser = {
   },
 };
 
+export const MOCK_NEW_USERS: LabSessionUser[] = [
+  {
+    id: 1,
+    name: "Carlos Silva",
+    email: "carlos.aluno.lab@gmail.com",
+    password: "1234",
+    tag: {
+      name: "aluno",
+      colorClass: "text-azure-800",
+    },
+    userPermissions: {
+      verItens: true,
+      pedirEmprestimos: true,
+      VerNotificacoes: true,
+      VerEstoque: false,
+      GerarRelatorios: false,
+      AprovEmprestimos: false,
+      CriarItens: false,
+      GerenciarItens: false,
+      GerenciarUsuarios: false,
+      GerenciarTag: false,
+      GerenciarCat: false,
+      GerenciarPermissoes: false,
+    },
+  },
+
+];
+
 /** Todos os usuários mock — usado pelo login para buscar por email */
 export const MOCK_USERS_DB: LabSessionUser[] = [
   MOCK_LABORATORISTA,
