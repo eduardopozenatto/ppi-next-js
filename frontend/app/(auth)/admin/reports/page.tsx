@@ -54,14 +54,14 @@ export default function AdminReportsPage() {
         description="Indicadores e métricas para gestão do laboratório."
         actions={
           <Button type="button" variant="secondary" onClick={handleExport}>
-            📥 Exportar
+            Exportar
           </Button>
         }
       />
 
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-blue-200 bg-blue-50 p-5 dark:border-blue-900 dark:bg-blue-900/20">
+        <div className="rounded-2xl border border-blue-200 bg-white p-5 dark:border-blue-900 dark:bg-blue-900/20">
           <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Total de itens</p>
           <p className="mt-1 text-3xl font-bold text-blue-800 dark:text-blue-300">{totalItems}</p>
           <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">{availableItems} disponíveis</p>
