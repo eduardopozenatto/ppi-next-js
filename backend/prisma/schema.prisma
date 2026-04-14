@@ -1,0 +1,182 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────
+// Mirror frontend type unions exactly
+
+enum UserRole {
+  user
+  admin
+}
+
+enum LoanStatus {
+  pending
+  active
+  overdue
+  returned
+  cancelled
+}
+
+enum NotificationType {
+  approval
+  reminder
+  rejection
+  new_item
+  overdue
+}
+
+// ─── Models ───────────────────────────────────────────
+
+/// User account — maps to frontend/types/user.ts User interface
+/// and frontend/types/lab-session.ts LabSessionUser (with tag join)
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String   @unique
+  password  String
+  matricula String?
+  role      UserRole @default(user)
+  phone     String?
+  avatarUrl String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tag   Tag?    @relation(fields: [tagId], references: [id])
+  tagId String?
+
+  loans               Loan[]
+  notifications       Notification[]
+  permissionOverrides UserPermissionOverride[]
+
+  @@map("users")
+}
+
+/// Tag/Role — maps to frontend/types/settings.ts Tag interface
+/// permissions field stores TagPermissions as JSON (11 boolean keys)
+model Tag {
+  id          String   @id @default(cuid())
+  name        String   @unique
+  color       String
+  description String
+  permissions Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users               User[]
+  permissionOverrides UserPermissionOverride[]
+
+  @@map("tags")
+}
+
+/// Inventory category — maps to frontend/types/settings.ts Category interface
+/// linkedItemsCount is computed via _count.items, not stored
+model Category {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  items InventoryItem[]
+
+  @@map("categories")
+}
+
+/// Lab equipment item — maps to frontend/types/lab-inventory.ts LabInventoryListItem
+/// Note: frontend stores category as string NAME, backend uses FK.
+/// API response must include category.name as "category" string field.
+model InventoryItem {
+  id                String   @id @default(cuid())
+  name              String
+  description       String?
+  quantity          Int      @default(0)
+  availableQuantity Int      @default(0)
+  loanedQuantity    Int      @default(0)
+  image             String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  category   Category @relation(fields: [categoryId], references: [id])
+  categoryId String
+
+  loanItems LoanItem[]
+
+  @@map("inventory_items")
+}
+
+/// Loan request — maps to frontend/types/loan.ts Loan interface
+/// borrowerName and borrowerEmail are denormalized in API response
+/// (fetched via borrower relation, not stored separately)
+model Loan {
+  id             String     @id @default(cuid())
+  status         LoanStatus @default(pending)
+  loanDate       DateTime
+  dueDate        DateTime
+  returnedDate   DateTime?
+  notes          String?
+  labObservation String?
+  returnedLate   Boolean    @default(false)
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+
+  borrower   User   @relation(fields: [borrowerId], references: [id])
+  borrowerId String
+
+  items LoanItem[]
+
+  @@map("loans")
+}
+
+/// Individual item in a loan — maps to frontend/types/loan.ts LoanItem
+/// inventoryItemName is denormalized for quick display without joining
+model LoanItem {
+  id                String @id @default(cuid())
+  quantity          Int
+  inventoryItemName String
+
+  loan   Loan   @relation(fields: [loanId], references: [id], onDelete: Cascade)
+  loanId String
+
+  inventoryItem   InventoryItem @relation(fields: [inventoryItemId], references: [id])
+  inventoryItemId String
+
+  @@map("loan_items")
+}
+
+/// User notification — maps to frontend/mocks/notifications.ts LabNotification
+model Notification {
+  id        String           @id @default(cuid())
+  title     String
+  body      String
+  read      Boolean          @default(false)
+  type      NotificationType
+  createdAt DateTime         @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("notifications")
+}
+
+/// Per-user permission override — maps to frontend/types/settings.ts UserPermissionOverride
+/// customOverrides stores Partial<TagPermissions> as JSON (only the overridden keys)
+model UserPermissionOverride {
+  id              String @id @default(cuid())
+  customOverrides Json
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  tag   Tag    @relation(fields: [tagId], references: [id])
+  tagId String
+
+  @@unique([userId, tagId])
+  @@map("user_permission_overrides")
+}
