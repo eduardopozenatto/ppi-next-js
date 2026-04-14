@@ -69,10 +69,10 @@ Plans:
 **Success Criteria** (what must be TRUE):
   1. ✅ `pnpm dev` inicia o servidor Express na porta 3001 sem erros
   2. ✅ GET /api/health retorna `{ "status": "ok" }` com status 200
-  3. ⏳ Conexão com PostgreSQL funciona e tabelas base são criadas via migration (aguardando PostgreSQL instalado)
+  3. ✅ Conexão com PostgreSQL funciona e tabelas base são criadas via migration
   4. ✅ Middleware de CORS aceita requests de localhost:3000
   5. ✅ Middleware de erro global retorna respostas no formato ApiError
-**Status**: In Progress (awaiting PostgreSQL for migration + seed)
+**Status**: Complete
 
 Plans:
 - [x] 05-01: Express + TypeScript scaffolding, env config, CORS, error handling, request logging, health endpoint
@@ -137,7 +137,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 2. Auth e Páginas Públicas | v1.0 | 2/2 | Complete | ✅ |
 | 3. Módulos Core | v1.0 | 4/4 | Complete | ✅ |
 | 4. Administração e Config | v1.0 | 4/4 | Complete | ✅ |
-| 5. Fundação Backend | v2.0 | 2/2 | In Progress (DB pending) | ⏳ |
+| 5. Fundação Backend | v2.0 | 2/2 | Complete | ✅ |
 | 6. Auth e Autorização | v2.0 | 0/? | Not started | - |
 | 7. CRUD Inventário e Empréstimos | v2.0 | 0/? | Not started | - |
 | 8. Usuários, Permissões, Notif. | v2.0 | 0/? | Not started | - |
