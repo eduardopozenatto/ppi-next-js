@@ -83,12 +83,15 @@ Plans:
 **Depends on**: Phase 5
 **Requirements**: [BAUTH-01, BAUTH-02, BAUTH-03, BAUTH-04, BAUTH-05, BAUTH-06, BPERM-03]
 **Success Criteria** (what must be TRUE):
-  1. POST /api/auth/register cria usuário com senha hasheada no banco
-  2. POST /api/auth/login retorna JWT válido para credenciais corretas
-  3. GET /api/auth/me retorna dados do usuário autenticado com tag e permissões
-  4. Rotas protegidas retornam 401 sem token e 403 sem permissão
-  5. Middleware de permissão valida as 11 chaves de TagPermissions
-**Plans**: TBD
+  1. ✅ POST /api/auth/register cria usuário com senha hasheada no banco
+  2. ✅ POST /api/auth/login retorna JWT válido para credenciais corretas
+  3. ✅ GET /api/auth/me retorna dados do usuário autenticado com tag e permissões
+  4. ✅ Rotas protegidas retornam 401 sem token e 403 sem permissão
+  5. ✅ Middleware de permissão valida as 11 chaves de TagPermissions
+**Status**: Complete
+
+Plans:
+- [x] 06-01: Autenticação e Autorização (JWT, Bcrypt, Middlewares e Controller)
 
 #### Phase 7: CRUD de Inventário e Empréstimos
 **Goal**: Endpoints completos de inventário e empréstimos com lógica de negócio (quantidade disponível, aprovação, devolução)
@@ -138,7 +141,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 3. Módulos Core | v1.0 | 4/4 | Complete | ✅ |
 | 4. Administração e Config | v1.0 | 4/4 | Complete | ✅ |
 | 5. Fundação Backend | v2.0 | 2/2 | Complete | ✅ |
-| 6. Auth e Autorização | v2.0 | 0/? | Not started | - |
+| 6. Auth e Autorização | v2.0 | 1/1 | Complete | ✅ |
 | 7. CRUD Inventário e Empréstimos | v2.0 | 0/? | Not started | - |
 | 8. Usuários, Permissões, Notif. | v2.0 | 0/? | Not started | - |
 | 9. Integração Front ↔ Back | v2.0 | 0/? | Not started | - |
