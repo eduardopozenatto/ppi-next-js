@@ -67,12 +67,16 @@ Plans:
 **Depends on**: Phase 4
 **Requirements**: [BINF-01, BINF-02, BINF-03, BINF-04, BINF-05, BINF-06, BINF-07]
 **Success Criteria** (what must be TRUE):
-  1. `npm run dev` inicia o servidor Express na porta 3001 sem erros
-  2. GET /api/health retorna `{ "status": "ok" }` com status 200
-  3. Conexão com PostgreSQL funciona e tabelas base são criadas via migration
-  4. Middleware de CORS aceita requests de localhost:3000
-  5. Middleware de erro global retorna respostas no formato ApiError
-**Plans**: TBD
+  1. ✅ `pnpm dev` inicia o servidor Express na porta 3001 sem erros
+  2. ✅ GET /api/health retorna `{ "status": "ok" }` com status 200
+  3. ⏳ Conexão com PostgreSQL funciona e tabelas base são criadas via migration (aguardando PostgreSQL instalado)
+  4. ✅ Middleware de CORS aceita requests de localhost:3000
+  5. ✅ Middleware de erro global retorna respostas no formato ApiError
+**Status**: In Progress (awaiting PostgreSQL for migration + seed)
+
+Plans:
+- [x] 05-01: Express + TypeScript scaffolding, env config, CORS, error handling, request logging, health endpoint
+- [x] 05-02: Prisma 7 schema (8 models, 3 enums), client singleton, pg adapter, seed script
 
 #### Phase 6: Autenticação e Autorização
 **Goal**: Registro, login, JWT, middleware de auth e sistema de permissões baseado em tags
@@ -133,7 +137,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 2. Auth e Páginas Públicas | v1.0 | 2/2 | Complete | ✅ |
 | 3. Módulos Core | v1.0 | 4/4 | Complete | ✅ |
 | 4. Administração e Config | v1.0 | 4/4 | Complete | ✅ |
-| 5. Fundação Backend | v2.0 | 0/? | Not started | - |
+| 5. Fundação Backend | v2.0 | 2/2 | In Progress (DB pending) | ⏳ |
 | 6. Auth e Autorização | v2.0 | 0/? | Not started | - |
 | 7. CRUD Inventário e Empréstimos | v2.0 | 0/? | Not started | - |
 | 8. Usuários, Permissões, Notif. | v2.0 | 0/? | Not started | - |
