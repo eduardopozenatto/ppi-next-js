@@ -6,6 +6,7 @@ import {
   LoanStatus,
   NotificationType,
 } from '../src/generated/prisma/enums';
+import { hashPassword } from '../src/utils/crypto';
 
 // ─── Create a standalone Prisma client for seeding ────
 const pool = new Pool({ connectionString: process.env['DATABASE_URL'] });
@@ -58,6 +59,8 @@ const LABORATORISTA_PERMISSIONS = {
 
 async function main() {
   console.log('🌱 Seeding LabControl database...\n');
+  
+  const defaultPassword = await hashPassword('1234');
 
   // ─── Tags (frontend/mocks/settings.ts MOCK_TAGS) ─────────
   const tagAluno = await prisma.tag.upsert({
@@ -133,12 +136,12 @@ async function main() {
   // Passwords are plain text — will be hashed in Phase 6 (BAUTH-01)
   const admin = await prisma.user.upsert({
     where: { email: 'labcontrol.admin@gmail.com' },
-    update: {},
+    update: { password: defaultPassword },
     create: {
       id: 'admin-1',
       name: 'Prof. Eduardo Pozenatto',
       email: 'labcontrol.admin@gmail.com',
-      password: '1234',
+      password: defaultPassword,
       matricula: 'SIAPE-9876',
       role: UserRole.admin,
       phone: '(54) 99876-5432',
@@ -148,12 +151,12 @@ async function main() {
 
   const carlos = await prisma.user.upsert({
     where: { email: 'carlos.aluno.lab@gmail.com' },
-    update: {},
+    update: { password: defaultPassword },
     create: {
       id: 'user-1',
       name: 'Carlos Silva',
       email: 'carlos.aluno.lab@gmail.com',
-      password: '1234',
+      password: defaultPassword,
       matricula: '2021001234',
       role: UserRole.user,
       tagId: tagAluno.id,
@@ -162,12 +165,12 @@ async function main() {
 
   const bruno = await prisma.user.upsert({
     where: { email: 'bruno@discente.uf.br' },
-    update: {},
+    update: { password: defaultPassword },
     create: {
       id: 'user-2',
       name: 'Bruno Lima',
       email: 'bruno@discente.uf.br',
-      password: '1234',
+      password: defaultPassword,
       matricula: '2021005678',
       role: UserRole.user,
       tagId: tagAluno.id,
@@ -176,12 +179,12 @@ async function main() {
 
   const maria = await prisma.user.upsert({
     where: { email: 'maria.estagiaria@gmail.com' },
-    update: {},
+    update: { password: defaultPassword },
     create: {
       id: 'user-3',
       name: 'Maria Santos',
       email: 'maria.estagiaria@gmail.com',
-      password: '1234',
+      password: defaultPassword,
       matricula: '2022001122',
       role: UserRole.user,
       tagId: tagEstagiario.id,
@@ -190,12 +193,12 @@ async function main() {
 
   const ana = await prisma.user.upsert({
     where: { email: 'ana@discente.uf.br' },
-    update: {},
+    update: { password: defaultPassword },
     create: {
       id: 'user-4',
       name: 'Ana Costa',
       email: 'ana@discente.uf.br',
-      password: '1234',
+      password: defaultPassword,
       matricula: '2023003344',
       role: UserRole.user,
       tagId: tagAluno.id,
