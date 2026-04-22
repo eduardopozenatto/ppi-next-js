@@ -1,5 +1,5 @@
 ---
-status: partial
+status: complete
 phase: 07-crud-inventario-emprestimos
 source: [07-01-SUMMARY.md]
 started: "2026-04-22T12:18:00Z"
@@ -26,9 +26,7 @@ result: pass
 
 ### 3. Inventory Create (Auth Required)
 expected: POST `/api/inventory` without auth token returns 401. With a valid JWT and `manipular_estoque` permission, POST with `{ "name": "Test Item", "quantity": 5, "categoryId": "<valid-id>" }` returns 201 with the created item.
-result: issue
-reported: "POST /api/inventory returns 400 Bad Request 'Categoria inválida' because Zod schema expects UUID but DB uses CUID or custom strings like 'cat-1'."
-severity: major
+result: pass
 
 ### 4. Inventory Image Upload
 expected: POST `/api/inventory/:id/image` with a multipart form containing an image file (JPEG/PNG) returns 200 with updated item. The `image` field contains the upload path. Non-image files are rejected with an error.
@@ -53,18 +51,12 @@ result: pass
 ## Summary
 
 total: 8
-passed: 7
-issues: 1
+passed: 8
+issues: 0
 pending: 0
 skipped: 0
 blocked: 0
 
 ## Gaps
 
-- truth: "POST `/api/inventory` with a valid JWT and `manipular_estoque` permission returns 201 with the created item."
-  status: failed
-  reason: "User reported: POST /api/inventory returns 400 Bad Request 'Categoria inválida' because Zod schema expects UUID but DB uses CUID or custom strings like 'cat-1'."
-  severity: major
-  test: 3
-  artifacts: []
-  missing: []
+[none yet]
