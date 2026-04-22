@@ -11,6 +11,7 @@ declare global {
         id: string;
         name: string;
         email: string;
+        role: string;
         matricula: string | null;
         tag: {
           name: string;
@@ -86,6 +87,7 @@ export async function requireAuth(
       id: currentUser.id,
       name: currentUser.name,
       email: currentUser.email,
+      role: currentUser.role,
       matricula: currentUser.matricula,
       tag: currentUser.tag
         ? {

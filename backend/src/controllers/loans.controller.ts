@@ -247,12 +247,34 @@ export async function updateLoanStatus(
         }
       }
 
-      await tx.loan.update({
+      const updatedLoan = await tx.loan.update({
         where: { id },
         data: updatePayload,
       });
 
-      // Em fase 8 colocaremos as Notifications de aprovação aqui
+      // Fase 8: Notificações
+      if (status === LoanStatus.active) {
+        await tx.notification.create({
+          data: {
+            title: 'Empréstimo Aprovado',
+            body: `Seu pedido de empréstimo (ID: ${updatedLoan.id.slice(0, 8)}) foi aprovado.`,
+            type: 'approval',
+            userId: updatedLoan.borrowerId,
+          },
+        });
+      } else if (status === LoanStatus.cancelled || status === LoanStatus.returned) {
+        // Here LoanStatus.cancelled from pending means rejected
+        if (loan.status === LoanStatus.pending && status === LoanStatus.cancelled) {
+           await tx.notification.create({
+            data: {
+              title: 'Empréstimo Rejeitado',
+              body: `Seu pedido de empréstimo (ID: ${updatedLoan.id.slice(0, 8)}) foi rejeitado. Observação: ${labObservation || 'Nenhuma'}`,
+              type: 'rejection',
+              userId: updatedLoan.borrowerId,
+            },
+          });
+        }
+      }
     });
 
     sendSuccess(res, null, 'Status do empréstimo atualizado');
