@@ -2,3 +2,9 @@ node_modules/
 dist/
 .env
 *.js.map
+
+/src/generated/prisma
+
+# Uploaded files (keep directory structure via .gitkeep)
+public/uploads/*
+!public/uploads/.gitkeep
