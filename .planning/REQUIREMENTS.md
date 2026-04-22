@@ -69,20 +69,20 @@
 
 ### Inventário Backend
 
-- [ ] **BINV-01**: Endpoint GET /api/inventory com paginação (PaginatedResponse)
-- [ ] **BINV-02**: Endpoint GET /api/inventory/:id (ApiResponse)
-- [ ] **BINV-03**: Endpoint POST /api/inventory (criar item, admin only)
-- [ ] **BINV-04**: Endpoint PUT /api/inventory/:id (atualizar item, admin only)
-- [ ] **BINV-05**: Endpoint DELETE /api/inventory/:id (remover item, admin only)
-- [ ] **BINV-06**: Upload de imagem para item do inventário
+- [x] **BINV-01**: Endpoint GET /api/inventory com paginação (PaginatedResponse)
+- [x] **BINV-02**: Endpoint GET /api/inventory/:id (ApiResponse)
+- [x] **BINV-03**: Endpoint POST /api/inventory (criar item, admin only)
+- [x] **BINV-04**: Endpoint PUT /api/inventory/:id (atualizar item, admin only)
+- [x] **BINV-05**: Endpoint DELETE /api/inventory/:id (remover item, admin only)
+- [x] **BINV-06**: Upload de imagem para item do inventário
 
 ### Empréstimos Backend
 
-- [ ] **BLOAN-01**: Endpoint GET /api/loans com paginação e filtros
-- [ ] **BLOAN-02**: Endpoint GET /api/loans/:id
-- [ ] **BLOAN-03**: Endpoint POST /api/loans (solicitar empréstimo)
-- [ ] **BLOAN-04**: Endpoint PUT /api/loans/:id (aprovar, rejeitar, devolver, cancelar)
-- [ ] **BLOAN-05**: Lógica de atualização de quantidade disponível/emprestada ao aprovar/devolver
+- [x] **BLOAN-01**: Endpoint GET /api/loans com paginação e filtros
+- [x] **BLOAN-02**: Endpoint GET /api/loans/:id
+- [x] **BLOAN-03**: Endpoint POST /api/loans (solicitar empréstimo)
+- [x] **BLOAN-04**: Endpoint PUT /api/loans/:id (aprovar, rejeitar, devolver, cancelar)
+- [x] **BLOAN-05**: Lógica de atualização de quantidade disponível/emprestada ao aprovar/devolver
 
 ### Usuários e Permissões Backend
 
