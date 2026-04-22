@@ -121,6 +121,10 @@ export async function createItem(
   try {
     const data = createInventorySchema.parse(req.body);
 
+    if (!data.categoryId) {
+      throw new AppError('Categoria é obrigatória', 400);
+    }
+
     const newItem = await prisma.inventoryItem.create({
       data: {
         name: data.name,
@@ -129,7 +133,7 @@ export async function createItem(
         quantity: data.quantity,
         availableQuantity: data.quantity, // Na criação, 100% está available
         image: data.image ?? undefined,
-        categoryId: data.categoryId ?? undefined,
+        category: { connect: { id: data.categoryId } },
       },
       include: { category: true },
     });
