@@ -6,6 +6,7 @@ export const newInventoryItemSchema = z.object({
   description: z.string().optional(),
   totalQuantity: z.number().int().min(0),
   availableQuantity: z.number().int().min(0),
+  image: z.string().optional(),
 });
 
 export type NewInventoryItemFormValues = z.infer<typeof newInventoryItemSchema>;

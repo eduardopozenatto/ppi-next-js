@@ -1,12 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { MOCK_TAGS } from "@/mocks/settings";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
 import { Tag, TagPermissions } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
 import { useAuth } from "@/hooks/useAuth";
 import { PERMISSION_LABELS } from "./CategoriesList";
+import type { ApiResponse } from "@/types/api";
 
 const DEFAULT_PERMISSIONS: TagPermissions = {
   ver_itens: false, pedir_emprestimos: false, ver_notificacoes: false,
@@ -24,13 +25,28 @@ type FormTag = { id?: string; name: string; color: string; description: string; 
 
 export function TagsList() {
   const { addToast } = useToast();
-  const { user } = useAuth();
-  const [tags, setTags] = useState<Tag[]>(MOCK_TAGS);
+  const { user, updateSessionPermissions, updateSessionTag } = useAuth();
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; tag: FormTag } | null>(null);
   const [deleteModal, setDeleteModal] = useState<Tag | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hexInput, setHexInput] = useState("");
+
+  async function fetchTags() {
+    try {
+      const res = await api.get<ApiResponse<Tag[]>>("/tags");
+      setTags(res.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar perfis", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchTags(); }, []);
 
   const filtered = tags.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
 
@@ -70,7 +86,7 @@ export function TagsList() {
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!formModal) return;
     const errs: Record<string, string> = {};
     if (!formModal.tag.name.trim()) errs.name = "Nome é obrigatório";
@@ -99,23 +115,33 @@ export function TagsList() {
       if (!confirm) return;
     }
 
-    if (formModal.mode === "create") {
-      const newTag: Tag = { ...formModal.tag, id: `tag-${Date.now()}`, userCount: 0 };
-      setTags((prev) => [...prev, newTag]);
-      addToast({ variant: "success", title: "Tag criada", message: `"${newTag.name}" foi adicionada com sucesso.` });
-    } else if (formModal.tag.id) {
-      setTags((prev) => prev.map((t) => (t.id === formModal.tag.id ? { ...t, ...formModal.tag } as Tag : t)));
-      addToast({
-        variant: "success",
-        title: "Tag atualizada",
-        message: `As permissões da tag "${formModal.tag.name}" foram atualizadas com sucesso.`,
-      });
+    try {
+      if (formModal.mode === "create") {
+        await api.post("/tags", formModal.tag);
+        addToast({ variant: "success", title: "Tag criada", message: `"${formModal.tag.name}" foi adicionada com sucesso.` });
+      } else if (formModal.tag.id) {
+        await api.put(`/tags/${formModal.tag.id}`, formModal.tag);
+  
+        // Propagar permissões ao contexto se a tag editada é a do user logado
+        if (formModal.tag.name.toLowerCase() === currentUserTagName) {
+          updateSessionPermissions(formModal.tag.permissions);
+        }
+  
+        addToast({
+          variant: "success",
+          title: "Tag atualizada",
+          message: `As permissões da tag "${formModal.tag.name}" foram atualizadas com sucesso.`,
+        });
+      }
+      setFormModal(null);
+      setErrors({});
+      await fetchTags();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao salvar tag", variant: "error" });
     }
-    setFormModal(null);
-    setErrors({});
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteModal) return;
 
     // Não pode excluir a própria tag
@@ -129,9 +155,14 @@ export function TagsList() {
       return;
     }
 
-    setTags((prev) => prev.filter((t) => t.id !== deleteModal.id));
-    addToast({ variant: "success", title: "Tag excluída", message: `"${deleteModal.name}" foi removida com sucesso.` });
-    setDeleteModal(null);
+    try {
+      await api.del(`/tags/${deleteModal.id}`);
+      addToast({ variant: "success", title: "Tag excluída", message: `"${deleteModal.name}" foi removida com sucesso.` });
+      setDeleteModal(null);
+      await fetchTags();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao excluir", variant: "error" });
+    }
   }
 
   function togglePermission(key: keyof TagPermissions) {

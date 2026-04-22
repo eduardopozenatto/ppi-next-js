@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import { MOCK_CATEGORIES } from "@/mocks/settings";
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
 import { Category } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
 
 export const PERMISSION_LABELS: Record<string, string> = {
   ver_itens: "Visualizar itens",
@@ -24,11 +25,26 @@ export { PERMISSION_LABELS as PERMISSION_LABELS_MAP };
 
 export function CategoriesList() {
   const { addToast } = useToast();
-  const [categories, setCategories] = useState<Category[]>(MOCK_CATEGORIES);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; category: { id?: string; name: string } } | null>(null);
   const [deleteModal, setDeleteModal] = useState<Category | null>(null);
   const [error, setError] = useState("");
+
+  async function fetchCategories() {
+    try {
+      const res = await api.get<ApiResponse<Category[]>>("/categories");
+      setCategories(res.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar categorias", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchCategories(); }, []);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase())
@@ -42,7 +58,7 @@ export function CategoriesList() {
     );
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!formModal) return;
     const trimmedName = formModal.category.name.trim();
 
@@ -51,76 +67,48 @@ export function CategoriesList() {
       return;
     }
 
-    // Verificação de nome duplicado (case-insensitive)
     if (isDuplicateName(trimmedName, formModal.category.id)) {
-      if (formModal.mode === "create") {
-        addToast({
-          variant: "error",
-          title: "Categoria duplicada",
-          message: `Você já possui uma categoria com o nome "${trimmedName}". Insira outro nome.`,
-        });
-      } else {
-        addToast({
-          variant: "error",
-          title: "Categoria duplicada",
-          message: "Já existe uma categoria com este nome.",
-        });
-      }
+      addToast({ variant: "error", title: "Categoria duplicada", message: "Já existe uma categoria com este nome." });
       return;
     }
 
-    if (formModal.mode === "create") {
-      const newCat: Category = {
-        id: `cat-${Date.now()}`,
-        name: trimmedName,
-        createdAt: new Date().toISOString(),
-        linkedItemsCount: 0,
-      };
-      setCategories((prev) => [...prev, newCat]);
-      addToast({
-        variant: "success",
-        title: "Categoria criada",
-        message: `Categoria de itens "${newCat.name}" criada com sucesso.`,
-      });
-    } else if (formModal.category.id) {
-      setCategories((prev) =>
-        prev.map((c) =>
-          c.id === formModal.category.id
-            ? { ...c, name: trimmedName }
-            : c
-        )
-      );
-      addToast({
-        variant: "success",
-        title: "Categoria atualizada",
-        message: `"${trimmedName}" atualizada com sucesso.`,
-      });
+    try {
+      if (formModal.mode === "create") {
+        await api.post("/categories", { name: trimmedName });
+        addToast({ variant: "success", title: "Categoria criada", message: `Categoria "${trimmedName}" criada com sucesso.` });
+      } else if (formModal.category.id) {
+        await api.put(`/categories/${formModal.category.id}`, { name: trimmedName });
+        addToast({ variant: "success", title: "Categoria atualizada", message: `"${trimmedName}" atualizada com sucesso.` });
+      }
+      setFormModal(null);
+      setError("");
+      await fetchCategories();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao salvar", variant: "error" });
     }
-    setFormModal(null);
-    setError("");
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteModal) return;
 
-    // Verificação de itens vinculados
     if (deleteModal.linkedItemsCount && deleteModal.linkedItemsCount > 0) {
       addToast({
         variant: "error",
         title: "Exclusão bloqueada",
-        message: `Não é possível excluir "${deleteModal.name}" pois existem ${deleteModal.linkedItemsCount} item(ns) vinculado(s). Reatribua os itens antes de excluir.`,
+        message: `Não é possível excluir "${deleteModal.name}" pois existem ${deleteModal.linkedItemsCount} item(ns) vinculado(s).`,
       });
       setDeleteModal(null);
       return;
     }
 
-    setCategories((prev) => prev.filter((c) => c.id !== deleteModal.id));
-    addToast({
-      variant: "success",
-      title: "Categoria excluída",
-      message: `"${deleteModal.name}" foi removida com sucesso.`,
-    });
-    setDeleteModal(null);
+    try {
+      await api.del(`/categories/${deleteModal.id}`);
+      addToast({ variant: "success", title: "Categoria excluída", message: `"${deleteModal.name}" foi removida com sucesso.` });
+      setDeleteModal(null);
+      await fetchCategories();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao excluir", variant: "error" });
+    }
   }
 
   return (
@@ -140,7 +128,9 @@ export function CategoriesList() {
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredCategories.length === 0 ? (
+        {loading ? (
+          <p className="col-span-full py-8 text-center text-sm text-[var(--color-text-subtle)]">Carregando...</p>
+        ) : filteredCategories.length === 0 ? (
           <p className="col-span-full py-8 text-center text-sm text-[var(--color-text-subtle)]">
             Nenhuma categoria encontrada.
           </p>
@@ -157,7 +147,7 @@ export function CategoriesList() {
                 <div className="flex flex-col">
                   <span className="font-medium text-[var(--color-text)]">{category.name}</span>
                   <span className="text-xs text-[var(--color-text-subtle)]">
-                    Criada em {new Date(category.createdAt).toLocaleDateString("pt-BR")}
+                    Criada em {category.createdAt ? new Date(category.createdAt).toLocaleDateString("pt-BR") : "—"}
                     {category.linkedItemsCount !== undefined && category.linkedItemsCount > 0 && (
                       <> · {category.linkedItemsCount} item(ns)</>
                     )}

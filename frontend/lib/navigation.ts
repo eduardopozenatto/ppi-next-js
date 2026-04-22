@@ -27,7 +27,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/items",
     label: "Buscar itens",
     iconSrc: "/buttonIcons/search.svg",
-    permission: "verItens",
+    permission: "ver_itens",
     section: "main",
   },
   {
@@ -35,7 +35,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/loans",
     label: "Empréstimos",
     iconSrc: "/buttonIcons/calendar.svg",
-    permission: "pedirEmprestimos",
+    permission: "pedir_emprestimos",
     section: "main",
   },
   {
@@ -43,7 +43,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/notifications",
     label: "Notificações",
     iconSrc: "/buttonIcons/bell.svg",
-    permission: "VerNotificacoes",
+    permission: "ver_notificacoes",
     section: "main",
   },
   {
@@ -51,7 +51,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/inventory",
     label: "Estoque",
     iconSrc: "/buttonIcons/box.svg",
-    permission: "VerEstoque",
+    permission: "manipular_estoque",
     section: "main",
   },
   {
@@ -59,7 +59,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/approvals",
     label: "Aprovações",
     iconSrc: "/buttonIcons/aprovation.svg",
-    permission: "AprovEmprestimos",
+    permission: "aprovar_emprestimos",
     section: "admin",
   },
   {
@@ -67,7 +67,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/admin/users",
     label: "Usuários",
     iconSrc: "/buttonIcons/users.svg",
-    permission: "GerenciarUsuarios",
+    permission: "gerenciar_usuarios",
     section: "admin",
   },
   {
@@ -75,7 +75,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
     href: "/admin/reports",
     label: "Relatórios",
     iconSrc: "/buttonIcons/reports.svg",
-    permission: "GerarRelatorios",
+    permission: "gerar_relatorios",
     section: "admin",
   },
   {

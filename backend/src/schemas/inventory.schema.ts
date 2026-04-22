@@ -5,7 +5,7 @@ export const createInventorySchema = z.object({
   description: z.string().optional().default(''),
   isActive: z.boolean().optional().default(true),
   quantity: z.number().int().min(0, 'A quantidade não pode ser negativa'),
-  categoryId: z.string().uuid('Categoria inválida').optional().nullable(),
+  categoryId: z.string().min(1, 'Categoria inválida').optional().nullable(),
   image: z.string().optional().nullable(),
 });
 
@@ -16,7 +16,7 @@ export const updateInventorySchema = z.object({
   quantity: z.number().int().min(0).optional(),
   availableQuantity: z.number().int().min(0).optional(),
   loanedQuantity: z.number().int().min(0).optional(),
-  categoryId: z.string().uuid().optional().nullable(),
+  categoryId: z.string().optional().nullable(),
   image: z.string().optional().nullable(),
 });
 

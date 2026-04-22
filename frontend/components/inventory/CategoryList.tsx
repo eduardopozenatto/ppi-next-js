@@ -1,18 +1,44 @@
-import { MOCK_STORAGE_CATEGORIES } from "@/mocks/storage-categories";
+"use client";
+
+import { useEffect, useState } from "react";
+import { api } from "@/lib/api/client";
+import type { ApiResponse } from "@/types/api";
+
+interface Category {
+  id: string;
+  name: string;
+}
 
 export function CategoryList() {
+  const [categories, setCategories] = useState<Category[]>([]);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await api.get<ApiResponse<Category[]>>("/categories");
+        setCategories(res.data ?? []);
+      } catch {
+        // silently fail
+      }
+    }
+    load();
+  }, []);
+
   return (
     <ul className="flex w-full flex-col gap-0.5 py-1">
-      {MOCK_STORAGE_CATEGORIES.map((category, index) => (
-        <li key={`${category}-${index}`}>
+      {categories.map((category) => (
+        <li key={category.id}>
           <button
             type="button"
             className="w-full rounded-lg px-3 py-2 text-center text-sm text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-subtle)]"
           >
-            {category}
+            {category.name}
           </button>
         </li>
       ))}
+      {categories.length === 0 && (
+         <li className="px-3 py-2 text-center text-xs text-[var(--color-text-subtle)]">Nenhuma categoria</li>
+      )}
     </ul>
   );
 }

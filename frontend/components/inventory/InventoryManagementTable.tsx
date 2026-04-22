@@ -1,9 +1,31 @@
+"use client";
+
+import { useEffect, useState } from "react";
 import Link from "next/link";
-import { MOCK_INVENTORY_ITEMS } from "@/mocks/inventory-items";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
+import type { LabInventoryListItem } from "@/types/lab-inventory";
 
 export function InventoryManagementTable() {
-  const rows = Object.values(MOCK_INVENTORY_ITEMS);
+  const [rows, setRows] = useState<LabInventoryListItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await api.get<ApiResponse<LabInventoryListItem[]>>("/inventory");
+        setRows(res.data ?? []);
+      } catch (err) {
+        addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [addToast]);
 
   return (
     <div
@@ -23,7 +45,11 @@ export function InventoryManagementTable() {
           </tr>
         </thead>
         <tbody className="divide-y divide-[var(--color-border)]">
-          {rows.map((item) => (
+          {loading ? (
+             <tr><td colSpan={6} className="px-4 py-4 text-center text-[var(--color-text-subtle)]">Carregando...</td></tr>
+          ) : rows.length === 0 ? (
+             <tr><td colSpan={6} className="px-4 py-4 text-center text-[var(--color-text-subtle)]">Nenhum item encontrado.</td></tr>
+          ) : rows.map((item) => (
             <tr key={item.id} className="hover:bg-[var(--color-bg-subtle)]/60">
               <td className="px-4 py-3 font-medium text-[var(--color-text)]">{item.name}</td>
               <td className="px-4 py-3 text-[var(--color-text-subtle)]">{item.category}</td>

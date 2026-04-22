@@ -1,24 +1,29 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { MOCK_ADMIN_USERS } from "@/mocks/users";
-import { MOCK_TAGS, MOCK_PERMISSION_OVERRIDES } from "@/mocks/settings";
 import { Tag, TagPermissions, UserPermissionOverride } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
 import { useAuth } from "@/hooks/useAuth";
 import { PERMISSION_LABELS } from "./CategoriesList";
 import type { User } from "@/types/user";
+import { api } from "@/lib/api/client";
+import type { ApiResponse, PaginatedResponse } from "@/types/api";
+
+type UserWithOverrides = User & { permissionOverrides?: UserPermissionOverride[] };
 
 export function PermissionsList() {
   const { addToast } = useToast();
-  const { user: sessionUser } = useAuth();
+  const { user: sessionUser, updateSessionPermissions } = useAuth();
+  
+  const [users, setUsers] = useState<UserWithOverrides[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("all");
   const [filterCustom, setFilterCustom] = useState<"all" | "custom" | "default">("all");
-  const [overrides, setOverrides] = useState<UserPermissionOverride[]>(MOCK_PERMISSION_OVERRIDES);
-  const [users, setUsers] = useState<User[]>(MOCK_ADMIN_USERS);
-  const [tags] = useState<Tag[]>(MOCK_TAGS);
+  
   const [editModal, setEditModal] = useState<{
     userId: string;
     userName: string;
@@ -29,7 +34,6 @@ export function PermissionsList() {
   const [tagDropdownOpen, setTagDropdownOpen] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Fechar dropdown ao clicar fora
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -40,8 +44,34 @@ export function PermissionsList() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  /** ID do usuário logado (mock — laboratorista) */
+  async function fetchData() {
+    try {
+      const [usersRes, tagsRes] = await Promise.all([
+        // Assuming limit=100 for now to display all, could be paginated
+        api.get<PaginatedResponse<UserWithOverrides>>("/users?limit=100"),
+        api.get<ApiResponse<Tag[]>>("/tags"),
+      ]);
+      setUsers(usersRes.data ?? []);
+      setTags(tagsRes.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar dados", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchData(); }, []);
+
   const currentUserId = sessionUser?.id?.toString() ?? "";
+
+  function getOverrideCount(userId: string) {
+    const user = users.find((u) => u.id === userId);
+    if (!user || !user.permissionOverrides) return 0;
+    // user.permissionOverrides should match the current tag
+    const ov = user.permissionOverrides.find((o) => o.tagId === user.tagId);
+    return ov ? Object.keys(ov.customOverrides).length : 0;
+  }
 
   const filteredUsers = users.filter((u) => {
     const matchSearch =
@@ -56,21 +86,40 @@ export function PermissionsList() {
     return matchSearch && matchTag && matchCustom;
   });
 
-  function getOverrideCount(userId: string) {
-    const ov = overrides.find((o) => o.userId === userId);
-    return ov ? Object.keys(ov.customOverrides).length : 0;
-  }
-
   function getTagPermission(tagId: string, key: keyof TagPermissions): boolean {
     const tag = tags.find((t) => t.id === tagId);
     return tag ? tag.permissions[key] : false;
   }
 
+  function computeEffectivePermissions(tagId: string, userOverrides: Partial<TagPermissions>): TagPermissions {
+    const tag = tags.find((t) => t.id === tagId);
+    const base: TagPermissions = tag
+      ? { ...tag.permissions }
+      : {
+          ver_itens: false, pedir_emprestimos: false, ver_notificacoes: false,
+          manipular_estoque: false, gerar_relatorios: false, aprovar_emprestimos: false,
+          gerenciar_itens: false, gerenciar_usuarios: false, gerenciar_roles: false,
+          gerenciar_categorias: false, gerenciar_permissoes: false,
+        };
+    for (const [key, value] of Object.entries(userOverrides)) {
+      if (value !== undefined) {
+        base[key as keyof TagPermissions] = value;
+      }
+    }
+    return base;
+  }
+
+  function isCurrentSessionUser(userItem: User): boolean {
+    return sessionUser?.email?.toLowerCase() === userItem.email.toLowerCase();
+  }
+
   function openEditModal(userId: string, userName: string) {
     const userItem = users.find((u) => u.id === userId);
-    const tagId = userItem?.tagId || "tag-1";
-    const existing = overrides.find((o) => o.userId === userId);
-    const currentOverrides = existing ? { ...existing.customOverrides } : {};
+    if (!userItem) return;
+    const tagId = userItem.tagId || (tags[0]?.id ?? "");
+    const ov = userItem.permissionOverrides?.find((o) => o.tagId === tagId);
+    const currentOverrides = ov ? { ...(ov.customOverrides as Partial<TagPermissions>) } : {};
+    
     setEditModal({
       userId,
       userName,
@@ -83,8 +132,8 @@ export function PermissionsList() {
   function toggleOverride(key: keyof TagPermissions) {
     if (!editModal) return;
 
-    // Self-protection: não pode remover gerenciar_permissoes de si mesmo
-    if (key === "gerenciar_permissoes" && editModal.userId === currentUserId.toString()) {
+    const userItem = users.find((u) => u.id === editModal.userId);
+    if (key === "gerenciar_permissoes" && userItem && isCurrentSessionUser(userItem)) {
       return;
     }
 
@@ -92,77 +141,70 @@ export function PermissionsList() {
     const tagDefault = getTagPermission(editModal.tagId, key);
 
     if (key in current) {
-      // Remove override → revert to tag default
       const { [key]: _, ...rest } = current;
       setEditModal({ ...editModal, overrides: rest });
     } else {
-      // Add override → toggle from tag default
       setEditModal({ ...editModal, overrides: { ...current, [key]: !tagDefault } });
     }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!editModal) return;
 
-    // No-change detection
     const originalKeys = Object.keys(editModal.originalOverrides).sort().join(",");
     const newKeys = Object.keys(editModal.overrides).sort().join(",");
     const originalValues = JSON.stringify(editModal.originalOverrides);
     const newValues = JSON.stringify(editModal.overrides);
 
     if (originalKeys === newKeys && originalValues === newValues) {
-      // Nenhuma alteração — não envia requisição
       setEditModal(null);
       return;
     }
 
-    const hasOverrides = Object.keys(editModal.overrides).length > 0;
+    try {
+      await api.put(`/users/${editModal.userId}/permissions/${editModal.tagId}`, {
+        customOverrides: editModal.overrides
+      });
 
-    setOverrides((prev) => {
-      const withoutCurrent = prev.filter((o) => o.userId !== editModal.userId);
-      if (hasOverrides) {
-        return [...withoutCurrent, { userId: editModal.userId, tagId: editModal.tagId, customOverrides: editModal.overrides }];
+      const userItem = users.find((u) => u.id === editModal.userId);
+      if (userItem && isCurrentSessionUser(userItem)) {
+        const effective = computeEffectivePermissions(editModal.tagId, editModal.overrides);
+        updateSessionPermissions(effective);
       }
-      return withoutCurrent;
-    });
 
-    addToast({
-      variant: "success",
-      title: "Permissões atualizadas",
-      message: `As permissões de "${editModal.userName}" foram salvas.`,
-    });
-    setEditModal(null);
+      addToast({ variant: "success", title: "Permissões atualizadas", message: `As permissões de "${editModal.userName}" foram salvas.` });
+      setEditModal(null);
+      await fetchData();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao salvar permissões", variant: "error" });
+    }
   }
 
-  function handleChangeTag(userId: string, newTagId: string) {
+  async function handleChangeTag(userId: string, newTagId: string) {
     const userItem = users.find((u) => u.id === userId);
     if (!userItem) return;
 
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, tagId: newTagId } : u)));
-
-    const hasOverrides = getOverrideCount(userId) > 0;
-    const newTag = tags.find((t) => t.id === newTagId);
-
-    if (hasOverrides) {
-      addToast({
-        variant: "info",
-        title: "Tag alterada",
-        message: `Tag alterada para ${newTag?.name || "nova tag"}. Permissões customizadas foram mantidas.`,
-      });
-    } else {
-      addToast({
-        variant: "success",
-        title: "Tag alterada",
-        message: `Tag alterada para ${newTag?.name || "nova tag"}. Permissões base atualizadas.`,
-      });
+    try {
+      await api.put(`/users/${userId}`, { tagId: newTagId });
+      
+      const userOverrides = userItem.permissionOverrides?.find((o) => o.tagId === newTagId)?.customOverrides ?? {};
+      const newTag = tags.find((t) => t.id === newTagId);
+      
+      if (isCurrentSessionUser(userItem)) {
+        const effective = computeEffectivePermissions(newTagId, userOverrides);
+        updateSessionPermissions(effective);
+      }
+      
+      addToast({ variant: "success", title: "Tag alterada", message: `Tag alterada para ${newTag?.name || "nova tag"}.` });
+      setTagDropdownOpen(null);
+      await fetchData();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao alterar tag", variant: "error" });
     }
-
-    setTagDropdownOpen(null);
   }
 
   return (
     <div className="space-y-6">
-      {/* Filters */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <label className="relative flex flex-1 max-w-sm flex-col">
           <span className="sr-only">Buscar por nome ou e-mail</span>
@@ -199,7 +241,6 @@ export function PermissionsList() {
         </div>
       </div>
 
-      {/* Table */}
       <div className="overflow-hidden rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm text-[var(--color-text)]">
@@ -212,7 +253,9 @@ export function PermissionsList() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {filteredUsers.length === 0 ? (
+              {loading ? (
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-sm text-[var(--color-text-subtle)]">Carregando...</td></tr>
+              ) : filteredUsers.length === 0 ? (
                 <tr>
                   <td colSpan={4} className="px-6 py-8 text-center text-sm text-[var(--color-text-subtle)]">
                     Nenhum usuário encontrado.
@@ -220,14 +263,13 @@ export function PermissionsList() {
                 </tr>
               ) : (
                 filteredUsers.map((userItem) => {
-                  const tagId = userItem.tagId || "tag-1";
+                  const tagId = userItem.tagId || "";
                   const tag = tags.find((t) => t.id === tagId);
                   const overrideCount = getOverrideCount(userItem.id);
                   const isCustomized = overrideCount > 0;
 
                   return (
                     <tr key={userItem.id} className="transition-colors hover:bg-[var(--color-bg-subtle)]/50">
-                      {/* Usuário */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-sm font-bold text-white">
@@ -240,7 +282,6 @@ export function PermissionsList() {
                         </div>
                       </td>
 
-                      {/* Tag — Inline dropdown */}
                       <td className="px-6 py-4">
                         <div className="relative" ref={tagDropdownOpen === userItem.id ? dropdownRef : undefined}>
                           <button
@@ -279,7 +320,6 @@ export function PermissionsList() {
                         </div>
                       </td>
 
-                      {/* Customizado */}
                       <td className="px-6 py-4 text-center">
                         {isCustomized ? (
                           <span className="inline-flex items-center rounded-full bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-400/10 dark:text-blue-400">
@@ -292,7 +332,6 @@ export function PermissionsList() {
                         )}
                       </td>
 
-                      {/* Ações */}
                       <td className="px-6 py-4 text-right">
                         <Button
                           type="button"
@@ -311,10 +350,10 @@ export function PermissionsList() {
         </div>
       </div>
 
-      {/* Permission Override Modal */}
       {editModal && (() => {
         const currentTag = tags.find((t) => t.id === editModal.tagId);
-        const isEditingSelf = editModal.userId === currentUserId.toString();
+        const userItem = users.find((u) => u.id === editModal.userId);
+        const isEditingSelf = userItem ? isCurrentSessionUser(userItem) : false;
 
         return (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setEditModal(null)}>
@@ -329,7 +368,6 @@ export function PermissionsList() {
                 Personalize as permissões desse usuário. Permissões personalizadas sobrescrevem as permissões da tag.
               </p>
 
-              {/* Tag info badge */}
               {currentTag && (
                 <div className="mt-3 flex items-center gap-2">
                   <span className="text-sm text-[var(--color-text-subtle)]">Tag atual:</span>

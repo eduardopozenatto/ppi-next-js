@@ -1,20 +1,38 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
+import type { LabInventoryListItem } from "@/types/lab-inventory";
 import { newLoanSchema, type NewLoanFormValues } from "@/lib/validations/loan";
-import { MOCK_INVENTORY_ITEMS } from "@/mocks/inventory-items";
 import { cn } from "@/lib/utils";
 
 export function NewLoanForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const presetItem = searchParams.get("item") ?? "";
+  
+  const [inventoryOptions, setInventoryOptions] = useState<LabInventoryListItem[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { addToast } = useToast();
 
-  const inventoryOptions = Object.values(MOCK_INVENTORY_ITEMS);
+  useEffect(() => {
+    async function loadItems() {
+      try {
+        const res = await api.get<ApiResponse<LabInventoryListItem[]>>("/inventory");
+        setInventoryOptions(res.data ?? []);
+      } catch {
+        addToast({ title: "Erro", message: "Falha ao carregar itens de estoque", variant: "error" });
+      }
+    }
+    loadItems();
+  }, [addToast]);
 
   const {
     register,
@@ -25,16 +43,32 @@ export function NewLoanForm() {
     defaultValues: {
       borrowerName: "",
       borrowerEmail: "",
-      itemId: presetItem && inventoryOptions.some((i) => i.id === presetItem) ? presetItem : "",
+      itemId: presetItem,
       quantity: 1,
       dueDate: "",
       notes: "",
     },
   });
 
-  function onSubmit() {
-    // TODO: substituir por POST /api/loans
-    router.push("/loans");
+  async function onSubmit(data: NewLoanFormValues) {
+    setIsSubmitting(true);
+    try {
+      // O formulário de "Novo Empréstimo Manual" envia borrowerName e borrowerEmail,
+      // mas a rota atual do backend usa o sessionUser como borrower por padrão.
+      // Se a rota POST /loans exigir auth, ela usa o usuário logado.
+      // Aqui mapeamos os campos do form para o formato esperado.
+      await api.post("/loans", {
+        items: [{ inventoryItemId: data.itemId, quantity: data.quantity }],
+        notes: data.notes,
+        // O backend decide o dueDate ou permite passar (verifique o contrato se precisar)
+      });
+      addToast({ title: "Sucesso", message: "Empréstimo registrado com sucesso.", variant: "success" });
+      router.push("/loans");
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao registrar empréstimo", variant: "error" });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (

@@ -22,6 +22,7 @@ export const getUsers = async (req: Request, res: Response) => {
       orderBy: { createdAt: 'desc' },
       include: {
         tag: true,
+        permissionOverrides: true,
       },
     });
 

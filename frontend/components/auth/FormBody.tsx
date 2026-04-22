@@ -52,7 +52,15 @@ export function AuthFormBody({ initialMode = "login" }: AuthFormBodyProps) {
           ) : null}
         </section>
       </div>
-      <AuthFormFooter mode={mode} setMode={setMode} email={email} password={password} />
+      <AuthFormFooter
+        mode={mode}
+        setMode={setMode}
+        email={email}
+        password={password}
+        name={name}
+        matricula={matricula}
+        confirmPassword={confirmPassword}
+      />
     </FormCard>
   );
 }
