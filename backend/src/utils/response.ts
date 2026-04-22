@@ -28,14 +28,15 @@ export function sendCreated<T>(
 
 /**
  * Send a paginated response.
- * Shape: { data: T[], total, page, perPage, totalPages }
+ * Shape: { data: T[], total, page, perPage, totalPages, message? }
  */
 export function sendPaginated<T>(
   res: Response,
   data: T[],
   total: number,
   page: number,
-  perPage: number
+  perPage: number,
+  _message?: string
 ): void {
   const totalPages = Math.ceil(total / perPage);
   const body: PaginatedResponse<T> = {
