@@ -19,7 +19,7 @@ export function AuthGate({ children }: AuthGateProps) {
     }
   }, [status, router]);
 
-  if (status === "guest") {
+  if (status === "loading" || status === "guest") {
     return (
       <div
         className={cn(

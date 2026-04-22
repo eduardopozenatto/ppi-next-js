@@ -1,18 +1,7 @@
-/** Utilizador da sessão no app do laboratório (mock até existir GET /api/auth/me). */
-export interface LabUserPermissions {
-  verItens: boolean;
-  pedirEmprestimos: boolean;
-  VerNotificacoes: boolean;
-  VerEstoque: boolean;
-  GerarRelatorios: boolean;
-  AprovEmprestimos: boolean;
-  CriarItens: boolean;
-  GerenciarItens: boolean;
-  GerenciarUsuarios: boolean;
-  GerenciarTag: boolean;
-  GerenciarCat: boolean;
-  GerenciarPermissoes: boolean;
-}
+import type { TagPermissions } from "./settings";
+
+/** Permissões do utilizador na sessão (segue shape da API GET /api/auth/me). */
+export type LabUserPermissions = TagPermissions;
 
 export interface LabUserTag {
   name: string;
@@ -24,7 +13,7 @@ export interface LabSessionUser {
   id: number;
   name: string;
   email: string;
-  password: string;
+  matricula?: string;
   tag: LabUserTag;
   userPermissions: LabUserPermissions;
 }
