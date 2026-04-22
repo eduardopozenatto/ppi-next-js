@@ -86,26 +86,26 @@
 
 ### Usuários e Permissões Backend
 
-- [ ] **BUSER-01**: Endpoint GET /api/users com paginação (admin only)
-- [ ] **BUSER-02**: Endpoint GET /api/users/:id (admin only)
-- [ ] **BUSER-03**: Endpoint PUT /api/users/:id (atualizar perfil, tag, status)
-- [ ] **BUSER-04**: Endpoint DELETE /api/users/:id (desativar usuário, admin only)
-- [ ] **BPERM-01**: CRUD de Tags com permissões (11 chaves de permissão)
-- [ ] **BPERM-02**: CRUD de Categorias de estoque
+- [x] **BUSER-01**: Endpoint GET /api/users com paginação (admin only)
+- [x] **BUSER-02**: Endpoint GET /api/users/:id (admin only)
+- [x] **BUSER-03**: Endpoint PUT /api/users/:id (atualizar perfil, tag, status)
+- [x] **BUSER-04**: Endpoint DELETE /api/users/:id (desativar usuário, admin only)
+- [x] **BPERM-01**: CRUD de Tags com permissões (11 chaves de permissão)
+- [x] **BPERM-02**: CRUD de Categorias de estoque
 - [ ] **BPERM-03**: Middleware de autorização baseado em permissões da tag do usuário
-- [ ] **BPERM-04**: Override de permissões por usuário individual
+- [x] **BPERM-04**: Override de permissões por usuário individual
 
 ### Notificações Backend
 
-- [ ] **BNOTIF-01**: Endpoint GET /api/notifications (listar notificações do usuário)
-- [ ] **BNOTIF-02**: Endpoint PUT /api/notifications/:id (marcar como lida)
-- [ ] **BNOTIF-03**: Criação automática de notificação ao aprovar/rejeitar empréstimo
-- [ ] **BNOTIF-04**: Configurações de preferência de notificação por usuário
+- [x] **BNOTIF-01**: Endpoint GET /api/notifications (listar notificações do usuário)
+- [x] **BNOTIF-02**: Endpoint PUT /api/notifications/:id (marcar como lida)
+- [x] **BNOTIF-03**: Criação automática de notificação ao aprovar/rejeitar empréstimo
+- [x] **BNOTIF-04**: Configurações de preferência de notificação por usuário
 
 ### Relatórios Backend
 
-- [ ] **BREP-01**: Endpoint GET /api/reports/loans (relatório de empréstimos)
-- [ ] **BREP-02**: Endpoint GET /api/reports/inventory (relatório de inventário)
+- [x] **BREP-01**: Endpoint GET /api/reports/loans (relatório de empréstimos)
+- [x] **BREP-02**: Endpoint GET /api/reports/inventory (relatório de inventário)
 
 ### Integração Frontend ↔ Backend
 

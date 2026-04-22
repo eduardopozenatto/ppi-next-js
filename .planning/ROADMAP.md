@@ -143,5 +143,5 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 5. Fundação Backend | v2.0 | 2/2 | Complete | ✅ |
 | 6. Auth e Autorização | v2.0 | 1/1 | Complete | ✅ |
 | 7. CRUD Inventário e Empréstimos | v2.0 | 0/? | Not started | - |
-| 8. Usuários, Permissões, Notif. | v2.0 | 0/? | Not started | - |
+| 8. Usuários, Permissões, Notif. | v2.0 | 1/1 | Complete   | 2026-04-22 |
 | 9. Integração Front ↔ Back | v2.0 | 0/? | Not started | - |
