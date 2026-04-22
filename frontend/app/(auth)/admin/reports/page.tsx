@@ -1,49 +1,60 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/Button/Button";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { formatDate } from "@/lib/utils";
-import { MOCK_INVENTORY_ITEMS } from "@/mocks/inventory-items";
-import { MOCK_LOANS } from "@/mocks/loans";
-import { MOCK_ADMIN_USERS } from "@/mocks/users";
-
-// TODO: substituir por chamada real quando backend estiver pronto
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
+import type { Loan } from "@/types/loan";
 
 type Tab = "estoque" | "emprestimos";
 type Period = "7" | "30" | "90" | "all";
+
+interface InventoryReport {
+  summary: { totalItems: number; availableQuantity: number; totalUsers: number; activeUsers: number };
+  itemsByCategory: Array<{ categoryName: string; totalItems: number; totalQuantity: number; availableQuantity: number }>;
+  mostBorrowed: Array<{ itemName: string; borrowedQuantity: number }>;
+}
+
+interface LoansReport {
+  summary: { totalLoans: number; activeLoans: number; overdueLoans: number; returnedLoans: number; pendingLoans: number };
+}
 
 export default function AdminReportsPage() {
   const [tab, setTab] = useState<Tab>("estoque");
   const [period, setPeriod] = useState<Period>("30");
 
-  const inv = Object.values(MOCK_INVENTORY_ITEMS);
-  const totalItems = inv.length;
-  const availableItems = inv.reduce((a, i) => a + i.availableQuantity, 0);
-  const activeLoans = MOCK_LOANS.filter((l) => l.status === "active" || l.status === "pending").length;
-  const overdueLoans = MOCK_LOANS.filter((l) => l.status === "overdue").length;
-  const activeUsers = MOCK_ADMIN_USERS.filter((u) => u.isActive).length;
+  const [invReport, setInvReport] = useState<InventoryReport | null>(null);
+  const [loansReport, setLoansReport] = useState<LoansReport | null>(null);
+  const [loansTable, setLoansTable] = useState<Loan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
 
-  // Group items by category for Estoque tab
-  const itemsByCategory = inv.reduce<Record<string, { category: string; total: number; available: number }>>((acc, item) => {
-    const cat = item.category;
-    if (!acc[cat]) acc[cat] = { category: cat, total: 0, available: 0 };
-    acc[cat].total += item.quantity;
-    acc[cat].available += item.availableQuantity;
-    return acc;
-  }, {});
-
-  // Most borrowed items (mock count by loan references)
-  const borrowedCount = MOCK_LOANS.flatMap((l) => l.items).reduce<Record<string, { name: string; count: number }>>((acc, item) => {
-    if (!acc[item.inventoryItemId]) acc[item.inventoryItemId] = { name: item.inventoryItemName, count: 0 };
-    acc[item.inventoryItemId].count += item.quantity;
-    return acc;
-  }, {});
-  const mostBorrowed = Object.values(borrowedCount).sort((a, b) => b.count - a.count);
+  useEffect(() => {
+    async function load() {
+      setLoading(true);
+      try {
+        const [invRes, loansRepRes, loansRes] = await Promise.all([
+          api.get<ApiResponse<InventoryReport>>("/reports/inventory"),
+          api.get<ApiResponse<LoansReport>>(`/reports/loans?period=${period}`),
+          api.get<ApiResponse<Loan[]>>("/loans"),
+        ]);
+        setInvReport(invRes.data);
+        setLoansReport(loansRepRes.data);
+        setLoansTable(loansRes.data ?? []);
+      } catch (err) {
+        addToast({ title: "Erro", message: "Falha ao carregar relatórios", variant: "error" });
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [period, addToast]);
 
   function handleExport() {
-    // TODO: implementar download real CSV/XLSX
     alert(`Exportando dados da aba "${tab === "estoque" ? "Estoque" : "Empréstimos"}"...`);
   }
 
@@ -63,23 +74,37 @@ export default function AdminReportsPage() {
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <div className="rounded-2xl border border-blue-200 bg-white p-5 dark:border-blue-900 dark:bg-blue-900/20">
           <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Total de itens</p>
-          <p className="mt-1 text-3xl font-bold text-blue-800 dark:text-blue-300">{totalItems}</p>
-          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">{availableItems} disponíveis</p>
+          <p className="mt-1 text-3xl font-bold text-blue-800 dark:text-blue-300">
+            {loading ? "..." : invReport?.summary.totalItems ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+            {loading ? "..." : invReport?.summary.availableQuantity ?? 0} disponíveis
+          </p>
         </div>
         <div className="rounded-2xl border border-green-200 bg-green-50 p-5 dark:border-green-900 dark:bg-green-900/20">
           <p className="text-sm font-medium text-green-700 dark:text-green-400">Empréstimos</p>
-          <p className="mt-1 text-3xl font-bold text-green-800 dark:text-green-300">{MOCK_LOANS.length}</p>
-          <p className="mt-1 text-xs text-green-600 dark:text-green-400">{activeLoans} ativos</p>
+          <p className="mt-1 text-3xl font-bold text-green-800 dark:text-green-300">
+            {loading ? "..." : loansReport?.summary.totalLoans ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+            {loading ? "..." : loansReport?.summary.activeLoans ?? 0} ativos
+          </p>
         </div>
         <div className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-900 dark:bg-red-900/20">
           <p className="text-sm font-medium text-red-700 dark:text-red-400">Atrasados</p>
-          <p className="mt-1 text-3xl font-bold text-red-800 dark:text-red-300">{overdueLoans}</p>
+          <p className="mt-1 text-3xl font-bold text-red-800 dark:text-red-300">
+            {loading ? "..." : loansReport?.summary.overdueLoans ?? 0}
+          </p>
           <p className="mt-1 text-xs text-red-600 dark:text-red-400">Requerem atenção</p>
         </div>
         <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-900 dark:bg-yellow-900/20">
           <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Usuários</p>
-          <p className="mt-1 text-3xl font-bold text-yellow-800 dark:text-yellow-300">{MOCK_ADMIN_USERS.length}</p>
-          <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">{activeUsers} ativos</p>
+          <p className="mt-1 text-3xl font-bold text-yellow-800 dark:text-yellow-300">
+            {loading ? "..." : invReport?.summary.totalUsers ?? 0}
+          </p>
+          <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+            {loading ? "..." : invReport?.summary.activeUsers ?? 0} ativos
+          </p>
         </div>
       </div>
 
@@ -122,18 +147,23 @@ export default function AdminReportsPage() {
               <thead className="bg-[var(--color-bg-subtle)] text-xs font-semibold uppercase text-[var(--color-text-subtle)]">
                 <tr>
                   <th className="px-5 py-3">Categoria</th>
-                  <th className="px-5 py-3">Total</th>
+                  <th className="px-5 py-3">Total (unidades)</th>
                   <th className="px-5 py-3">Disponível</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]">
-                {Object.values(itemsByCategory).map((row) => (
-                  <tr key={row.category} className="hover:bg-[var(--color-bg-subtle)]/50">
-                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{row.category}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.total}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.available}</td>
+                {invReport?.itemsByCategory.map((row) => (
+                  <tr key={row.categoryName} className="hover:bg-[var(--color-bg-subtle)]/50">
+                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{row.categoryName}</td>
+                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.totalQuantity}</td>
+                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.availableQuantity}</td>
                   </tr>
                 ))}
+                {!invReport?.itemsByCategory.length && !loading && (
+                  <tr>
+                    <td colSpan={3} className="px-5 py-4 text-center text-[var(--color-text-subtle)]">Sem dados de estoque.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -145,16 +175,21 @@ export default function AdminReportsPage() {
               <thead className="bg-[var(--color-bg-subtle)] text-xs font-semibold uppercase text-[var(--color-text-subtle)]">
                 <tr>
                   <th className="px-5 py-3">Item</th>
-                  <th className="px-5 py-3">Emprestado</th>
+                  <th className="px-5 py-3">Quantidade total emprestada</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]">
-                {mostBorrowed.map((row) => (
-                  <tr key={row.name} className="hover:bg-[var(--color-bg-subtle)]/50">
-                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{row.name}</td>
-                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.count}×</td>
+                {invReport?.mostBorrowed.map((row) => (
+                  <tr key={row.itemName} className="hover:bg-[var(--color-bg-subtle)]/50">
+                    <td className="px-5 py-3 font-medium text-[var(--color-text)]">{row.itemName}</td>
+                    <td className="px-5 py-3 text-[var(--color-text-subtle)]">{row.borrowedQuantity}×</td>
                   </tr>
                 ))}
+                {!invReport?.mostBorrowed.length && !loading && (
+                  <tr>
+                    <td colSpan={2} className="px-5 py-4 text-center text-[var(--color-text-subtle)]">Sem dados de empréstimos.</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -175,7 +210,7 @@ export default function AdminReportsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border)]">
-              {MOCK_LOANS.map((loan) => (
+              {loansTable.map((loan) => (
                 <tr key={loan.id} className="hover:bg-[var(--color-bg-subtle)]/50">
                   <td className="px-5 py-3 font-medium text-[var(--color-text)]">{loan.items.map((i) => i.inventoryItemName).join(", ")}</td>
                   <td className="px-5 py-3 text-[var(--color-text-subtle)]">{loan.borrowerName}</td>
@@ -186,6 +221,11 @@ export default function AdminReportsPage() {
                   <td className="px-5 py-3"><LoanStatusBadge status={loan.status} /></td>
                 </tr>
               ))}
+              {!loansTable.length && !loading && (
+                <tr>
+                  <td colSpan={5} className="px-5 py-4 text-center text-[var(--color-text-subtle)]">Sem dados de empréstimos.</td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

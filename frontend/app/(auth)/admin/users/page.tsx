@@ -1,26 +1,50 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
-import { MOCK_ADMIN_USERS } from "@/mocks/users";
-import { MOCK_TAGS } from "@/mocks/settings";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
 import type { User } from "@/types/user";
-
-// TODO: substituir por chamada real quando backend estiver pronto
+import type { Tag } from "@/types/settings";
 
 const EMPTY_USER: Omit<User, "id" | "createdAt"> = {
   name: "", email: "", role: "user", matricula: "", tagId: "tag-1", isActive: false,
 };
 
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<User[]>(MOCK_ADMIN_USERS);
+  const [users, setUsers] = useState<User[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [filterTag, setFilterTag] = useState("all");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; user: Omit<User, "id" | "createdAt"> & { id?: string } } | null>(null);
   const [deleteModal, setDeleteModal] = useState<User | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const { addToast } = useToast();
+
+  async function fetchUsersAndTags() {
+    try {
+      const [usersRes, tagsRes] = await Promise.all([
+        api.get<ApiResponse<User[]>>("/users"),
+        api.get<ApiResponse<Tag[]>>("/tags"),
+      ]);
+      setUsers(usersRes.data ?? []);
+      setTags(tagsRes.data ?? []);
+      if (formModal?.mode === "create" && tagsRes.data?.[0]) {
+         EMPTY_USER.tagId = tagsRes.data[0].id;
+      }
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar usuários e perfis", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchUsersAndTags(); }, []);
 
   const filtered = users.filter((u) => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()) || (u.matricula ?? "").includes(search);
@@ -29,17 +53,23 @@ export default function AdminUsersPage() {
   });
 
   function getTagName(tagId?: string) {
-    return MOCK_TAGS.find((t) => t.id === tagId)?.name ?? "—";
+    return tags.find((t) => t.id === tagId)?.name ?? "—";
   }
   function getTagColor(tagId?: string) {
-    return MOCK_TAGS.find((t) => t.id === tagId)?.color ?? "#888";
+    return tags.find((t) => t.id === tagId)?.color ?? "#888";
   }
 
-  function toggleStatus(userId: string) {
-    setUsers((prev) => prev.map((u) => (u.id === userId ? { ...u, isActive: !u.isActive } : u)));
+  async function toggleStatus(user: User) {
+    try {
+      await api.put(`/users/${user.id}`, { isActive: !user.isActive });
+      addToast({ title: "Atualizado", message: "Status alterado", variant: "success" });
+      await fetchUsersAndTags();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao alterar status", variant: "error" });
+    }
   }
 
-  function handleSave() {
+  async function handleSave() {
     if (!formModal) return;
     const errs: Record<string, string> = {};
     if (!formModal.user.name.trim()) errs.name = "Nome é obrigatório";
@@ -48,20 +78,44 @@ export default function AdminUsersPage() {
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
-    if (formModal.mode === "create") {
-      const newUser: User = { ...formModal.user, id: `user-${Date.now()}`, createdAt: new Date().toISOString(), isActive: false };
-      setUsers((prev) => [...prev, newUser]);
-    } else if (formModal.user.id) {
-      setUsers((prev) => prev.map((u) => (u.id === formModal.user.id ? { ...u, ...formModal.user } as User : u)));
+    try {
+      if (formModal.mode === "create") {
+        await api.post("/auth/register", {
+          name: formModal.user.name,
+          email: formModal.user.email,
+          matricula: formModal.user.matricula,
+          password: "1234", // senha provisória até backend enviar e-mail de criação
+          // ... a API decide a tag inicial mas o admin pode criar e depois alterar a tag via PUT
+        });
+        addToast({ title: "Criado", message: "Usuário cadastrado com sucesso", variant: "success" });
+      } else if (formModal.user.id) {
+        await api.put(`/users/${formModal.user.id}`, {
+          name: formModal.user.name,
+          email: formModal.user.email,
+          matricula: formModal.user.matricula,
+          tagId: formModal.user.tagId,
+          isActive: formModal.user.isActive,
+        });
+        addToast({ title: "Atualizado", message: "Usuário salvo", variant: "success" });
+      }
+      setFormModal(null);
+      setErrors({});
+      await fetchUsersAndTags();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao salvar usuário", variant: "error" });
     }
-    setFormModal(null);
-    setErrors({});
   }
 
-  function handleDelete() {
+  async function handleDelete() {
     if (!deleteModal) return;
-    setUsers((prev) => prev.filter((u) => u.id !== deleteModal.id));
-    setDeleteModal(null);
+    try {
+      await api.del(`/users/${deleteModal.id}`);
+      addToast({ title: "Excluído", message: "Usuário removido", variant: "success" });
+      setDeleteModal(null);
+      await fetchUsersAndTags();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao excluir", variant: "error" });
+    }
   }
 
   const inputClass = (field: string) =>
@@ -86,7 +140,7 @@ export default function AdminUsersPage() {
           className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
         >
           <option value="all">Todos os perfis</option>
-          {MOCK_TAGS.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+          {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
       </div>
 
@@ -104,7 +158,11 @@ export default function AdminUsersPage() {
             </tr>
           </thead>
           <tbody className="divide-y divide-[var(--color-border)]">
-            {filtered.map((u) => (
+            {loading ? (
+               <tr><td colSpan={6} className="px-4 py-4 text-center text-[var(--color-text-subtle)]">Carregando...</td></tr>
+            ) : filtered.length === 0 ? (
+               <tr><td colSpan={6} className="px-4 py-4 text-center text-[var(--color-text-subtle)]">Nenhum usuário encontrado.</td></tr>
+            ) : filtered.map((u) => (
               <tr key={u.id} className="hover:bg-[var(--color-bg-subtle)]/50">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
@@ -125,7 +183,7 @@ export default function AdminUsersPage() {
                   </span>
                 </td>
                 <td className="px-4 py-3">
-                  <button type="button" onClick={() => toggleStatus(u.id)} aria-label={u.isActive ? "Desativar" : "Ativar"}
+                  <button type="button" onClick={() => toggleStatus(u)} aria-label={u.isActive ? "Desativar" : "Ativar"}
                     className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${u.isActive ? "bg-[var(--color-primary)]" : "bg-gray-300"}`}
                   >
                     <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transition ${u.isActive ? "translate-x-5" : "translate-x-0"}`} />
@@ -158,7 +216,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label htmlFor="user-email" className="mb-1 block text-sm font-medium text-[var(--color-text)]">E-mail *</label>
-                <input id="user-email" type="email" value={formModal.user.email} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, email: e.target.value } })} className={inputClass("email")} />
+                <input id="user-email" type="email" value={formModal.user.email} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, email: e.target.value } })} className={inputClass("email")} disabled={formModal.mode === "edit"} />
                 {errors.email && <p className="mt-1 text-xs text-[var(--color-danger)]">{errors.email}</p>}
               </div>
               <div>
@@ -166,14 +224,16 @@ export default function AdminUsersPage() {
                 <input id="user-matricula" type="text" value={formModal.user.matricula ?? ""} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, matricula: e.target.value } })} className={inputClass("matricula")} />
                 {errors.matricula && <p className="mt-1 text-xs text-[var(--color-danger)]">{errors.matricula}</p>}
               </div>
-              <div>
-                <label htmlFor="user-tag" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Perfil *</label>
-                <select id="user-tag" value={formModal.user.tagId ?? "tag-1"} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, tagId: e.target.value } })}
-                  className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-                >
-                  {MOCK_TAGS.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                </select>
-              </div>
+              {formModal.mode === "edit" && (
+                <div>
+                  <label htmlFor="user-tag" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Perfil *</label>
+                  <select id="user-tag" value={formModal.user.tagId ?? "tag-1"} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, tagId: e.target.value } })}
+                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
+                  >
+                    {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                  </select>
+                </div>
+              )}
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => { setFormModal(null); setErrors({}); }}>Cancelar</Button>

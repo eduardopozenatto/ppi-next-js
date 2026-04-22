@@ -1,18 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
-import { MOCK_LOANS } from "@/mocks/loans";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
 import type { Loan } from "@/types/loan";
 
-// TODO: substituir por chamada real quando backend estiver pronto
-
 export default function ApprovalsPage() {
-  const [loans, setLoans] = useState<Loan[]>(MOCK_LOANS);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
   const [approveModal, setApproveModal] = useState<Loan | null>(null);
   const [rejectModal, setRejectModal] = useState<Loan | null>(null);
   const [detailModal, setDetailModal] = useState<Loan | null>(null);
@@ -26,23 +28,56 @@ export default function ApprovalsPage() {
   const approved = loans.filter((l) => l.status === "active" || l.status === "overdue");
   const rejected = loans.filter((l) => l.status === "cancelled");
 
-  function handleApprove() {
+  async function fetchLoans() {
+    try {
+      const res = await api.get<ApiResponse<Loan[]>>("/loans");
+      setLoans(res.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar empréstimos", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchLoans(); }, []);
+
+  async function handleApprove() {
     if (!dueDate) { setDueDateError(true); return; }
     const d = new Date(dueDate);
     if (d <= new Date()) { setDueDateError(true); return; }
     if (!approveModal) return;
-    setLoans((prev) => prev.map((l) => l.id === approveModal.id ? { ...l, status: "active" as const, dueDate: d.toISOString(), labObservation: observation || undefined } : l));
-    setApproveModal(null);
-    setDueDate("");
-    setObservation("");
+    try {
+      await api.put(`/loans/${approveModal.id}/status`, {
+        status: "active",
+        dueDate: d.toISOString(),
+        observation: observation || undefined,
+      });
+      addToast({ title: "Aprovado", message: "Empréstimo aprovado com sucesso", variant: "success" });
+      setApproveModal(null);
+      setDueDate("");
+      setObservation("");
+      await fetchLoans();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao aprovar", variant: "error" });
+    }
   }
 
-  function handleReject() {
+  async function handleReject() {
     if (!rejectReason.trim()) { setReasonError(true); return; }
     if (!rejectModal) return;
-    setLoans((prev) => prev.map((l) => l.id === rejectModal.id ? { ...l, status: "cancelled" as const, labObservation: rejectReason } : l));
-    setRejectModal(null);
-    setRejectReason("");
+    try {
+      await api.put(`/loans/${rejectModal.id}/status`, {
+        status: "cancelled",
+        observation: rejectReason,
+      });
+      addToast({ title: "Rejeitado", message: "Empréstimo rejeitado", variant: "info" });
+      setRejectModal(null);
+      setRejectReason("");
+      await fetchLoans();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao rejeitar", variant: "error" });
+    }
   }
 
   return (

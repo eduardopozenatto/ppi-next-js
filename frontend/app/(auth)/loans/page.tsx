@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
-import { MOCK_LOANS } from "@/mocks/loans";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
 import type { Loan } from "@/types/loan";
-
-// TODO: substituir por chamada real quando backend estiver pronto
 
 type Tab = "active" | "history";
 
@@ -18,10 +18,26 @@ const HISTORY_STATUSES = ["returned", "cancelled"];
 
 export default function LoansListPage() {
   const [tab, setTab] = useState<Tab>("active");
-  const [loans, setLoans] = useState<Loan[]>(MOCK_LOANS);
+  const [loans, setLoans] = useState<Loan[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
   const [editModal, setEditModal] = useState<Loan | null>(null);
   const [cancelModal, setCancelModal] = useState<Loan | null>(null);
   const [editMessage, setEditMessage] = useState("");
+
+  async function fetchLoans() {
+    try {
+      const res = await api.get<ApiResponse<Loan[]>>("/loans");
+      setLoans(res.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar empréstimos", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchLoans(); }, []);
 
   const activeLoans = loans.filter((l) => ACTIVE_STATUSES.includes(l.status));
   const historyLoans = loans.filter((l) => HISTORY_STATUSES.includes(l.status));
@@ -32,16 +48,28 @@ export default function LoansListPage() {
     setEditModal(loan);
   }
 
-  function handleSaveEdit() {
+  async function handleSaveEdit() {
     if (!editModal) return;
-    setLoans((prev) => prev.map((l) => (l.id === editModal.id ? { ...l, notes: editMessage } : l)));
-    setEditModal(null);
+    try {
+      await api.put(`/loans/${editModal.id}/status`, { notes: editMessage });
+      addToast({ title: "Salvo", message: "Empréstimo atualizado", variant: "success" });
+      setEditModal(null);
+      await fetchLoans();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao salvar", variant: "error" });
+    }
   }
 
-  function handleCancel() {
+  async function handleCancel() {
     if (!cancelModal) return;
-    setLoans((prev) => prev.map((l) => (l.id === cancelModal.id ? { ...l, status: "cancelled" as const } : l)));
-    setCancelModal(null);
+    try {
+      await api.put(`/loans/${cancelModal.id}/status`, { status: "cancelled" });
+      addToast({ title: "Cancelado", message: "Empréstimo cancelado", variant: "info" });
+      setCancelModal(null);
+      await fetchLoans();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao cancelar", variant: "error" });
+    }
   }
 
   return (

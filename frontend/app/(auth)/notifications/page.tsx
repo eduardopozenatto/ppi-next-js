@@ -1,14 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
-import { MOCK_NOTIFICATIONS } from "@/mocks/notifications";
-import type { LabNotification, NotificationType } from "@/mocks/notifications";
-
-// TODO: substituir por chamada real quando backend estiver pronto
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
+import type { LabNotification, NotificationType } from "@/types/notification";
 
 const TYPE_CONFIG: Record<NotificationType, { icon: string; borderColor: string }> = {
   approval: { icon: "✅", borderColor: "border-l-[var(--color-success)]" },
@@ -19,19 +19,48 @@ const TYPE_CONFIG: Record<NotificationType, { icon: string; borderColor: string 
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] = useState<LabNotification[]>(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications] = useState<LabNotification[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { addToast } = useToast();
+
+  async function fetchNotifications() {
+    try {
+      const res = await api.get<ApiResponse<LabNotification[]>>("/notifications");
+      setNotifications(res.data ?? []);
+    } catch {
+      addToast({ title: "Erro", message: "Falha ao carregar notificações", variant: "error" });
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => { fetchNotifications(); }, []);
 
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  function markAsRead(id: string) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+  async function markAsRead(id: string) {
+    try {
+      await api.put(`/notifications/${id}/read`);
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha", variant: "error" });
+    }
   }
 
-  function markAllAsRead() {
-    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  async function markAllAsRead() {
+    try {
+      // Mark each unread notification — backend may support bulk endpoint
+      const unread = notifications.filter((n) => !n.read);
+      await Promise.all(unread.map((n) => api.put(`/notifications/${n.id}/read`)));
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha", variant: "error" });
+    }
   }
 
   function deleteNotification(id: string) {
+    // Remove locally — backend doesn't have a delete endpoint for notifications
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }
 

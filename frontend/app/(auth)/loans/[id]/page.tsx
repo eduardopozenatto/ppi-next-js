@@ -1,18 +1,50 @@
+"use client";
+
+import { useEffect, useState, use } from "react";
 import Link from "next/link";
-import { notFound } from "next/navigation";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { formatDate } from "@/lib/utils";
-import { getMockLoan } from "@/mocks/loans";
+import { api } from "@/lib/api/client";
+import type { ApiResponse } from "@/types/api";
+import type { Loan } from "@/types/loan";
 
 interface LoanDetailPageProps {
   params: Promise<{ id: string }>;
 }
 
-export default async function LoanDetailPage({ params }: LoanDetailPageProps) {
-  const { id } = await params;
-  const loan = getMockLoan(id);
-  if (!loan) notFound();
+export default function LoanDetailPage({ params }: LoanDetailPageProps) {
+  const { id } = use(params);
+  const [loan, setLoan] = useState<Loan | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const res = await api.get<ApiResponse<Loan>>(`/loans/${id}`);
+        setLoan(res.data);
+      } catch {
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+    load();
+  }, [id]);
+
+  if (loading) {
+    return <div className="p-8 text-center text-[var(--color-text-subtle)]">Carregando empréstimo...</div>;
+  }
+
+  if (error || !loan) {
+    return (
+      <div className="p-8 text-center">
+        <h2 className="text-lg font-semibold text-[var(--color-text)]">Empréstimo não encontrado</h2>
+        <Link href="/loans" className="mt-4 inline-block text-[var(--color-primary)] hover:underline">Voltar para empréstimos</Link>
+      </div>
+    );
+  }
 
   return (
     <div>
@@ -74,6 +106,13 @@ export default async function LoanDetailPage({ params }: LoanDetailPageProps) {
           <div className="mt-8">
             <h3 className="text-sm font-semibold text-[var(--color-text)]">Notas</h3>
             <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-subtle)]">{loan.notes}</p>
+          </div>
+        ) : null}
+        
+        {loan.labObservation ? (
+          <div className="mt-4">
+            <h3 className="text-sm font-semibold text-[var(--color-text)]">Observação do Laboratorista</h3>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-subtle)]">{loan.labObservation}</p>
           </div>
         ) : null}
       </div>

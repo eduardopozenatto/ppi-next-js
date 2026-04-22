@@ -4,18 +4,26 @@ import { useState } from "react";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
-import { MOCK_CART_LINES } from "@/mocks/cart";
-import type { CartLine } from "@/mocks/cart";
+import { api } from "@/lib/api/client";
+import { useToast } from "@/components/shared/Toast";
 import Link from "next/link";
 
-// TODO: substituir por chamada real quando backend estiver pronto
+/** Cart line — kept in local state (client-side only). */
+export interface CartLine {
+  id: string;
+  name: string;
+  category: string;
+  quantity: number;
+  availableQuantity: number;
+}
 
 export default function CartPage() {
-  const [lines, setLines] = useState<CartLine[]>(MOCK_CART_LINES);
+  const [lines, setLines] = useState<CartLine[]>([]);
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
   const [messageError, setMessageError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const { addToast } = useToast();
 
   const totalItems = lines.length;
   const totalUnits = lines.reduce((acc, l) => acc + l.quantity, 0);
@@ -34,17 +42,28 @@ export default function CartPage() {
     setLines((prev) => prev.filter((l) => l.id !== id));
   }
 
-  function handleConfirm() {
+  async function handleConfirm() {
     if (!message.trim()) {
       setMessageError(true);
       return;
     }
     setMessageError(false);
-    // TODO: POST /api/loans
-    setShowModal(false);
-    setMessage("");
-    setLines([]);
-    setSubmitted(true);
+    try {
+      await api.post("/loans", {
+        items: lines.map((l) => ({
+          inventoryItemId: Number(l.id),
+          quantity: l.quantity,
+        })),
+        notes: message,
+      });
+      setShowModal(false);
+      setMessage("");
+      setLines([]);
+      setSubmitted(true);
+      addToast({ title: "Sucesso", message: "Empréstimo criado com sucesso", variant: "success" });
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao criar empréstimo", variant: "error" });
+    }
   }
 
   if (submitted) {
