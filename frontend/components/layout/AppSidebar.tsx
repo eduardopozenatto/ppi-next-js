@@ -57,8 +57,8 @@ export function AppSidebar() {
           </div>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-[var(--color-text)]">{user.name}</p>
-            <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag.colorClass)}>
-              {user.tag.name}
+            <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag?.colorClass || "text-[var(--color-text-muted)]")}>
+              {user.tag?.name || "Sem tag"}
             </p>
             <button
               type="button"

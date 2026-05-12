@@ -49,12 +49,16 @@ export default function CartPage() {
     }
     setMessageError(false);
     try {
+      const defaultDueDate = new Date();
+      defaultDueDate.setDate(defaultDueDate.getDate() + 7);
+
       await api.post("/loans", {
         items: lines.map((l) => ({
-          inventoryItemId: Number(l.id),
+          inventoryItemId: String(l.id),
           quantity: l.quantity,
         })),
         notes: message,
+        dueDate: defaultDueDate.toISOString(),
       });
       setShowModal(false);
       setMessage("");

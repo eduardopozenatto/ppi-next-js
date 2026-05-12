@@ -25,13 +25,18 @@ export async function register(
 
     const hashedPassword = await hashPassword(data.password);
 
+    // Buscar a tag padrão "Aluno" para atribuir a novos usuários
+    const defaultTag = await prisma.tag.findFirst({
+      where: { name: { equals: 'Aluno', mode: 'insensitive' } },
+    });
+
     const newUser = await prisma.user.create({
       data: {
         name: data.name,
         email: data.email,
         password: hashedPassword,
         matricula: data.matricula,
-        // O ID da tag default ou aprovação da conta será lidado de acordo com o Admin na tela.
+        tagId: defaultTag?.id, // Atribui a tag "Aluno" por padrão
       },
     });
 

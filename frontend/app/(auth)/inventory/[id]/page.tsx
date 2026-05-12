@@ -45,7 +45,7 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
     );
   }
 
-  const src = item.image.startsWith("/") ? item.image : `/${item.image}`;
+  const src = item.image ? (item.image.startsWith("/") ? item.image : `/${item.image}`) : "/buttonIcons/box.svg";
 
   return (
     <div>

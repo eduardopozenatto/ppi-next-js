@@ -95,7 +95,7 @@ export const NAV_ITEMS: NavItemConfig[] = [
 ];
 
 export function isLabAdmin(user: LabSessionUser): boolean {
-  return user.tag.name === "laboratorista";
+  return user.tag?.name?.toLowerCase() === "laboratorista";
 }
 
 export function navVisible(item: NavItemConfig, user: LabSessionUser): boolean {

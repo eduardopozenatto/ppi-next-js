@@ -60,7 +60,7 @@ export function NewLoanForm() {
       await api.post("/loans", {
         items: [{ inventoryItemId: data.itemId, quantity: data.quantity }],
         notes: data.notes,
-        // O backend decide o dueDate ou permite passar (verifique o contrato se precisar)
+        dueDate: new Date(data.dueDate + "T12:00:00Z").toISOString(),
       });
       addToast({ title: "Sucesso", message: "Empréstimo registrado com sucesso.", variant: "success" });
       router.push("/loans");
