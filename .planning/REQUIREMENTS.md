@@ -109,10 +109,10 @@
 
 ### Integração Frontend ↔ Backend
 
-- [ ] **BINT-01**: Substituir mocks do frontend por chamadas reais à API
-- [ ] **BINT-02**: Configurar AuthContext para usar JWT do backend
-- [ ] **BINT-03**: Tratamento de erros consistente entre front e back
-- [ ] **BINT-04**: Seed do banco com dados de demonstração (equivalente aos mocks atuais)
+- [x] **BINT-01**: Substituir mocks do frontend por chamadas reais à API
+- [x] **BINT-02**: Configurar AuthContext para usar JWT do backend
+- [x] **BINT-03**: Tratamento de erros consistente entre front e back
+- [x] **BINT-04**: Seed do banco com dados de demonstração (equivalente aos mocks atuais)
 
 ## Out of Scope
 
