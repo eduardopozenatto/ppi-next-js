@@ -129,6 +129,12 @@ Plans:
   5. Erros da API são tratados e exibidos ao usuário via Toast
 **Plans**: TBD
 
+#### Phase 10: Verification Debt Closure
+**Goal**: Satisfy unverified requirements by validating and formally closing Phases 5, 6, and 8
+**Requirements**: [BINF-01..07, BAUTH-01..06, BUSER-01..04, BPERM-01..04, BNOTIF-01..04, BREP-01..02]
+**Gap Closure**: Closes gaps from audit v2.0
+**Plans**: TBD
+
 ## Progress
 
 **Execution Order:**
@@ -145,3 +151,4 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 7. CRUD Inventário e Empréstimos | v2.0 | 0/? | Not started | - |
 | 8. Usuários, Permissões, Notif. | v2.0 | 1/1 | Complete   | 2026-04-22 |
 | 9. Integração Front ↔ Back | v2.0 | 0/? | Not started | - |
+| 10. Verification Debt Closure | v2.0 | 0/? | Not started | - |
