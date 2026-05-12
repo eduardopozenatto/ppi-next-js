@@ -50,22 +50,22 @@
 
 ### Infraestrutura Backend
 
-- [ ] **BINF-01**: Projeto Node.js/Express com TypeScript configurado
-- [ ] **BINF-02**: Configuração de variáveis de ambiente (.env)
-- [ ] **BINF-03**: Conexão com PostgreSQL via ORM (Prisma ou outro)
-- [ ] **BINF-04**: Sistema de migrations para schema do banco
-- [ ] **BINF-05**: Middleware de tratamento de erros global
-- [ ] **BINF-06**: Logger estruturado para requests e erros
-- [ ] **BINF-07**: CORS configurado para aceitar requests do frontend (localhost:3000)
+- [x] **BINF-01**: Projeto Node.js/Express com TypeScript configurado
+- [x] **BINF-02**: Configuração de variáveis de ambiente (.env)
+- [x] **BINF-03**: Conexão com PostgreSQL via ORM (Prisma ou outro)
+- [x] **BINF-04**: Sistema de migrations para schema do banco
+- [x] **BINF-05**: Middleware de tratamento de erros global
+- [x] **BINF-06**: Logger estruturado para requests e erros
+- [x] **BINF-07**: CORS configurado para aceitar requests do frontend (localhost:3000)
 
 ### Autenticação Backend
 
-- [ ] **BAUTH-01**: Endpoint POST /api/auth/register com hash de senha (bcrypt)
-- [ ] **BAUTH-02**: Endpoint POST /api/auth/login com retorno de JWT
-- [ ] **BAUTH-03**: Endpoint POST /api/auth/logout (invalidação de token)
-- [ ] **BAUTH-04**: Endpoint GET /api/auth/me com dados do usuário autenticado
-- [ ] **BAUTH-05**: Middleware de autenticação JWT para rotas protegidas
-- [ ] **BAUTH-06**: Endpoint POST /api/auth/recovery (reset de senha)
+- [x] **BAUTH-01**: Endpoint POST /api/auth/register com hash de senha (bcrypt)
+- [x] **BAUTH-02**: Endpoint POST /api/auth/login com retorno de JWT
+- [x] **BAUTH-03**: Endpoint POST /api/auth/logout (invalidação de token)
+- [x] **BAUTH-04**: Endpoint GET /api/auth/me com dados do usuário autenticado
+- [x] **BAUTH-05**: Middleware de autenticação JWT para rotas protegidas
+- [x] **BAUTH-06**: Endpoint POST /api/auth/recovery (reset de senha)
 
 ### Inventário Backend
 
@@ -86,26 +86,26 @@
 
 ### Usuários e Permissões Backend
 
-- [ ] **BUSER-01**: Endpoint GET /api/users com paginação (admin only)
-- [ ] **BUSER-02**: Endpoint GET /api/users/:id (admin only)
-- [ ] **BUSER-03**: Endpoint PUT /api/users/:id (atualizar perfil, tag, status)
-- [ ] **BUSER-04**: Endpoint DELETE /api/users/:id (desativar usuário, admin only)
-- [ ] **BPERM-01**: CRUD de Tags com permissões (11 chaves de permissão)
-- [ ] **BPERM-02**: CRUD de Categorias de estoque
-- [ ] **BPERM-03**: Middleware de autorização baseado em permissões da tag do usuário
-- [ ] **BPERM-04**: Override de permissões por usuário individual
+- [x] **BUSER-01**: Endpoint GET /api/users com paginação (admin only)
+- [x] **BUSER-02**: Endpoint GET /api/users/:id (admin only)
+- [x] **BUSER-03**: Endpoint PUT /api/users/:id (atualizar perfil, tag, status)
+- [x] **BUSER-04**: Endpoint DELETE /api/users/:id (desativar usuário, admin only)
+- [x] **BPERM-01**: CRUD de Tags com permissões (11 chaves de permissão)
+- [x] **BPERM-02**: CRUD de Categorias de estoque
+- [x] **BPERM-03**: Middleware de autorização baseado em permissões da tag do usuário
+- [x] **BPERM-04**: Override de permissões por usuário individual
 
 ### Notificações Backend
 
-- [ ] **BNOTIF-01**: Endpoint GET /api/notifications (listar notificações do usuário)
-- [ ] **BNOTIF-02**: Endpoint PUT /api/notifications/:id (marcar como lida)
-- [ ] **BNOTIF-03**: Criação automática de notificação ao aprovar/rejeitar empréstimo
-- [ ] **BNOTIF-04**: Configurações de preferência de notificação por usuário
+- [x] **BNOTIF-01**: Endpoint GET /api/notifications (listar notificações do usuário)
+- [x] **BNOTIF-02**: Endpoint PUT /api/notifications/:id (marcar como lida)
+- [x] **BNOTIF-03**: Criação automática de notificação ao aprovar/rejeitar empréstimo
+- [x] **BNOTIF-04**: Configurações de preferência de notificação por usuário
 
 ### Relatórios Backend
 
-- [ ] **BREP-01**: Endpoint GET /api/reports/loans (relatório de empréstimos)
-- [ ] **BREP-02**: Endpoint GET /api/reports/inventory (relatório de inventário)
+- [x] **BREP-01**: Endpoint GET /api/reports/loans (relatório de empréstimos)
+- [x] **BREP-02**: Endpoint GET /api/reports/inventory (relatório de inventário)
 
 ### Integração Frontend ↔ Backend
 
