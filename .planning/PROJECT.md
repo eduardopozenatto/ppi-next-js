@@ -27,18 +27,19 @@ Alunos podem solicitar empréstimos de equipamentos do laboratório e laboratori
 - ✓ Gerenciamento de categorias de estoque — Milestone 1
 - ✓ Relatórios com KPIs e exportação — Milestone 1
 - ✓ Sidebar responsiva com navegação baseada em permissões — Milestone 1
+- ✓ Backend REST API com Node.js/Express para todas rotas contratuais — v2.0
+- ✓ Banco de dados persistente (PostgreSQL) com Prisma ORM e migrations — v2.0
+- ✓ Autenticação real JWT e segurança (Bcrypt) — v2.0
+- ✓ CRUD completo e lógica de validação de negócios (ex: desconto de estoque) — v2.0
+- ✓ Sistema de permissões middleware com TagPermissions de 11 chaves — v2.0
+- ✓ Notificações criadas automaticamente via Prisma transactions — v2.0
+- ✓ Integração front↔back e remoção total dos mocks — v2.0
 
 ### Active
 
-<!-- Current scope. Building toward these (Milestone 2: Backend). -->
+<!-- Current scope. -->
 
-- [ ] Backend REST API com Node.js/Express para todas as rotas definidas no contrato
-- [ ] Banco de dados persistente (PostgreSQL) com migrations
-- [ ] Autenticação real com JWT e hashing de senhas
-- [ ] CRUD completo: Inventário, Empréstimos, Usuários, Tags, Categorias, Notificações
-- [ ] Sistema de permissões no backend validado por middleware
-- [ ] Upload de imagens para itens do inventário
-- [ ] Integração frontend ↔ backend (substituir mocks por chamadas reais)
+(Nenhum - Projeto v2.0 completo)
 
 ### Out of Scope
 
@@ -52,13 +53,11 @@ Alunos podem solicitar empréstimos de equipamentos do laboratório e laboratori
 ## Context
 
 - Projeto acadêmico (PPI) desenvolvido por Eduardo Pozenatto
-- Monorepo com pastas `frontend/` e `backend/` na raiz
-- Frontend completo em Next.js 16 + React 19 + Tailwind v4 + TypeScript
-- Frontend usa dados mock in-memory (8 arquivos em `mocks/`)
-- Contrato de API já definido em `frontend_skills.md` (rotas, tipos, formatos de resposta)
-- Backend esperado em `http://localhost:3001/api` (env: `NEXT_PUBLIC_API_URL`)
-- Pasta `backend/` já criada, vazia — aguardando arquitetura e implementação
-- Sistema de permissões com 11 chaves usando TagPermissions (tags definem base, overrides por usuário)
+- Sistema end-to-end (Frontend + Backend) 100% funcional.
+- Frontend React 19 + Next.js App Router com integração completa ao Backend REST.
+- Autenticação por cookie JWT HTTPOnly, sistema de permissões funcionando em toda a API.
+- Banco Postgres provisionado, migrations feitas e prisma seed garantindo dados de startup.
+- Todo o código sujo (`mocks/`) deletado do frontend e tipos TypeScript validados com sucesso (`tsc --noEmit`).
 
 ## Constraints
 
@@ -76,8 +75,9 @@ Alunos podem solicitar empréstimos de equipamentos do laboratório e laboratori
 | Tailwind CSS v4 para estilização | Utility-first, rápido para prototipar | ✓ Good |
 | Mock data layer separado em `mocks/` | Facilita transição para API real | ✓ Good |
 | 11 permissões granulares via tags | Flexibilidade de controle de acesso | ✓ Good |
-| Express para backend | Maduro, bem documentado, time familiar | — Pending |
-| PostgreSQL como banco | Relacional, robusto, gratuito | — Pending |
+| Express para backend | Maduro, bem documentado, time familiar | ✓ Good |
+| PostgreSQL como banco | Relacional, robusto, gratuito | ✓ Good |
+| HTTPOnly cookies para JWT | Maior segurança contra XSS em apps React | ✓ Good |
 
 ---
-*Last updated: 2026-04-14 after GSD initialization*
+*Last updated: 2026-05-12 after v2.0 milestone*
