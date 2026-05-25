@@ -80,14 +80,14 @@ Plans:
 **Goal**: Corrigir 5 problemas reais: foto de perfil, alteração de senha via email, exclusão real de usuários, exportação de relatórios em XLSX, e alinhar notificações/aprovações
 **Depends on**: Phase 10
 **Requirements**: [FAUTH-03, FADM-01, FADM-02, FADM-05, FADM-06]
-**Status**: Planning
+**Status**: Complete
 
 Plans:
-- [ ] 11-01: Upload de foto de perfil (backend + frontend)
-- [ ] 11-02: Alteração de senha via email com código de verificação
-- [ ] 11-03: Exclusão real (hard delete) de usuários pelo admin
-- [ ] 11-04: Exportação real de relatórios em XLSX
-- [ ] 11-05: Correção do mecanismo de notificações e aprovações
+- [x] 11-01: Upload de foto de perfil (backend + frontend)
+- [x] 11-02: Alteração de senha via email com código de verificação
+- [x] 11-03: Exclusão real (hard delete) de usuários pelo admin
+- [x] 11-04: Exportação real de relatórios em XLSX
+- [x] 11-05: Correção do mecanismo de notificações e aprovações
 
 ## Progress
 
