@@ -8,6 +8,7 @@ import { Input } from "@/components/Input/Input";
 import { FormCard } from "@/components/Body/FormCard";
 import { api } from "@/lib/api/client";
 import { useToast } from "@/components/shared/Toast";
+import type { ApiResponse } from "@/types/api";
 
 type Step = "email" | "code" | "newPassword";
 
@@ -33,9 +34,13 @@ export function RecoveryForm() {
     setLoading(true);
     setError("");
     try {
-      await api.post("/auth/forgot-password", { email });
+      const res = await api.post<ApiResponse<{ devCode?: string }>>("/auth/forgot-password", { email });
       setStep("code");
       addToast({ variant: "success", title: "Código enviado", message: "Verifique sua caixa de entrada." });
+      
+      if (res.data?.devCode) {
+        addToast({ variant: "info", title: "Ambiente de Teste", message: "Seu código é: " + res.data.devCode });
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Falha ao enviar código");
     } finally {

@@ -41,7 +41,7 @@ export function InventoryManagementTable() {
         api.get<ApiResponse<LabInventoryListItem[]>>("/inventory?limit=100"),
         api.get<ApiResponse<Category[]>>("/categories"),
       ]);
-      setRows(invRes.data ?? []);
+      setRows((invRes.data ?? []).filter((item) => item.isActive));
       setCategories(catRes.data ?? []);
     } catch (err) {
       addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });

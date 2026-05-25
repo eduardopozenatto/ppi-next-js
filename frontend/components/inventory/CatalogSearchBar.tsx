@@ -6,14 +6,34 @@ import { CategoryPanel } from "@/components/inventory/CategoryList";
 import { Input } from "@/components/Input/Input";
 import { cn } from "@/lib/utils";
 
-export function CatalogSearchBar() {
+interface CatalogSearchBarProps {
+  searchQuery?: string;
+  setSearchQuery?: (val: string) => void;
+  category?: string;
+  setCategory?: (val: string, name: string) => void;
+  categoryName?: string;
+}
+
+export function CatalogSearchBar({
+  searchQuery = "",
+  setSearchQuery,
+  category = "all",
+  setCategory,
+  categoryName = "Todos",
+}: CatalogSearchBarProps = {}) {
   const [open, setOpen] = useState(false);
 
   return (
     <section className="relative flex flex-col gap-3">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-stretch sm:gap-4">
         <div className="min-w-0 flex-1">
-          <Input type="search" placeholder="Buscar por nome ou descrição..." name="q" />
+          <Input 
+            type="search" 
+            placeholder="Buscar por nome ou descrição..." 
+            name="q" 
+            value={searchQuery}
+            onChange={(e) => setSearchQuery?.(e.target.value)}
+          />
         </div>
         <button
           type="button"
@@ -26,7 +46,7 @@ export function CatalogSearchBar() {
           aria-controls="catalog-category-panel"
         >
           <Image src="/filter.svg" alt="" width={16} height={16} className="opacity-70" aria-hidden />
-          <span>Todos</span>
+          <span className="truncate">{categoryName}</span>
           <Image
             src={open ? "/angle-up.svg" : "/angle-down.svg"}
             alt=""
@@ -45,7 +65,13 @@ export function CatalogSearchBar() {
           role="region"
           aria-label="Filtrar por categoria"
         >
-          <CategoryPanel />
+          <CategoryPanel
+            selectedCategory={category}
+            onSelect={(id, name) => {
+              setCategory?.(id, name);
+              setOpen(false);
+            }}
+          />
         </div>
       ) : null}
     </section>

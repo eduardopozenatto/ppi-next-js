@@ -16,6 +16,11 @@ const envSchema = z.object({
     .default('development'),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 chars'),
   JWT_EXPIRES_IN: z.string().default('7d'),
+  SMTP_HOST: z.string().optional(),
+  SMTP_PORT: z.string().optional(),
+  SMTP_USER: z.string().optional(),
+  SMTP_PASS: z.string().optional(),
+  SMTP_FROM: z.string().optional(),
 });
 
 const parsed = envSchema.safeParse(process.env);

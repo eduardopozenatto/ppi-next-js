@@ -34,12 +34,13 @@ Alunos podem solicitar empréstimos de equipamentos do laboratório e laboratori
 - ✓ Sistema de permissões middleware com TagPermissions de 11 chaves — v2.0
 - ✓ Notificações criadas automaticamente via Prisma transactions — v2.0
 - ✓ Integração front↔back e remoção total dos mocks — v2.0
+- ✓ Correções de bugs e melhorias críticas (upload de avatar, cascade na exclusão de usuários, exportação XLSX, SMTP condicional) — v3.0
 
 ### Active
 
 <!-- Current scope. -->
 
-(Nenhum - Projeto v2.0 completo)
+(Nenhum - Projeto v3.0 completo)
 
 ### Out of Scope
 
@@ -80,4 +81,4 @@ Alunos podem solicitar empréstimos de equipamentos do laboratório e laboratori
 | HTTPOnly cookies para JWT | Maior segurança contra XSS em apps React | ✓ Good |
 
 ---
-*Last updated: 2026-05-12 after v2.0 milestone*
+*Last updated: 2026-05-25 after v3.0 milestone*

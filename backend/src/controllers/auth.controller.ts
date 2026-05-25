@@ -13,6 +13,7 @@ import {
 } from '../schemas/auth.schema';
 import { sendResetCodeEmail } from '../utils/email';
 import { z } from 'zod';
+import { env } from '../config/env';
 
 export async function register(
   req: Request,
@@ -227,6 +228,9 @@ export async function forgotPassword(
     const user = await prisma.user.findUnique({
       where: { email: data.email },
     });
+    console.log('[DEBUG] forgotPassword user lookup:', data.email, user ? user.id : 'NOT_FOUND');
+
+    let devCode: string | undefined;
 
     if (user) {
       // Invalidar códigos anteriores
@@ -237,6 +241,7 @@ export async function forgotPassword(
 
       // Gerar código de 6 dígitos
       const code = Math.floor(100000 + Math.random() * 900000).toString();
+      devCode = code;
 
       // Criar registro
       await prisma.passwordResetCode.create({
@@ -257,7 +262,17 @@ export async function forgotPassword(
       }
     }
 
-    sendSuccess(res, null, 'Se o email existir, um código foi enviado');
+    // Se não houver SMTP configurado ou não estiver em produção, mas o SMTP não estiver ativo,
+    // consideramos como ambiente de teste/local para retornar o devCode no toast.
+    // Se o desenvolvedor configurar SMTP_USER e SMTP_PASS, ele quer testar o fluxo real de email,
+    // então isTestEnv será false para ocultar o código do response e forçar o envio e recebimento real.
+    const isTestEnv = env.NODE_ENV !== 'production' && (!env.SMTP_PASS || !env.SMTP_USER);
+
+    sendSuccess(
+      res,
+      isTestEnv && devCode ? { devCode } : null,
+      'Se o email existir, um código foi enviado'
+    );
   } catch (err) {
     if (err instanceof z.ZodError) {
       next(

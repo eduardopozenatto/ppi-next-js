@@ -29,7 +29,10 @@ export function getStaticUrl(relativePath: string | null | undefined): string | 
   }
 
   // BASE_URL is "http://localhost:3001/api" — we need "http://localhost:3001"
-  const backendOrigin = BASE_URL.replace(/\/api\/?$/, "");
+  let backendOrigin = BASE_URL.replace(/\/api\/?$/, "");
+  if (!backendOrigin) {
+    backendOrigin = "http://localhost:3001";
+  }
 
   // Normalize: remove leading slash if present
   const clean = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;

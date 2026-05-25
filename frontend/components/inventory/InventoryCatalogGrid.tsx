@@ -57,14 +57,15 @@ export function InventoryCatalogGrid({ items, className }: InventoryCatalogGridP
             </div>
             <Link
               href={`/inventory/${item.id}`}
-              className="relative block h-48 w-full shrink-0 bg-[var(--color-bg-subtle)] sm:h-auto sm:min-h-[11rem] sm:w-40 md:w-44"
+              className="block shrink-0 bg-[var(--color-bg-subtle)] sm:w-40 md:w-44"
             >
               <Image
                 src={src}
                 alt={`Imagem do item: ${item.name}`}
-                fill
-                className="object-contain p-3"
-                sizes="(max-width: 640px) 100vw, (max-width: 1280px) 40vw, 280px"
+                width={400}
+                height={400}
+                className="h-48 w-full object-cover sm:h-full"
+                unoptimized
               />
             </Link>
           </article>

@@ -71,7 +71,10 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
         }
       />
 
-      <div className="grid gap-8 lg:grid-cols-[1fr_minmax(0,20rem)]">
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,25rem)_1fr] lg:items-start">
+        <div className="relative aspect-square w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] lg:max-w-none">
+          <Image src={src} alt={item.name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 400px" unoptimized />
+        </div>
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-[var(--color-text)]">Descrição</h2>
           <p className="mt-2 text-sm leading-relaxed text-[var(--color-text-subtle)]">
@@ -95,9 +98,6 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
               <dd className="mt-1 text-lg font-bold text-[var(--color-text)]">{item.loanedQuantity}</dd>
             </div>
           </dl>
-        </div>
-        <div className="relative aspect-square w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] lg:max-w-none">
-          <Image src={src} alt={item.name} fill className="object-contain p-6" sizes="(max-width: 1024px) 100vw, 320px" />
         </div>
       </div>
     </div>

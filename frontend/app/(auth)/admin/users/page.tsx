@@ -9,6 +9,8 @@ import { useToast } from "@/components/shared/Toast";
 import type { ApiResponse } from "@/types/api";
 import type { User } from "@/types/user";
 import type { Tag } from "@/types/settings";
+import Image from "next/image";
+import { getStaticUrl } from "@/lib/static-url";
 
 const EMPTY_USER: Omit<User, "id" | "createdAt"> = {
   name: "", email: "", role: "user", matricula: "", tagId: "tag-1", isActive: false,
@@ -166,9 +168,20 @@ export default function AdminUsersPage() {
               <tr key={u.id} className="hover:bg-[var(--color-bg-subtle)]/50">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">
-                      {u.name.charAt(0).toUpperCase()}
-                    </div>
+                    {u.avatarUrl ? (
+                      <Image
+                        src={getStaticUrl(u.avatarUrl) || ""}
+                        alt={u.name}
+                        width={36}
+                        height={36}
+                        className="h-9 w-9 shrink-0 rounded-full object-cover"
+                        unoptimized
+                      />
+                    ) : (
+                      <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-xs font-bold text-white">
+                        {u.name.charAt(0).toUpperCase()}
+                      </div>
+                    )}
                     <div>
                       <p className="font-medium text-[var(--color-text)]">{u.name}</p>
                       <p className="text-xs text-[var(--color-text-subtle)]">{u.email}</p>

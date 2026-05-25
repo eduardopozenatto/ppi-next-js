@@ -105,33 +105,17 @@ export const deleteUser = async (req: Request, res: Response) => {
       return res.status(400).json({ success: false, message: 'Você não pode excluir sua própria conta' });
     }
 
-    // Verificar se o usuário tem empréstimos ativos ou pendentes
-    const activeLoans = await prisma.loan.count({
-      where: {
-        borrowerId: id,
-        status: { in: ['pending', 'active', 'overdue'] },
-      },
-    });
-
-    if (activeLoans > 0) {
-      return res.status(400).json({
-        success: false,
-        message: `Não é possível excluir: o usuário possui ${activeLoans} empréstimo(s) ativo(s) ou pendente(s). Resolva os empréstimos antes de excluir.`,
-      });
-    }
-
     // Deletar em transação para garantir atomicidade
     await prisma.$transaction(async (tx) => {
-      // 1. Buscar IDs dos empréstimos finalizados do usuário
-      const finishedLoans = await tx.loan.findMany({
+      // 1. Buscar IDs de todos os empréstimos do usuário
+      const allLoans = await tx.loan.findMany({
         where: {
           borrowerId: id,
-          status: { in: ['returned', 'cancelled'] },
         },
         select: { id: true },
       });
 
-      const loanIds = finishedLoans.map((l) => l.id);
+      const loanIds = allLoans.map((l) => l.id);
 
       // 2. Deletar LoanItems desses empréstimos (deleteMany não faz cascade)
       if (loanIds.length > 0) {

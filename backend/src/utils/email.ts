@@ -11,6 +11,10 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function sendResetCodeEmail(to: string, code: string): Promise<void> {
+  if (!process.env.SMTP_USER || !process.env.SMTP_PASS) {
+    console.log('[SMTP] Envio de e-mail ignorado: SMTP_USER ou SMTP_PASS não configurado.');
+    return;
+  }
   await transporter.sendMail({
     from: process.env.SMTP_FROM || '"LabControl" <noreply@labcontrol.app>',
     to,

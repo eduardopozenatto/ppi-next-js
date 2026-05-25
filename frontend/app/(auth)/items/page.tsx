@@ -11,6 +11,9 @@ import type { LabInventoryList, LabInventoryListItem } from "@/types/lab-invento
 export default function CatalogPage() {
   const [items, setItems] = useState<LabInventoryList>({});
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [category, setCategory] = useState("all");
+  const [categoryName, setCategoryName] = useState("Todos");
 
   useEffect(() => {
     async function load() {
@@ -36,7 +39,16 @@ export default function CatalogPage() {
         title="Buscar itens"
         description="Encontre equipamento disponível e solicite empréstimo para o laboratório."
       />
-      <CatalogSearchBar />
+      <CatalogSearchBar
+        searchQuery={searchQuery}
+        setSearchQuery={setSearchQuery}
+        category={category}
+        setCategory={(val, name) => {
+          setCategory(val);
+          setCategoryName(name);
+        }}
+        categoryName={categoryName}
+      />
       <div className="mt-8">
         {loading ? (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
@@ -45,7 +57,17 @@ export default function CatalogPage() {
             ))}
           </div>
         ) : (
-          <InventoryCatalogGrid items={items} />
+          <InventoryCatalogGrid
+            items={Object.fromEntries(
+              Object.entries(items).filter(([_, item]) => {
+                const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+                const matchesCategory = category === "all" || item.category === categoryName;
+                // Ocultar itens inativos do catálogo
+                return item.isActive && matchesSearch && matchesCategory;
+              })
+            )}
+          />
         )}
       </div>
     </div>

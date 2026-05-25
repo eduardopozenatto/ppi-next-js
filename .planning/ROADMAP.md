@@ -106,3 +106,5 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 8. Usuários, Permissões, Notif. | v2.0 | 1/1 | Complete   | 2026-04-22 |
 | 9. Integração Front ↔ Back | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 10. Verification Debt Closure | v2.0 | 1/1 | Complete    | 2026-05-12 |
+| 11. Correções Críticas e Funcionalidades | v3.0 | 5/5 | Complete | 2026-05-25 |
+
