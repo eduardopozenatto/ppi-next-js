@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { NAV_ITEMS, navVisible } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api/client";
+import { getStaticUrl } from "@/lib/static-url";
 import type { ApiResponse } from "@/types/api";
 import type { LabNotification } from "@/types/notification";
 
@@ -72,7 +73,7 @@ export function AppSidebar() {
         <div className="flex items-center gap-3">
           {user.avatarUrl ? (
             <img
-              src={`${typeof window !== "undefined" ? window.location.origin : ""}/${user.avatarUrl}`}
+              src={getStaticUrl(user.avatarUrl) ?? ""}
               alt={user.name}
               className="h-10 w-10 shrink-0 rounded-xl object-cover"
             />

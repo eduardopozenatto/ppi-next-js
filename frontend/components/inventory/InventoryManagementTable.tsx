@@ -5,6 +5,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { api, BASE_URL } from "@/lib/api/client";
+import { getStaticUrl } from "@/lib/static-url";
 import { useToast } from "@/components/shared/Toast";
 import { Button } from "@/components/Button/Button";
 import type { ApiResponse } from "@/types/api";
@@ -65,7 +66,7 @@ export function InventoryManagementTable() {
       isActive: item.isActive,
     });
     setImageFile(null);
-    setImagePreview(item.image ? (item.image.startsWith("/") ? item.image : `/${item.image}`) : null);
+    setImagePreview(getStaticUrl(item.image));
   }
 
   function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -159,7 +160,7 @@ export function InventoryManagementTable() {
                   <div className="flex items-center gap-3">
                     {item.image ? (
                       <img
-                        src={item.image.startsWith("/") ? item.image : `/${item.image}`}
+                        src={getStaticUrl(item.image) ?? ""}
                         alt={item.name}
                         className="h-8 w-8 shrink-0 rounded object-cover"
                       />
@@ -244,9 +245,11 @@ export function InventoryManagementTable() {
                       <button type="button" onClick={() => fileInputRef.current?.click()} className="self-start text-sm font-semibold text-[var(--color-primary)] hover:underline">
                         Trocar imagem
                       </button>
-                      <button type="button" onClick={() => { setImagePreview(null); setImageFile(null); }} className="self-start text-sm font-semibold text-[var(--color-danger)] hover:underline">
-                        Remover
-                      </button>
+                      {imageFile && (
+                        <button type="button" onClick={() => { setImagePreview(getStaticUrl(editModal.image)); setImageFile(null); }} className="self-start text-sm font-semibold text-[var(--color-danger)] hover:underline">
+                          Cancelar
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (

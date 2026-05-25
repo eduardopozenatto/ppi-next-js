@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { api } from "@/lib/api/client";
+import { getStaticUrl } from "@/lib/static-url";
 import type { ApiResponse } from "@/types/api";
 import type { LabInventoryListItem } from "@/types/lab-inventory";
 
@@ -45,7 +46,7 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
     );
   }
 
-  const src = item.image ? (item.image.startsWith("/") ? item.image : `/${item.image}`) : "/buttonIcons/box.svg";
+  const src = getStaticUrl(item.image) || "/buttonIcons/box.svg";
 
   return (
     <div>

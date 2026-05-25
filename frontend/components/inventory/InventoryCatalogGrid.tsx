@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { LabInventoryList } from "@/types/lab-inventory";
 import { cn } from "@/lib/utils";
+import { getStaticUrl } from "@/lib/static-url";
 
 export interface InventoryCatalogGridProps {
   items: LabInventoryList;
@@ -12,7 +13,7 @@ export function InventoryCatalogGrid({ items, className }: InventoryCatalogGridP
   return (
     <section className={cn("grid grid-cols-1 gap-4 sm:gap-5 md:grid-cols-2 xl:grid-cols-3", className)}>
       {Object.entries(items).map(([key, item]) => {
-        const src = item.image ? (item.image.startsWith("/") ? item.image : `/${item.image}`) : "/buttonIcons/box.svg";
+        const src = getStaticUrl(item.image) || "/buttonIcons/box.svg";
         const available = item.availableQuantity > 0;
         return (
           <article

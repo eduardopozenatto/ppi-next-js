@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
 import { api, BASE_URL } from "@/lib/api/client";
+import { getStaticUrl } from "@/lib/static-url";
 
 /** Aplica máscara de telefone brasileiro: (XX) XXXXX-XXXX */
 function formatPhone(value: string): string {
@@ -139,7 +140,7 @@ export function ProfileSummary() {
     );
 
   // Resolver URL da foto
-  const avatarSrc = avatarPreview || (user.avatarUrl ? `${BASE_URL.replace("/api", "")}/${user.avatarUrl}` : null);
+  const avatarSrc = avatarPreview || getStaticUrl(user.avatarUrl);
 
   return (
     <div className="max-w-2xl space-y-6">
