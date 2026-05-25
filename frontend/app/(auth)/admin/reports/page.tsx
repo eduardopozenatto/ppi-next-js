@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/Button/Button";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { formatDate } from "@/lib/utils";
-import { api } from "@/lib/api/client";
+import { api, BASE_URL } from "@/lib/api/client";
 import { useToast } from "@/components/shared/Toast";
 import type { ApiResponse } from "@/types/api";
 import type { Loan } from "@/types/loan";
@@ -31,6 +31,7 @@ export default function AdminReportsPage() {
   const [loansReport, setLoansReport] = useState<LoansReport | null>(null);
   const [loansTable, setLoansTable] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
+  const [exporting, setExporting] = useState(false);
   const { addToast } = useToast();
 
   useEffect(() => {
@@ -54,8 +55,39 @@ export default function AdminReportsPage() {
     load();
   }, [period, addToast]);
 
-  function handleExport() {
-    alert(`Exportando dados da aba "${tab === "estoque" ? "Estoque" : "Empréstimos"}"...`);
+  async function handleExport() {
+    setExporting(true);
+    try {
+      const endpoint = tab === "estoque"
+        ? "/reports/export/inventory"
+        : `/reports/export/loans?period=${period}`;
+
+      const response = await fetch(`${BASE_URL}${endpoint}`, {
+        credentials: "include",
+      });
+
+      if (!response.ok) {
+        throw new Error("Falha ao exportar");
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = tab === "estoque"
+        ? `estoque-${new Date().toISOString().split("T")[0]}.xlsx`
+        : `emprestimos-${new Date().toISOString().split("T")[0]}.xlsx`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+
+      addToast({ title: "Exportado", message: "Relatório baixado com sucesso!", variant: "success" });
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao exportar", variant: "error" });
+    } finally {
+      setExporting(false);
+    }
   }
 
   return (
@@ -64,8 +96,8 @@ export default function AdminReportsPage() {
         title="Relatórios"
         description="Indicadores e métricas para gestão do laboratório."
         actions={
-          <Button type="button" variant="secondary" onClick={handleExport}>
-            Exportar
+          <Button type="button" variant="secondary" onClick={handleExport} disabled={exporting}>
+            {exporting ? "Exportando..." : "Exportar"}
           </Button>
         }
       />

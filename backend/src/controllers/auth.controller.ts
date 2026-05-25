@@ -4,7 +4,14 @@ import { AppError } from '../middlewares/errorHandler';
 import { sendCreated, sendSuccess } from '../utils/response';
 import { hashPassword, comparePassword } from '../utils/crypto';
 import { signToken } from '../utils/jwt';
-import { registerSchema, loginSchema } from '../schemas/auth.schema';
+import {
+  registerSchema,
+  loginSchema,
+  changePasswordSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+} from '../schemas/auth.schema';
+import { sendResetCodeEmail } from '../utils/email';
 import { z } from 'zod';
 
 export async function register(
@@ -125,9 +132,195 @@ export async function getMe(
       name: req.user.name,
       email: req.user.email,
       matricula: req.user.matricula,
+      avatarUrl: req.user.avatarUrl,
       tag: req.user.tag,
       userPermissions: req.user.userPermissions,
     },
     'Sessão ativa recuperada'
   );
+}
+
+/* ─── Avatar Upload ────────────────────────────────── */
+
+export async function uploadAvatarHandler(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.file) {
+      throw new AppError('Nenhum arquivo enviado', 400);
+    }
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const avatarUrl = `uploads/avatars/${req.file.filename}`;
+
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { avatarUrl },
+    });
+
+    sendSuccess(res, { avatarUrl }, 'Foto de perfil atualizada');
+  } catch (err) {
+    next(err);
+  }
+}
+
+/* ─── Change Password (logged-in user) ────────────── */
+
+export async function changePassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = changePasswordSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+    });
+
+    if (!user) {
+      throw new AppError('Usuário não encontrado', 404);
+    }
+
+    const isValid = await comparePassword(data.currentPassword, user.password);
+    if (!isValid) {
+      throw new AppError('Senha atual incorreta', 400);
+    }
+
+    const hashedNew = await hashPassword(data.newPassword);
+    await prisma.user.update({
+      where: { id: req.user.id },
+      data: { password: hashedNew },
+    });
+
+    sendSuccess(res, null, 'Senha alterada com sucesso');
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(
+        new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any)
+      );
+    } else {
+      next(err);
+    }
+  }
+}
+
+/* ─── Forgot Password (public) ────────────────────── */
+
+export async function forgotPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const data = forgotPasswordSchema.parse(req.body);
+
+    // Buscar user — se não encontrado, retorna sucesso mesmo assim (segurança)
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (user) {
+      // Invalidar códigos anteriores
+      await prisma.passwordResetCode.updateMany({
+        where: { userId: user.id, used: false },
+        data: { used: true },
+      });
+
+      // Gerar código de 6 dígitos
+      const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Criar registro
+      await prisma.passwordResetCode.create({
+        data: {
+          code,
+          userId: user.id,
+          expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutos
+        },
+      });
+
+      // Enviar email
+      try {
+        await sendResetCodeEmail(user.email, code);
+      } catch (emailErr) {
+        console.error('[forgotPassword] Falha ao enviar email:', emailErr);
+        // Log do código para debug em dev quando SMTP não está configurado
+        console.log(`[forgotPassword] Código de reset para ${user.email}: ${code}`);
+      }
+    }
+
+    sendSuccess(res, null, 'Se o email existir, um código foi enviado');
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(
+        new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any)
+      );
+    } else {
+      next(err);
+    }
+  }
+}
+
+/* ─── Reset Password (public — with code) ─────────── */
+
+export async function resetPassword(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const data = resetPasswordSchema.parse(req.body);
+
+    const user = await prisma.user.findUnique({
+      where: { email: data.email },
+    });
+
+    if (!user) {
+      throw new AppError('Código inválido ou expirado', 400);
+    }
+
+    const resetCode = await prisma.passwordResetCode.findFirst({
+      where: {
+        code: data.code,
+        userId: user.id,
+        used: false,
+        expiresAt: { gte: new Date() },
+      },
+    });
+
+    if (!resetCode) {
+      throw new AppError('Código inválido ou expirado', 400);
+    }
+
+    // Marcar como usado
+    await prisma.passwordResetCode.update({
+      where: { id: resetCode.id },
+      data: { used: true },
+    });
+
+    // Atualizar senha
+    const hashedNew = await hashPassword(data.newPassword);
+    await prisma.user.update({
+      where: { id: user.id },
+      data: { password: hashedNew },
+    });
+
+    sendSuccess(res, null, 'Senha redefinida com sucesso');
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(
+        new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any)
+      );
+    } else {
+      next(err);
+    }
+  }
 }

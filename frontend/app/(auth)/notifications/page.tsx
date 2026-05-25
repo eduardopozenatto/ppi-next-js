@@ -41,7 +41,7 @@ export default function NotificationsPage() {
 
   async function markAsRead(id: string) {
     try {
-      await api.put(`/notifications/${id}/read`);
+      await api.put(`/notifications/${id}/read`, { read: true });
       setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
     } catch (err) {
       addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha", variant: "error" });
@@ -52,16 +52,21 @@ export default function NotificationsPage() {
     try {
       // Mark each unread notification — backend may support bulk endpoint
       const unread = notifications.filter((n) => !n.read);
-      await Promise.all(unread.map((n) => api.put(`/notifications/${n.id}/read`)));
+      await Promise.all(unread.map((n) => api.put(`/notifications/${n.id}/read`, { read: true })));
       setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     } catch (err) {
       addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha", variant: "error" });
     }
   }
 
-  function deleteNotification(id: string) {
-    // Remove locally — backend doesn't have a delete endpoint for notifications
-    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  async function deleteNotification(id: string) {
+    try {
+      await api.del(`/notifications/${id}`);
+      setNotifications((prev) => prev.filter((n) => n.id !== id));
+      addToast({ title: "Excluída", message: "Notificação removida", variant: "info" });
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao excluir", variant: "error" });
+    }
   }
 
   return (

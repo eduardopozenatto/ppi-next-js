@@ -179,7 +179,7 @@ export async function updateLoanStatus(
 ): Promise<void> {
   try {
     const id = getParam(req.params.id);
-    const { status, labObservation } = updateLoanStatusSchema.parse(req.body);
+    const { status, labObservation, dueDate } = updateLoanStatusSchema.parse(req.body);
 
     await prisma.$transaction(async (tx) => {
       const loan = await tx.loan.findUnique({
@@ -194,6 +194,11 @@ export async function updateLoanStatus(
       }
 
       const updatePayload: any = { status, labObservation };
+
+      // Se aprovando e dueDate fornecida pelo admin, atualizar a data de devolução
+      if (status === LoanStatus.active && dueDate) {
+        updatePayload.dueDate = new Date(dueDate);
+      }
 
       // Regras de negócio de estoque:
       if (loan.status === LoanStatus.pending) {

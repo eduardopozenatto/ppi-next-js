@@ -61,3 +61,28 @@ export const markAsRead = async (req: Request, res: Response) => {
     return res.status(500).json({ success: false, message: 'Erro interno ao atualizar notificação', errors: [String(error)] });
   }
 };
+
+export const deleteNotification = async (req: Request, res: Response) => {
+  try {
+    const id = getParam(req.params.id);
+    if (!id) return res.status(400).json({ success: false, message: 'ID não fornecido' });
+
+    const userId = req.user!.id;
+
+    // Verificar que a notificação pertence ao usuário
+    const existing = await prisma.notification.findFirst({
+      where: { id, userId },
+    });
+
+    if (!existing) {
+      return res.status(404).json({ success: false, message: 'Notificação não encontrada' });
+    }
+
+    await prisma.notification.delete({ where: { id } });
+
+    return res.json({ success: true, message: 'Notificação excluída' });
+  } catch (error) {
+    console.error('[deleteNotification]', error);
+    return res.status(500).json({ success: false, message: 'Erro interno ao excluir notificação', errors: [String(error)] });
+  }
+};

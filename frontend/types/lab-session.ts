@@ -14,6 +14,7 @@ export interface LabSessionUser {
   name: string;
   email: string;
   matricula?: string;
+  avatarUrl?: string | null;
   tag: LabUserTag;
   userPermissions: LabUserPermissions;
 }

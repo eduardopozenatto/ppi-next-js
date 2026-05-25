@@ -1,15 +1,39 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { NAV_ITEMS, navVisible } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
+import { api } from "@/lib/api/client";
+import type { ApiResponse } from "@/types/api";
+import type { LabNotification } from "@/types/notification";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  // Poll for unread notifications every 60 seconds
+  useEffect(() => {
+    if (!user) return;
+
+    async function fetchUnread() {
+      try {
+        const res = await api.get<ApiResponse<LabNotification[]>>("/notifications?limit=100");
+        const count = (res.data ?? []).filter((n) => !n.read).length;
+        setUnreadCount(count);
+      } catch {
+        // Silently ignore — badge is non-critical
+      }
+    }
+
+    fetchUnread();
+    const interval = setInterval(fetchUnread, 60000);
+    return () => clearInterval(interval);
+  }, [user]);
 
   if (!user) return null;
 
@@ -21,7 +45,7 @@ export function AppSidebar() {
     <div className="flex h-full min-h-0 flex-col gap-6 pb-4">
       <div className="flex flex-col gap-1 sm:gap-2">
         {main.map((item) => (
-          <SidebarLink key={item.id} item={item} pathname={pathname} />
+          <SidebarLink key={item.id} item={item} pathname={pathname} badge={item.id === "notifications" ? unreadCount : 0} />
         ))}
       </div>
 
@@ -31,7 +55,7 @@ export function AppSidebar() {
             Administração
           </p>
           {admin.map((item) => (
-            <SidebarLink key={item.id} item={item} pathname={pathname} />
+            <SidebarLink key={item.id} item={item} pathname={pathname} badge={0} />
           ))}
         </div>
       ) : null}
@@ -40,21 +64,29 @@ export function AppSidebar() {
 
       <div className="flex flex-col gap-1 sm:gap-2">
         {footer.map((item) => (
-          <SidebarLink key={item.id} item={item} pathname={pathname} />
+          <SidebarLink key={item.id} item={item} pathname={pathname} badge={0} />
         ))}
       </div>
 
       <div className="mt-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/60 p-3 sm:mx-1">
         <div className="flex items-center gap-3">
-          <div className="flex shrink-0 rounded-xl bg-[var(--color-bg-subtle)] p-2">
-            <Image
-              src="/buttonIcons/exit-account.svg"
-              alt=""
-              width={22}
-              height={22}
-              aria-hidden
+          {user.avatarUrl ? (
+            <img
+              src={`${typeof window !== "undefined" ? window.location.origin : ""}/${user.avatarUrl}`}
+              alt={user.name}
+              className="h-10 w-10 shrink-0 rounded-xl object-cover"
             />
-          </div>
+          ) : (
+            <div className="flex shrink-0 rounded-xl bg-[var(--color-bg-subtle)] p-2">
+              <Image
+                src="/buttonIcons/exit-account.svg"
+                alt=""
+                width={22}
+                height={22}
+                aria-hidden
+              />
+            </div>
+          )}
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-[var(--color-text)]">{user.name}</p>
             <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag?.colorClass || "text-[var(--color-text-muted)]")}>
@@ -80,9 +112,11 @@ export function AppSidebar() {
 function SidebarLink({
   item,
   pathname,
+  badge,
 }: {
   item: (typeof NAV_ITEMS)[number];
   pathname: string;
+  badge: number;
 }) {
   const active = pathname === item.href || pathname.startsWith(`${item.href}/`);
   return (
@@ -104,6 +138,11 @@ function SidebarLink({
         aria-hidden
       />
       <span className="truncate text-sm font-medium sm:text-[0.9375rem]">{item.label}</span>
+      {badge > 0 && (
+        <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-[var(--color-danger)] px-1.5 text-[10px] font-bold text-white">
+          {badge > 99 ? "99+" : badge}
+        </span>
+      )}
     </Link>
   );
 }

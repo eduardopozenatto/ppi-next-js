@@ -13,6 +13,7 @@ declare global {
         email: string;
         role: string;
         matricula: string | null;
+        avatarUrl: string | null;
         tag: {
           name: string;
           colorClass: string;
@@ -89,6 +90,7 @@ export async function requireAuth(
       email: currentUser.email,
       role: currentUser.role,
       matricula: currentUser.matricula,
+      avatarUrl: currentUser.avatarUrl,
       tag: currentUser.tag
         ? {
             name: currentUser.tag.name,

@@ -26,6 +26,8 @@ interface AuthContextValue {
     password: string,
   ) => Promise<string | null>;
   logout: () => Promise<void>;
+  /** Re-fetcha o perfil do backend para atualizar dados em memória */
+  refreshUser: () => Promise<void>;
   /** Atualiza as permissões do usuário logado (usado pelo admin ao editar permissões/tags) */
   updateSessionPermissions: (permissions: LabUserPermissions) => void;
   /** Atualiza o tag name do usuário logado */
@@ -143,6 +145,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /* ─── Refresh User ─────────────────────────────────── */
+  const refreshUser = useCallback(async () => {
+    try {
+      const res = await api.get<ApiResponse<LabSessionUser>>("/auth/me");
+      setCurrentUser(res.data);
+    } catch {
+      // silently ignore
+    }
+  }, []);
+
   const value = useMemo<AuthContextValue>(
     () => ({
       status,
@@ -150,6 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
       updateSessionPermissions,
       updateSessionTag,
     }),
@@ -159,6 +172,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       login,
       register,
       logout,
+      refreshUser,
       updateSessionPermissions,
       updateSessionTag,
     ],

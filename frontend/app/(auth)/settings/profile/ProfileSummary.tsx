@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
-
-// TODO: substituir por chamada real quando backend estiver pronto
+import { api, BASE_URL } from "@/lib/api/client";
 
 /** Aplica máscara de telefone brasileiro: (XX) XXXXX-XXXX */
 function formatPhone(value: string): string {
@@ -17,8 +16,9 @@ function formatPhone(value: string): string {
 }
 
 export function ProfileSummary() {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const { addToast } = useToast();
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [name, setName] = useState(user?.name ?? "");
   const [email, setEmail] = useState(user?.email ?? "");
   const [phone, setPhone] = useState("");
@@ -27,6 +27,9 @@ export function ProfileSummary() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [saving, setSaving] = useState(false);
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   if (!user) return null;
 
@@ -37,23 +40,90 @@ export function ProfileSummary() {
       errs.email = "E-mail inválido";
     if (newPassword && !currentPassword)
       errs.currentPassword = "Informe a senha atual para alterar a senha";
-    if (newPassword && newPassword.length < 8)
-      errs.newPassword = "Mínimo de 8 caracteres";
+    if (newPassword && newPassword.length < 6)
+      errs.newPassword = "Mínimo de 6 caracteres";
     if (newPassword && newPassword !== confirmPassword)
       errs.confirmPassword = "As senhas não coincidem";
     return errs;
   }
 
-  function handleSave() {
+  async function handleSave() {
     const errs = validate();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
-    // TODO: POST /api/auth/profile
-    addToast({
-      variant: "success",
-      title: "Perfil atualizado",
-      message: "Perfil atualizado com sucesso.",
-    });
+
+    setSaving(true);
+    try {
+      // Alterar senha se preenchida
+      if (newPassword) {
+        await api.post("/auth/change-password", {
+          currentPassword,
+          newPassword,
+        });
+        setCurrentPassword("");
+        setNewPassword("");
+        setConfirmPassword("");
+        addToast({
+          variant: "success",
+          title: "Senha alterada",
+          message: "Sua senha foi alterada com sucesso.",
+        });
+      } else {
+        addToast({
+          variant: "success",
+          title: "Perfil atualizado",
+          message: "Perfil atualizado com sucesso.",
+        });
+      }
+    } catch (err) {
+      addToast({
+        variant: "error",
+        title: "Erro",
+        message: err instanceof Error ? err.message : "Falha ao salvar",
+      });
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  async function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validar tamanho
+    if (file.size > 2 * 1024 * 1024) {
+      addToast({ variant: "error", title: "Arquivo muito grande", message: "Máximo de 2 MB" });
+      return;
+    }
+
+    // Preview local
+    setAvatarPreview(URL.createObjectURL(file));
+
+    // Upload
+    setUploading(true);
+    try {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      const response = await fetch(`${BASE_URL}/auth/avatar`, {
+        method: "POST",
+        credentials: "include",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const data = await response.json();
+        throw new Error(data.message || "Falha ao enviar foto");
+      }
+
+      await refreshUser();
+      addToast({ variant: "success", title: "Foto atualizada", message: "Sua foto de perfil foi atualizada." });
+    } catch (err) {
+      setAvatarPreview(null);
+      addToast({ variant: "error", title: "Erro", message: err instanceof Error ? err.message : "Falha ao enviar foto" });
+    } finally {
+      setUploading(false);
+    }
   }
 
   function handlePhoneChange(value: string) {
@@ -68,20 +138,43 @@ export function ProfileSummary() {
         : "border-[var(--color-border)] bg-[var(--color-bg)] focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]"
     );
 
+  // Resolver URL da foto
+  const avatarSrc = avatarPreview || (user.avatarUrl ? `${BASE_URL.replace("/api", "")}/${user.avatarUrl}` : null);
+
   return (
     <div className="max-w-2xl space-y-6">
       {/* Photo */}
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Foto de perfil</h3>
         <div className="flex items-center gap-5">
-          <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-2xl font-bold text-white">
-            {user.name.charAt(0).toUpperCase()}
-          </div>
+          {avatarSrc ? (
+            <img
+              src={avatarSrc}
+              alt={user.name}
+              className="h-20 w-20 shrink-0 rounded-full object-cover border-2 border-[var(--color-border)]"
+            />
+          ) : (
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-2xl font-bold text-white">
+              {user.name.charAt(0).toUpperCase()}
+            </div>
+          )}
           <div>
-            <Button type="button" variant="secondary" onClick={() => alert("TODO: Upload de foto")}>
-              Alterar foto
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={handleAvatarChange}
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={uploading}
+            >
+              {uploading ? "Enviando..." : "Alterar foto"}
             </Button>
-            <p className="mt-1.5 text-xs text-[var(--color-text-subtle)]">JPG ou PNG, máximo 2 MB</p>
+            <p className="mt-1.5 text-xs text-[var(--color-text-subtle)]">JPG, PNG ou WebP, máximo 2 MB</p>
           </div>
         </div>
       </div>
@@ -183,8 +276,8 @@ export function ProfileSummary() {
 
       {/* Footer */}
       <div className="flex items-center gap-4">
-        <Button type="button" onClick={handleSave}>
-          Salvar alterações
+        <Button type="button" onClick={handleSave} disabled={saving}>
+          {saving ? "Salvando..." : "Salvar alterações"}
         </Button>
       </div>
     </div>

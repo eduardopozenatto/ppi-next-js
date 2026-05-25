@@ -17,6 +17,7 @@ export const createLoanSchema = z.object({
 export const updateLoanStatusSchema = z.object({
   status: z.nativeEnum(LoanStatus, { message: 'Status inválido' }),
   labObservation: z.string().optional(),
+  dueDate: z.string().datetime({ message: 'Data de devolução inválida' }).optional(),
 });
 
 export const loanQuerySchema = z.object({

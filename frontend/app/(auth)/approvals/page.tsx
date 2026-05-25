@@ -51,7 +51,7 @@ export default function ApprovalsPage() {
       await api.put(`/loans/${approveModal.id}/status`, {
         status: "active",
         dueDate: d.toISOString(),
-        observation: observation || undefined,
+        labObservation: observation || undefined,
       });
       addToast({ title: "Aprovado", message: "Empréstimo aprovado com sucesso", variant: "success" });
       setApproveModal(null);
@@ -69,7 +69,7 @@ export default function ApprovalsPage() {
     try {
       await api.put(`/loans/${rejectModal.id}/status`, {
         status: "cancelled",
-        observation: rejectReason,
+        labObservation: rejectReason,
       });
       addToast({ title: "Rejeitado", message: "Empréstimo rejeitado", variant: "info" });
       setRejectModal(null);

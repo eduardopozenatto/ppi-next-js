@@ -100,19 +100,46 @@ export const deleteUser = async (req: Request, res: Response) => {
     const id = getParam(req.params.id);
     if (!id) return res.status(400).json({ success: false, message: 'ID não fornecido' });
 
-    // Soft delete: set isActive to false instead of actually deleting the record
-    await prisma.user.update({
-      where: { id },
-      data: { isActive: false },
+    // Impedir exclusão do próprio usuário
+    if (req.user?.id === id) {
+      return res.status(400).json({ success: false, message: 'Você não pode excluir sua própria conta' });
+    }
+
+    // Verificar se o usuário tem empréstimos ativos ou pendentes
+    const activeLoans = await prisma.loan.count({
+      where: {
+        borrowerId: id,
+        status: { in: ['pending', 'active', 'overdue'] },
+      },
     });
 
-    return res.json({ success: true, message: 'Usuário desativado com sucesso' });
+    if (activeLoans > 0) {
+      return res.status(400).json({
+        success: false,
+        message: `Não é possível excluir: o usuário possui ${activeLoans} empréstimo(s) ativo(s) ou pendente(s). Resolva os empréstimos antes de excluir.`,
+      });
+    }
+
+    // Remover empréstimos finalizados (histórico) antes de deletar o user
+    await prisma.loan.deleteMany({
+      where: {
+        borrowerId: id,
+        status: { in: ['returned', 'cancelled'] },
+      },
+    });
+
+    // Hard delete — cascata em notifications e permissionOverrides via Prisma onDelete: Cascade
+    await prisma.user.delete({
+      where: { id },
+    });
+
+    return res.json({ success: true, message: 'Usuário excluído permanentemente' });
   } catch (error: any) {
     if (error.code === 'P2025') {
       return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
     }
     console.error('[deleteUser]', error);
-    return res.status(500).json({ success: false, message: 'Erro interno ao desativar usuário', errors: [String(error)] });
+    return res.status(500).json({ success: false, message: 'Erro interno ao excluir usuário', errors: [String(error)] });
   }
 };
 

@@ -54,6 +54,7 @@ model User {
   loans               Loan[]
   notifications       Notification[]
   permissionOverrides UserPermissionOverride[]
+  passwordResetCodes  PasswordResetCode[]
 
   @@map("users")
 }
@@ -179,4 +180,18 @@ model UserPermissionOverride {
 
   @@unique([userId, tagId])
   @@map("user_permission_overrides")
+}
+
+/// Código de reset de senha — expira em 15 minutos
+model PasswordResetCode {
+  id        String   @id @default(cuid())
+  code      String
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
+
+  @@map("password_reset_codes")
 }

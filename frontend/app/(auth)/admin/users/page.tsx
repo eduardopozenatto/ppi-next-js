@@ -110,7 +110,7 @@ export default function AdminUsersPage() {
     if (!deleteModal) return;
     try {
       await api.del(`/users/${deleteModal.id}`);
-      addToast({ title: "Excluído", message: "Usuário removido", variant: "success" });
+      addToast({ title: "Excluído", message: "Usuário excluído permanentemente", variant: "success" });
       setDeleteModal(null);
       await fetchUsersAndTags();
     } catch (err) {
@@ -247,11 +247,19 @@ export default function AdminUsersPage() {
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteModal(null)}>
           <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Confirmar Exclusão</h2>
-            <p className="mt-2 text-sm text-[var(--color-text-subtle)]">Tem certeza que deseja excluir o usuário &quot;{deleteModal.name}&quot;? Essa ação não pode ser desfeita.</p>
+            <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)]">
+              <span className="text-xl">⚠️</span> Confirmar Exclusão Permanente
+            </h2>
+            <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
+              Tem certeza que deseja excluir permanentemente o usuário &quot;{deleteModal.name}&quot;?
+              Todos os dados associados (notificações, permissões) serão removidos.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-[var(--color-danger)]">
+              Esta ação NÃO pode ser desfeita.
+            </p>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>Cancelar</Button>
-              <button type="button" onClick={handleDelete} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">Excluir Usuário</button>
+              <button type="button" onClick={handleDelete} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">Excluir Permanentemente</button>
             </div>
           </div>
         </div>
