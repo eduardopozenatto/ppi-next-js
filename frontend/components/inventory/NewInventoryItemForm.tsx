@@ -7,7 +7,7 @@ import { useForm } from "react-hook-form";
 import Image from "next/image";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
-import { api } from "@/lib/api/client";
+import { api, BASE_URL } from "@/lib/api/client";
 import { useToast } from "@/components/shared/Toast";
 import type { ApiResponse } from "@/types/api";
 import type { Category } from "@/types/settings";
@@ -20,6 +20,7 @@ export function NewInventoryItemForm() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToast } = useToast();
@@ -39,7 +40,6 @@ export function NewInventoryItemForm() {
   const {
     register,
     handleSubmit,
-    setValue,
     formState: { errors },
   } = useForm<NewInventoryItemFormValues>({
     resolver: zodResolver(newInventoryItemSchema),
@@ -57,28 +57,16 @@ export function NewInventoryItemForm() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // Validar tipo
-    if (!file.type.startsWith("image/")) {
-      return;
-    }
+    if (!file.type.startsWith("image/")) return;
+    if (file.size > 5 * 1024 * 1024) return;
 
-    // Validar tamanho (máx 5MB)
-    if (file.size > 5 * 1024 * 1024) {
-      return;
-    }
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result as string;
-      setImagePreview(dataUrl);
-      setValue("image", dataUrl);
-    };
-    reader.readAsDataURL(file);
+    setImageFile(file);
+    setImagePreview(URL.createObjectURL(file));
   }
 
   function removeImage() {
     setImagePreview(null);
-    setValue("image", "");
+    setImageFile(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -90,15 +78,28 @@ export function NewInventoryItemForm() {
       const cat = categories.find((c) => c.name === data.category);
       if (!cat) throw new Error("Categoria não encontrada.");
 
-      await api.post("/inventory", {
+      // 1. Create the item
+      const result = await api.post<ApiResponse<{ id: string }>>("/inventory", {
         name: data.name,
         description: data.description || "",
         categoryId: cat.id,
         quantity: data.totalQuantity,
         availableQuantity: data.availableQuantity,
-        image: data.image || null,
         isActive: true,
       });
+
+      const itemId = result.data?.id;
+
+      // 2. Upload image if one was selected
+      if (imageFile && itemId) {
+        const formData = new FormData();
+        formData.append("image", imageFile);
+        await fetch(`${BASE_URL}/inventory/${itemId}/image`, {
+          method: "POST",
+          credentials: "include",
+          body: formData,
+        });
+      }
 
       addToast({ title: "Criado", message: "Item salvo no estoque.", variant: "success" });
       router.push("/inventory");

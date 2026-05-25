@@ -120,23 +120,44 @@ export const deleteUser = async (req: Request, res: Response) => {
       });
     }
 
-    // Remover empréstimos finalizados (histórico) antes de deletar o user
-    await prisma.loan.deleteMany({
-      where: {
-        borrowerId: id,
-        status: { in: ['returned', 'cancelled'] },
-      },
-    });
+    // Deletar em transação para garantir atomicidade
+    await prisma.$transaction(async (tx) => {
+      // 1. Buscar IDs dos empréstimos finalizados do usuário
+      const finishedLoans = await tx.loan.findMany({
+        where: {
+          borrowerId: id,
+          status: { in: ['returned', 'cancelled'] },
+        },
+        select: { id: true },
+      });
 
-    // Hard delete — cascata em notifications e permissionOverrides via Prisma onDelete: Cascade
-    await prisma.user.delete({
-      where: { id },
+      const loanIds = finishedLoans.map((l) => l.id);
+
+      // 2. Deletar LoanItems desses empréstimos (deleteMany não faz cascade)
+      if (loanIds.length > 0) {
+        await tx.loanItem.deleteMany({
+          where: { loanId: { in: loanIds } },
+        });
+
+        // 3. Deletar os empréstimos
+        await tx.loan.deleteMany({
+          where: { id: { in: loanIds } },
+        });
+      }
+
+      // 4. Hard delete do usuário — cascata em notifications, permissionOverrides, passwordResetCodes
+      await tx.user.delete({
+        where: { id },
+      });
     });
 
     return res.json({ success: true, message: 'Usuário excluído permanentemente' });
   } catch (error: any) {
     if (error.code === 'P2025') {
       return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
+    }
+    if (error.code === 'P2003') {
+      return res.status(400).json({ success: false, message: 'Não é possível excluir: existem registros vinculados ao usuário. Verifique empréstimos e tente novamente.' });
     }
     console.error('[deleteUser]', error);
     return res.status(500).json({ success: false, message: 'Erro interno ao excluir usuário', errors: [String(error)] });
