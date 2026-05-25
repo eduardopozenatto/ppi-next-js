@@ -107,7 +107,7 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 | 9. Integração Front ↔ Back | v2.0 | 1/1 | Complete | 2026-05-12 |
 | 10. Verification Debt Closure | v2.0 | 1/1 | Complete    | 2026-05-12 |
 | 11. Correções Críticas e Funcionalidades | v3.0 | 5/5 | Complete | 2026-05-25 |
-| 12. Regras e Validação de Empréstimos | v4.0 | 0/2 | Pending | |
+| 12. Regras e Validação de Empréstimos | v4.0 | 2/2 | Complete | 2026-05-25 |
 | 13. Gestão de Usuários e Segurança Admin | v4.0 | 0/3 | Pending | |
 | 14. Estoque, Soft Delete e Ativação | v4.0 | 0/2 | Pending | |
 | 15. Polimento de UI e Auditoria | v4.0 | 0/2 | Pending | |
@@ -118,11 +118,11 @@ Phases execute in numeric order: 5 → 6 → 7 → 8 → 9
 **Goal**: Validar datas de empréstimo (futuro, limites) e travar dados do solicitante no frontend com base no usuário autenticado.
 **Depends on**: Phase 11
 **Requirements**: [REQ-401, REQ-402]
-**Status**: Pending
+**Status**: Complete
 
 Plans:
-- [ ] 12-01: Validação de datas (futuro, limite de duração) no backend e frontend
-- [ ] 12-02: Auto-preenchimento e bloqueio de dados do solicitante na criação do empréstimo
+- [x] 12-01: Validação de datas (futuro, limite de duração) no backend e frontend
+- [x] 12-02: Auto-preenchimento e bloqueio de dados do solicitante na criação do empréstimo
 
 ### Phase 13: Gestão de Usuários e Segurança Administrativa
 **Goal**: Implementar criação administrativa de usuários, unicidade de e-mail/matrícula e troca obrigatória de senha provisória.
