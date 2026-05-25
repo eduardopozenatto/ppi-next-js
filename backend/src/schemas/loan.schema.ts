@@ -10,8 +10,22 @@ export const createLoanSchema = z.object({
       })
     )
     .min(1, 'Você deve solicitar ao menos um item'),
-  dueDate: z.string().datetime({ message: 'Data de devolução inválida' }),
+  dueDate: z.string().datetime({ message: 'Data de devolução inválida' })
+    .refine((val) => {
+      const selected = new Date(val);
+      const now = new Date();
+      now.setHours(0, 0, 0, 0); // tolerância para início do dia
+      return selected >= now;
+    }, 'A data de devolução não pode ser no passado')
+    .refine((val) => {
+      const selected = new Date(val);
+      const maxDate = new Date();
+      maxDate.setDate(maxDate.getDate() + 30);
+      maxDate.setHours(23, 59, 59, 999);
+      return selected <= maxDate;
+    }, 'O período de empréstimo não pode exceder 30 dias'),
   notes: z.string().optional(),
+  borrowerEmail: z.string().email('E-mail do solicitante inválido').optional(),
 });
 
 export const updateLoanStatusSchema = z.object({

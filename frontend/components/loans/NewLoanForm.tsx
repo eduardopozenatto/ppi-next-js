@@ -12,6 +12,7 @@ import type { ApiResponse } from "@/types/api";
 import type { LabInventoryListItem } from "@/types/lab-inventory";
 import { newLoanSchema, type NewLoanFormValues } from "@/lib/validations/loan";
 import { cn } from "@/lib/utils";
+import { useAuth } from "@/hooks/useAuth";
 
 export function NewLoanForm() {
   const router = useRouter();
@@ -21,6 +22,8 @@ export function NewLoanForm() {
   const [inventoryOptions, setInventoryOptions] = useState<LabInventoryListItem[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToast } = useToast();
+  const { user } = useAuth();
+  const isAdmin = user?.tag?.name?.toLowerCase() === "laboratorista" || user?.userPermissions?.aprovar_emprestimos;
 
   useEffect(() => {
     async function loadItems() {
@@ -37,18 +40,26 @@ export function NewLoanForm() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors },
   } = useForm<NewLoanFormValues>({
     resolver: zodResolver(newLoanSchema),
     defaultValues: {
-      borrowerName: "",
-      borrowerEmail: "",
+      borrowerName: user?.name ?? "",
+      borrowerEmail: user?.email ?? "",
       itemId: presetItem,
       quantity: 1,
       dueDate: "",
       notes: "",
     },
   });
+
+  useEffect(() => {
+    if (user) {
+      setValue("borrowerName", user.name);
+      setValue("borrowerEmail", user.email);
+    }
+  }, [user, setValue]);
 
   async function onSubmit(data: NewLoanFormValues) {
     setIsSubmitting(true);
@@ -61,6 +72,7 @@ export function NewLoanForm() {
         items: [{ inventoryItemId: data.itemId, quantity: data.quantity }],
         notes: data.notes,
         dueDate: new Date(data.dueDate + "T12:00:00Z").toISOString(),
+        borrowerEmail: isAdmin ? data.borrowerEmail : undefined,
       });
       addToast({ title: "Sucesso", message: "Empréstimo registrado com sucesso.", variant: "success" });
       router.push("/loans");
@@ -100,12 +112,25 @@ export function NewLoanForm() {
         ) : null}
       </div>
 
-      <Input label="Nome do solicitante" placeholder="Nome completo" {...register("borrowerName")} />
+      <Input
+        label="Nome do solicitante"
+        placeholder="Nome completo"
+        readOnly={!isAdmin}
+        className={cn(!isAdmin && "bg-[var(--color-bg-subtle)] opacity-80 cursor-not-allowed")}
+        {...register("borrowerName")}
+      />
       {errors.borrowerName ? (
         <p className="-mt-3 text-sm text-[var(--color-danger)]">{errors.borrowerName.message}</p>
       ) : null}
 
-      <Input label="E-mail" type="email" placeholder="email@instituicao.br" {...register("borrowerEmail")} />
+      <Input
+        label="E-mail"
+        type="email"
+        placeholder="email@instituicao.br"
+        readOnly={!isAdmin}
+        className={cn(!isAdmin && "bg-[var(--color-bg-subtle)] opacity-80 cursor-not-allowed")}
+        {...register("borrowerEmail")}
+      />
       {errors.borrowerEmail ? (
         <p className="-mt-3 text-sm text-[var(--color-danger)]">{errors.borrowerEmail.message}</p>
       ) : null}

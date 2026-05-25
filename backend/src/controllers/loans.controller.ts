@@ -100,6 +100,33 @@ export async function createLoan(
       throw new AppError('Usuário não autenticado', 401);
     }
 
+    let borrowerId = req.user.id;
+
+    if (data.borrowerEmail) {
+      const hasAdminRights =
+        req.user.role === 'admin' ||
+        req.user.userPermissions.aprovar_emprestimos;
+      if (!hasAdminRights) {
+        throw new AppError(
+          'Você não tem permissão para registrar empréstimos para outros usuários',
+          403
+        );
+      }
+
+      const targetUser = await prisma.user.findUnique({
+        where: { email: data.borrowerEmail },
+      });
+
+      if (!targetUser) {
+        throw new AppError(
+          'Usuário solicitante não encontrado com o e-mail informado',
+          400
+        );
+      }
+
+      borrowerId = targetUser.id;
+    }
+
     // Cria a transação pois os dados devem ser decrementados da availableQuantity de cada Item
     const result = await prisma.$transaction(async (tx) => {
       // Confirma e captura todos os items solicitados
@@ -142,7 +169,7 @@ export async function createLoan(
       // Se tudo ocorreu bem, cria e atrela
       const newLoan = await tx.loan.create({
         data: {
-          borrowerId: req.user!.id,
+          borrowerId: borrowerId,
           status: LoanStatus.pending,
           loanDate: new Date(),
           dueDate: new Date(data.dueDate),
