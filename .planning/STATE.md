@@ -1,36 +1,36 @@
 ---
 gsd_state_version: 1.0
-milestone: v3.0
-milestone_name: Correções e Funcionalidades Pendentes
-status: verification
-stopped_at: Phase 11 plans implemented and debugged, ready for UAT
-last_updated: "2026-05-25T12:35:00.000Z"
+milestone: v4.0
+milestone_name: Consistência Lógica e Regras de Negócio
+status: planning
+stopped_at: Milestone v4.0 planned, ready for requirements review
+last_updated: "2026-05-25T18:03:00.000Z"
 last_activity: 2026-05-25
 progress:
-  total_phases: 1
+  total_phases: 4
   completed_phases: 0
-  total_plans: 5
-  completed_plans: 5
-  percent: 100
+  total_plans: 9
+  completed_plans: 0
+  percent: 0
 ---
 
 # Project State
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-05-12)
+See: .planning/PROJECT.md (updated 2026-05-25)
 
 **Core value:** Alunos podem solicitar empréstimos de equipamentos e laboratoristas podem gerenciar estoque e aprovações
-**Current focus:** Planning next milestone
+**Current focus:** Executing milestone v4.0
 
 ## Current Position
 
-Phase: 11
-Plan: All 5 plans implemented
-Status: Verification (UAT) pending
-Last activity: 2026-05-12
+Phase: 12
+Plan: Planning Phase 12
+Status: Planning
+Last activity: 2026-05-25
 
-Progress: [██████████] 100% (21/21 plans complete)
+Progress: [▆░░░░░░░░░] 74% (26/35 plans complete)
 
 ## Performance Metrics
 
