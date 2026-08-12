@@ -71,15 +71,25 @@ export async function register(
   }
 }
 
+interface InstitutionalAuthResult {
+  authenticated: boolean;
+  name?: string;
+  email?: string;
+}
+
 async function authenticateInstitutional(
   userStr: string,
   passStr: string,
   tipoStr: 'L' | 'S'
-): Promise<boolean> {
+): Promise<InstitutionalAuthResult> {
   try {
+    if (!userStr || !userStr.trim() || !passStr || !passStr.trim()) {
+      return { authenticated: false };
+    }
+
     const params = new URLSearchParams();
-    params.append('user', userStr);
-    params.append('pass', passStr);
+    params.append('user', userStr.trim());
+    params.append('pass', passStr.trim());
     params.append('tipo', tipoStr);
 
     const response = await fetch('https://www3.fw.iffarroupilha.edu.br/auth/index.php', {
@@ -90,16 +100,69 @@ async function authenticateInstitutional(
       body: params.toString(),
     });
 
-    if (!response.ok) return false;
+    if (!response.ok) {
+      console.warn('[authenticateInstitutional] HTTP error:', response.status);
+      return { authenticated: false };
+    }
+
     const responseText = await response.text();
-    const isError =
-      responseText.toLowerCase().includes('erro') ||
-      responseText.toLowerCase().includes('inválid') ||
-      responseText.toLowerCase().includes('incorret');
-    return !isError;
+
+    // Tentar interpretar resposta como JSON
+    try {
+      const json = JSON.parse(responseText);
+
+      if (json.status !== undefined) {
+        const statusLower = String(json.status).toLowerCase();
+        if (
+          statusLower === 'fail' ||
+          statusLower === 'error' ||
+          statusLower === 'false' ||
+          statusLower === '0'
+        ) {
+          return { authenticated: false };
+        }
+        if (
+          statusLower === 'success' ||
+          statusLower === 'ok' ||
+          statusLower === 'true' ||
+          statusLower === '1'
+        ) {
+          return {
+            authenticated: true,
+            name: json.name || json.nome,
+            email: json.email,
+          };
+        }
+      }
+
+      if (json.success === false) {
+        return { authenticated: false };
+      }
+      if (json.success === true) {
+        return {
+          authenticated: true,
+          name: json.name || json.nome,
+          email: json.email,
+        };
+      }
+    } catch {
+      // Se não for JSON, aplica verificação estrita por substring no texto
+    }
+
+    const lower = responseText.toLowerCase();
+    const isFailure =
+      lower.includes('fail') ||
+      lower.includes('error') ||
+      lower.includes('erro') ||
+      lower.includes('inválid') ||
+      lower.includes('invalid') ||
+      lower.includes('incorret') ||
+      lower.includes('falha');
+
+    return { authenticated: !isFailure && responseText.trim().length > 0 };
   } catch (error) {
-    console.error('[authenticateInstitutional] Error calling external auth:', error);
-    return false;
+    console.error('[authenticateInstitutional] Connection error:', error);
+    return { authenticated: false };
   }
 }
 
@@ -117,66 +180,53 @@ export async function login(
     let user;
 
     if (tipo === 'L' || tipo === 'S') {
-      const isExtAuthenticated = await authenticateInstitutional(
+      const authResult = await authenticateInstitutional(
         userIdentifier,
         passwordInput,
         tipo
       );
 
-      if (!isExtAuthenticated) {
-        // Fallback local por segurança / desenvolvimento
-        const localUser = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { email: userIdentifier },
-              { matricula: userIdentifier },
-            ],
-          },
-        });
-        if (localUser && (await comparePassword(passwordInput, localUser.password))) {
-          user = localUser;
-        } else {
-          throw new AppError('Credenciais inválidas no portal institucional', 401);
-        }
-      } else {
-        // Se autenticado externamente, busca ou provisiona o usuário no PostgreSQL local
-        user = await prisma.user.findFirst({
-          where: {
-            OR: [
-              { matricula: userIdentifier },
-              { email: userIdentifier },
-              { email: `${userIdentifier}@iffarroupilha.edu.br` },
-            ],
-          },
+      if (!authResult.authenticated) {
+        throw new AppError('CPF/Matrícula ou senha incorretos no portal institucional', 401);
+      }
+
+      // Se autenticado com sucesso no portal institucional, busca ou auto-provisiona no PostgreSQL local
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { matricula: userIdentifier },
+            { email: userIdentifier },
+            { email: `${userIdentifier}@iffarroupilha.edu.br` },
+          ],
+        },
+      });
+
+      if (!user) {
+        const defaultTag = await prisma.tag.findFirst({
+          where: { name: { equals: 'Aluno', mode: 'insensitive' } },
         });
 
-        if (!user) {
-          const defaultTag = await prisma.tag.findFirst({
-            where: { name: { equals: 'Aluno', mode: 'insensitive' } },
-          });
+        const randomPassword = await hashPassword(
+          Math.random().toString(36).slice(-8) + Date.now().toString()
+        );
 
-          const randomPassword = await hashPassword(
-            Math.random().toString(36).slice(-8) + Date.now().toString()
-          );
-
-          user = await prisma.user.create({
-            data: {
-              name: `Usuário ${userIdentifier}`,
-              email: userIdentifier.includes('@')
-                ? userIdentifier
-                : `${userIdentifier}@iffarroupilha.edu.br`,
-              matricula: userIdentifier,
-              password: randomPassword,
-              role: 'user',
-              tagId: defaultTag?.id,
-              isActive: true,
-              mustChangePassword: false,
-            },
-          });
-        }
+        user = await prisma.user.create({
+          data: {
+            name: authResult.name || `Usuário ${userIdentifier}`,
+            email: authResult.email || (userIdentifier.includes('@')
+              ? userIdentifier
+              : `${userIdentifier}@iffarroupilha.edu.br`),
+            matricula: userIdentifier,
+            password: randomPassword,
+            role: 'user',
+            tagId: defaultTag?.id,
+            isActive: true,
+            mustChangePassword: false,
+          },
+        });
       }
     } else {
-      // Login local tradicional
+      // Login local tradicional (Conta Local / Admin)
       user = await prisma.user.findFirst({
         where: {
           OR: [
