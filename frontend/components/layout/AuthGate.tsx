@@ -4,13 +4,14 @@ import { useRouter } from "next/navigation";
 import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
+import { PasswordResetForce } from "../auth/PasswordResetForce";
 
 export interface AuthGateProps {
   children: ReactNode;
 }
 
 export function AuthGate({ children }: AuthGateProps) {
-  const { status } = useAuth();
+  const { status, user } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -32,6 +33,10 @@ export function AuthGate({ children }: AuthGateProps) {
         A carregar…
       </div>
     );
+  }
+
+  if (user?.mustChangePassword) {
+    return <PasswordResetForce />;
   }
 
   return <>{children}</>;

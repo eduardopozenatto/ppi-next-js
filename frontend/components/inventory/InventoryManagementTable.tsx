@@ -38,10 +38,10 @@ export function InventoryManagementTable() {
   async function fetchItems() {
     try {
       const [invRes, catRes] = await Promise.all([
-        api.get<ApiResponse<LabInventoryListItem[]>>("/inventory?limit=100"),
+        api.get<ApiResponse<LabInventoryListItem[]>>("/inventory?limit=100&includeInactive=true"),
         api.get<ApiResponse<Category[]>>("/categories"),
       ]);
-      setRows((invRes.data ?? []).filter((item) => item.isActive));
+      setRows(invRes.data ?? []);
       setCategories(catRes.data ?? []);
     } catch (err) {
       addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });
@@ -121,11 +121,21 @@ export function InventoryManagementTable() {
     }
   }
 
+  async function toggleItemStatus(item: LabInventoryListItem) {
+    try {
+      await api.put(`/inventory/${item.id}`, { isActive: !item.isActive });
+      addToast({ title: "Atualizado", message: "Status do item alterado", variant: "success" });
+      await fetchItems();
+    } catch (err) {
+      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao alterar status", variant: "error" });
+    }
+  }
+
   async function handleDelete() {
     if (!deleteModal) return;
     try {
       await api.del(`/inventory/${deleteModal.id}`);
-      addToast({ title: "Excluído", message: "Item desativado", variant: "success" });
+      addToast({ title: "Excluído", message: "Item excluído com sucesso", variant: "success" });
       setDeleteModal(null);
       await fetchItems();
     } catch (err) {
@@ -146,6 +156,7 @@ export function InventoryManagementTable() {
               <th className="hidden px-4 py-3 sm:table-cell">Total</th>
               <th className="px-4 py-3">Disponível</th>
               <th className="px-4 py-3">Emprestados</th>
+              <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3 text-end">Ações</th>
             </tr>
           </thead>
@@ -174,6 +185,25 @@ export function InventoryManagementTable() {
                 <td className="hidden px-4 py-3 sm:table-cell">{item.quantity}</td>
                 <td className="px-4 py-3">{item.availableQuantity}</td>
                 <td className="px-4 py-3">{item.loanedQuantity}</td>
+                <td className="px-4 py-3">
+                  <button
+                    type="button"
+                    onClick={() => toggleItemStatus(item)}
+                    aria-label={item.isActive ? "Desativar" : "Ativar"}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${
+                      item.isActive ? "bg-[var(--color-primary)]" : "bg-gray-300"
+                    }`}
+                  >
+                    <span
+                      className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transition ${
+                        item.isActive ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                  <span className="ml-2 text-xs text-[var(--color-text-subtle)]">
+                    {item.isActive ? "Ativo" : "Inativo"}
+                  </span>
+                </td>
                 <td className="px-4 py-3 text-end">
                   <div className="flex justify-end gap-1">
                     <Link
@@ -191,7 +221,7 @@ export function InventoryManagementTable() {
                       type="button"
                       onClick={() => setDeleteModal(item)}
                       className="rounded p-1.5 text-[var(--color-danger)] hover:bg-red-50"
-                      title="Desativar"
+                      title="Excluir"
                     >🗑</button>
                   </div>
                 </td>
@@ -288,14 +318,14 @@ export function InventoryManagementTable() {
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteModal(null)}>
           <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Desativar Item</h2>
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">Excluir Item</h2>
             <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
-              Tem certeza que deseja desativar &quot;{deleteModal.name}&quot;? O item será mantido no histórico mas ficará inativo.
+              Tem certeza que deseja excluir permanentemente &quot;{deleteModal.name}&quot;? Esta ação removerá o item fisicamente do banco de dados e só é possível se não houver empréstimos vinculados a ele.
             </p>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>Cancelar</Button>
               <button type="button" onClick={handleDelete} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">
-                Desativar
+                Excluir
               </button>
             </div>
           </div>

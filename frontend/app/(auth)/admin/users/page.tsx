@@ -13,7 +13,7 @@ import Image from "next/image";
 import { getStaticUrl } from "@/lib/static-url";
 
 const EMPTY_USER: Omit<User, "id" | "createdAt"> = {
-  name: "", email: "", role: "user", matricula: "", tagId: "tag-1", isActive: false,
+  name: "", email: "", role: "user", matricula: "", tagId: "", isActive: true,
 };
 
 export default function AdminUsersPage() {
@@ -77,17 +77,19 @@ export default function AdminUsersPage() {
     if (!formModal.user.name.trim()) errs.name = "Nome é obrigatório";
     if (!formModal.user.email.trim()) errs.email = "E-mail é obrigatório";
     if (!formModal.user.matricula?.trim()) errs.matricula = "Matrícula é obrigatória";
+    if (!formModal.user.tagId) errs.tagId = "Perfil é obrigatório";
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
     try {
       if (formModal.mode === "create") {
-        await api.post("/auth/register", {
+        await api.post("/users", {
           name: formModal.user.name,
           email: formModal.user.email,
           matricula: formModal.user.matricula,
-          password: "1234", // senha provisória até backend enviar e-mail de criação
-          // ... a API decide a tag inicial mas o admin pode criar e depois alterar a tag via PUT
+          tagId: formModal.user.tagId,
+          role: formModal.user.role,
+          isActive: formModal.user.isActive,
         });
         addToast({ title: "Criado", message: "Usuário cadastrado com sucesso", variant: "success" });
       } else if (formModal.user.id) {
@@ -237,16 +239,16 @@ export default function AdminUsersPage() {
                 <input id="user-matricula" type="text" value={formModal.user.matricula ?? ""} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, matricula: e.target.value } })} className={inputClass("matricula")} />
                 {errors.matricula && <p className="mt-1 text-xs text-[var(--color-danger)]">{errors.matricula}</p>}
               </div>
-              {formModal.mode === "edit" && (
-                <div>
-                  <label htmlFor="user-tag" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Perfil *</label>
-                  <select id="user-tag" value={formModal.user.tagId ?? "tag-1"} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, tagId: e.target.value } })}
-                    className="w-full rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-4 py-2.5 text-sm focus:border-[var(--color-primary)] focus:outline-none focus:ring-1 focus:ring-[var(--color-primary)]"
-                  >
-                    {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
-                  </select>
-                </div>
-              )}
+              <div>
+                <label htmlFor="user-tag" className="mb-1 block text-sm font-medium text-[var(--color-text)]">Perfil *</label>
+                <select id="user-tag" value={formModal.user.tagId ?? ""} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, tagId: e.target.value } })}
+                  className={inputClass("tagId")}
+                >
+                  <option value="" disabled>Selecione um perfil...</option>
+                  {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
+                </select>
+                {errors.tagId && <p className="mt-1 text-xs text-[var(--color-danger)]">{errors.tagId}</p>}
+              </div>
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => { setFormModal(null); setErrors({}); }}>Cancelar</Button>

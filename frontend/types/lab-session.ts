@@ -17,4 +17,5 @@ export interface LabSessionUser {
   avatarUrl?: string | null;
   tag: LabUserTag;
   userPermissions: LabUserPermissions;
+  mustChangePassword?: boolean;
 }
