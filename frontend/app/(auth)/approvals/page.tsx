@@ -7,11 +7,14 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
 import { api } from "@/lib/api/client";
+import { useAuth } from "@/hooks/useAuth";
 import { useToast } from "@/components/shared/Toast";
+import { cn } from "@/lib/utils";
 import type { ApiResponse } from "@/types/api";
 import type { Loan } from "@/types/loan";
 
 export default function ApprovalsPage() {
+  const { user: currentUser } = useAuth();
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
@@ -111,45 +114,68 @@ export default function ApprovalsPage() {
         />
       ) : (
         <ul className="space-y-4">
-          {pending.map((loan) => (
-            <li key={loan.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-sm">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h2 className="font-semibold text-[var(--color-text)]">
-                      {loan.items.map((i) => i.inventoryItemName).join(", ")}
-                    </h2>
-                    <LoanStatusBadge status={loan.status} />
-                    <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-subtle)]">
-                      Qtd: {loan.items.reduce((a, i) => a + i.quantity, 0)}
-                    </span>
-                  </div>
-                  <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                    👤 {loan.borrowerName} · 📅 {formatDate(loan.loanDate)}
-                  </p>
-
-                  {/* Student message */}
-                  {loan.notes && (
-                    <div className="mt-3 rounded-lg border-l-4 border-l-[var(--color-primary)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text)]">
-                      {loan.notes}
+          {pending.map((loan) => {
+            const isSelf = String(currentUser?.id) === String(loan.borrowerId);
+            return (
+              <li key={loan.id} className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-sm">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h2 className="font-semibold text-[var(--color-text)]">
+                        {loan.items.map((i) => i.inventoryItemName).join(", ")}
+                      </h2>
+                      <LoanStatusBadge status={loan.status} />
+                      <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-subtle)]">
+                        Qtd: {loan.items.reduce((a, i) => a + i.quantity, 0)}
+                      </span>
+                      {isSelf && (
+                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                          Seu pedido (Auto-aprovação bloqueada)
+                        </span>
+                      )}
                     </div>
-                  )}
-                </div>
+                    <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                      👤 {loan.borrowerName} · 📅 {formatDate(loan.loanDate)}
+                    </p>
 
-                <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
-                  <button type="button" onClick={() => setDetailModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-bg-subtle)]" title="Ver detalhes">
-                    👁 Detalhes
-                  </button>
-                  <button type="button" onClick={() => setRejectModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50" title="Rejeitar">
-                    ✕ Rejeitar
-                  </button>
-                  <button type="button" onClick={() => { setApproveModal(loan); setDueDateError(false); }} className="rounded-lg bg-[var(--color-primary)] px-3 py-1.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--color-primary-hover)]" title="Aprovar">
-                    ✓ Aprovar
-                  </button>
+                    {/* Student message */}
+                    {loan.notes && (
+                      <div className="mt-3 rounded-lg border-l-4 border-l-[var(--color-primary)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text)]">
+                        {loan.notes}
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
+                    <button type="button" onClick={() => setDetailModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-bg-subtle)]" title="Ver detalhes">
+                      👁 Detalhes
+                    </button>
+                    <button type="button" onClick={() => setRejectModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50" title="Rejeitar">
+                      ✕ Rejeitar
+                    </button>
+                    <button
+                      type="button"
+                      disabled={isSelf}
+                      onClick={() => {
+                        if (isSelf) return;
+                        setApproveModal(loan);
+                        setDueDateError(false);
+                      }}
+                      className={cn(
+                        "rounded-lg px-3 py-1.5 text-sm font-semibold transition-colors",
+                        isSelf
+                          ? "cursor-not-allowed bg-neutral-200 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-600"
+                          : "bg-[var(--color-primary)] text-white hover:bg-[var(--color-primary-hover)]"
+                      )}
+                      title={isSelf ? "Não é possível auto-aprovar seu próprio empréstimo" : "Aprovar"}
+                    >
+                      ✓ Aprovar
+                    </button>
+                  </div>
                 </div>
-              </div>
-            </li>
-          ))}
+              </li>
+            );
+          })}
         </ul>
       )}
 
