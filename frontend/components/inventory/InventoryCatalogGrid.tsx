@@ -21,7 +21,7 @@ export function InventoryCatalogGrid({ items, className }: InventoryCatalogGridP
             className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm transition-shadow hover:shadow-md sm:flex-row"
           >
             <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
-              <div className="flex flex-wrap items-center justify-end gap-2">
+              <div className="flex flex-wrap items-center justify-between gap-2">
                 <span
                   className={cn(
                     "rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1",

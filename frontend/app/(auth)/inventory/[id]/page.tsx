@@ -54,7 +54,7 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
         title={item.name}
         description={item.category}
         actions={
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/items"
               className="text-sm font-semibold text-[var(--color-primary)] hover:underline"

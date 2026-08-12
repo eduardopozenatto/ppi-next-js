@@ -48,11 +48,11 @@ export function CatalogSearchBar({
           <Image src="/filter.svg" alt="" width={16} height={16} className="opacity-70" aria-hidden />
           <span className="truncate">{categoryName}</span>
           <Image
-            src={open ? "/angle-up.svg" : "/angle-down.svg"}
+            src="/angle-down.svg"
             alt=""
             width={14}
             height={14}
-            className="opacity-60"
+            className={cn("opacity-60 transition-transform duration-200", open && "rotate-180")}
             aria-hidden
           />
         </button>
