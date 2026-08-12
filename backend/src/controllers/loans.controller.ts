@@ -144,6 +144,20 @@ export async function createLoan(
           );
         }
 
+        if (loanReq.quantity <= 0) {
+          throw new AppError(
+            `A quantidade solicitada para o item '${itemDb.name}' deve ser maior que zero`,
+            400
+          );
+        }
+
+        if (itemDb.availableQuantity <= 0) {
+          throw new AppError(
+            `O item '${itemDb.name}' está com estoque zerado e não pode ser solicitado`,
+            400
+          );
+        }
+
         if (itemDb.availableQuantity < loanReq.quantity) {
           throw new AppError(
             `Quantidade solicitada (${loanReq.quantity}) do item '${itemDb.name}' é maior que a disponível (${itemDb.availableQuantity})`,
@@ -215,6 +229,10 @@ export async function updateLoanStatus(
       });
 
       if (!loan) throw new AppError('Empréstimo não encontrado', 404);
+
+      if (status === LoanStatus.active && loan.borrowerId === req.user?.id) {
+        throw new AppError('Você não pode aprovar seu próprio empréstimo', 403);
+      }
 
       if (loan.status === status) {
         throw new AppError('O empréstimo já está neste estado', 400);
