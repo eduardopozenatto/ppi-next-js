@@ -18,7 +18,7 @@ type AuthStatus = "loading" | "guest" | "authenticated";
 interface AuthContextValue {
   status: AuthStatus;
   user: LabSessionUser | null;
-  login: (email: string, password: string) => Promise<string | null>;
+  login: (user: string, password: string, tipo?: "L" | "S" | "local") => Promise<string | null>;
   register: (
     name: string,
     email: string,
@@ -67,11 +67,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   /* ─── Login ─────────────────────────────────────── */
   const login = useCallback(
-    async (email: string, password: string): Promise<string | null> => {
+    async (userIdentifier: string, password: string, tipo: "L" | "S" | "local" = "S"): Promise<string | null> => {
       try {
         await api.post<ApiResponse<{ id: number }>>("/auth/login", {
-          email,
-          password,
+          user: userIdentifier,
+          pass: password,
+          tipo,
+          email: userIdentifier,
+          password: password,
         });
         // Fetch full profile after successful login
         const profile =

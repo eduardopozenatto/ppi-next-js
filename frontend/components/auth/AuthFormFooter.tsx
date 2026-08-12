@@ -10,6 +10,7 @@ import { useAuth } from "@/hooks/useAuth";
 export interface AuthFormFooterProps {
   mode?: Mode;
   setMode?: (mode: Mode) => void;
+  tipo?: "L" | "S" | "local";
   email?: string;
   password?: string;
   name?: string;
@@ -20,6 +21,7 @@ export interface AuthFormFooterProps {
 export function AuthFormFooter({
   mode = "login",
   setMode = () => {},
+  tipo = "S",
   email = "",
   password = "",
   name = "",
@@ -50,7 +52,7 @@ export function AuthFormFooter({
     setSuccess(null);
 
     if (!email.trim()) {
-      setError("Informe o e-mail.");
+      setError(tipo === "local" ? "Informe o e-mail ou usuário." : "Informe o CPF ou matrícula.");
       return;
     }
 
@@ -62,7 +64,7 @@ export function AuthFormFooter({
     setLoading(true);
 
     if (mode === "login") {
-      const err = await login(email, password);
+      const err = await login(email, password, tipo);
       if (err) {
         setError(err);
         setLoading(false);
