@@ -25,6 +25,7 @@ export const inventoryQuerySchema = z.object({
   category: z.string().optional(),
   page: z.union([z.string(), z.number()]).transform(Number).default(1),
   limit: z.union([z.string(), z.number()]).transform(Number).default(10),
+  includeInactive: z.string().optional(),
 });
 
 export type CreateInventoryInput = z.infer<typeof createInventorySchema>;

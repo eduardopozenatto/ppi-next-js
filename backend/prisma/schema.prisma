@@ -40,11 +40,12 @@ model User {
   name      String
   email     String   @unique
   password  String
-  matricula String?
+  matricula String?  @unique
   role      UserRole @default(user)
   phone     String?
   avatarUrl String?
   isActive  Boolean  @default(true)
+  mustChangePassword Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

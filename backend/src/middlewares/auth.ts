@@ -19,6 +19,7 @@ declare global {
           colorClass: string;
         } | null;
         userPermissions: Record<string, boolean>;
+        mustChangePassword: boolean;
       };
     }
   }
@@ -98,6 +99,7 @@ export async function requireAuth(
           }
         : null,
       userPermissions: resolvedPermissions,
+      mustChangePassword: currentUser.mustChangePassword,
     };
 
     next();

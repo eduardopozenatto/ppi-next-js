@@ -5,6 +5,7 @@ import {
   getUsers,
   getUserById,
   updateUser,
+  createUser,
   deleteUser,
   updateUserPermissionOverride,
 } from '../controllers/users.controller';
@@ -16,6 +17,7 @@ router.use(requireAuth);
 router.use(requirePermission('gerenciar_usuarios'));
 
 router.get('/', getUsers);
+router.post('/', createUser);
 router.get('/:id', getUserById);
 router.put('/:id', updateUser);
 router.delete('/:id', deleteUser);

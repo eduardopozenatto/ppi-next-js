@@ -24,7 +24,7 @@ export async function listItems(
   next: NextFunction
 ): Promise<void> {
   try {
-    const { search, category, page, limit } = inventoryQuerySchema.parse(
+    const { search, category, page, limit, includeInactive } = inventoryQuerySchema.parse(
       req.query
     );
 
@@ -39,6 +39,10 @@ export async function listItems(
       whereClause.category = {
         name: { equals: category, mode: 'insensitive' },
       };
+    }
+
+    if (includeInactive !== 'true') {
+      whereClause.isActive = true;
     }
 
     const total = await prisma.inventoryItem.count({ where: whereClause });
@@ -199,13 +203,24 @@ export async function deleteItem(
   try {
     const id = getParam(req.params.id);
 
-    // Apenas desativa (Soft Delete logic para manter o histórico de Loans)
-    const updatedItem = await prisma.inventoryItem.update({
-      where: { id },
-      data: { isActive: false },
+    // Verificar se existem empréstimos vinculados a esse item
+    const loanItemCount = await prisma.loanItem.count({
+      where: { inventoryItemId: id },
     });
 
-    sendSuccess(res, updatedItem, 'Item desativado com sucesso');
+    if (loanItemCount > 0) {
+      throw new AppError(
+        'Não é possível excluir: existem empréstimos vinculados a este item. Você pode desativá-lo.',
+        400
+      );
+    }
+
+    // Se não houver empréstimos vinculados, deleta fisicamente do banco
+    const deletedItem = await prisma.inventoryItem.delete({
+      where: { id },
+    });
+
+    sendSuccess(res, deletedItem, 'Item excluído com sucesso');
   } catch (err) {
     next(err);
   }

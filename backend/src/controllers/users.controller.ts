@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import { prisma } from '../config/database';
 import { sendPaginated } from '../utils/response';
 import { getParam } from '../utils/params';
-import { updateUserSchema, updatePermissionOverrideSchema } from '../schemas/user.schema';
+import { updateUserSchema, updatePermissionOverrideSchema, createUserSchema } from '../schemas/user.schema';
+import { hashPassword } from '../utils/crypto';
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -75,6 +76,18 @@ export const updateUser = async (req: Request, res: Response) => {
       delete validatedData.isActive;
     }
 
+    if (validatedData.matricula) {
+      const existingMatricula = await prisma.user.findFirst({
+        where: {
+          matricula: validatedData.matricula,
+          id: { not: id },
+        },
+      });
+      if (existingMatricula) {
+        return res.status(400).json({ success: false, message: 'Matrícula já está em uso' });
+      }
+    }
+
     const user = await prisma.user.update({
       where: { id },
       data: validatedData,
@@ -92,6 +105,55 @@ export const updateUser = async (req: Request, res: Response) => {
     }
     console.error('[updateUser]', error);
     return res.status(500).json({ success: false, message: 'Erro interno ao atualizar usuário', errors: [String(error)] });
+  }
+};
+
+export const createUser = async (req: Request, res: Response) => {
+  try {
+    const validatedData = createUserSchema.parse(req.body);
+
+    // 1. Check if email is in use
+    const existingEmail = await prisma.user.findUnique({
+      where: { email: validatedData.email },
+    });
+    if (existingEmail) {
+      return res.status(400).json({ success: false, message: 'Este e-mail já está em uso' });
+    }
+
+    // 2. Check if matricula is in use
+    const existingMatricula = await prisma.user.findUnique({
+      where: { matricula: validatedData.matricula },
+    });
+    if (existingMatricula) {
+      return res.status(400).json({ success: false, message: 'Matrícula já está em uso' });
+    }
+
+    // 3. Encrypt password "1234"
+    const hashedPassword = await hashPassword('1234');
+
+    // 4. Create user
+    const user = await prisma.user.create({
+      data: {
+        name: validatedData.name,
+        email: validatedData.email,
+        matricula: validatedData.matricula,
+        tagId: validatedData.tagId,
+        role: validatedData.role || 'user',
+        isActive: validatedData.isActive !== undefined ? validatedData.isActive : true,
+        password: hashedPassword,
+        mustChangePassword: true,
+      },
+      include: { tag: true },
+    });
+
+    const { password, ...sanitizedUser } = user;
+    return res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data: sanitizedUser });
+  } catch (error: any) {
+    if (error.name === 'ZodError') {
+      return res.status(400).json({ success: false, message: 'Dados inválidos', errors: error.errors });
+    }
+    console.error('[createUser]', error);
+    return res.status(500).json({ success: false, message: 'Erro interno ao criar usuário', errors: [String(error)] });
   }
 };
 

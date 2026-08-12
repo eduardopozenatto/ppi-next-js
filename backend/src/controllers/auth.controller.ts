@@ -31,6 +31,15 @@ export async function register(
       throw new AppError('Este e-mail já está em uso', 400);
     }
 
+    if (data.matricula) {
+      const existingMatricula = await prisma.user.findUnique({
+        where: { matricula: data.matricula },
+      });
+      if (existingMatricula) {
+        throw new AppError('Matrícula já está em uso', 400);
+      }
+    }
+
     const hashedPassword = await hashPassword(data.password);
 
     // Buscar a tag padrão "Aluno" para atribuir a novos usuários
@@ -136,6 +145,7 @@ export async function getMe(
       avatarUrl: req.user.avatarUrl,
       tag: req.user.tag,
       userPermissions: req.user.userPermissions,
+      mustChangePassword: req.user.mustChangePassword,
     },
     'Sessão ativa recuperada'
   );
@@ -199,7 +209,10 @@ export async function changePassword(
     const hashedNew = await hashPassword(data.newPassword);
     await prisma.user.update({
       where: { id: req.user.id },
-      data: { password: hashedNew },
+      data: {
+        password: hashedNew,
+        mustChangePassword: false,
+      },
     });
 
     sendSuccess(res, null, 'Senha alterada com sucesso');
@@ -325,7 +338,10 @@ export async function resetPassword(
     const hashedNew = await hashPassword(data.newPassword);
     await prisma.user.update({
       where: { id: user.id },
-      data: { password: hashedNew },
+      data: {
+        password: hashedNew,
+        mustChangePassword: false,
+      },
     });
 
     sendSuccess(res, null, 'Senha redefinida com sucesso');
