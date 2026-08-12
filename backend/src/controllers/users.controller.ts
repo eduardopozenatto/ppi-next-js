@@ -169,7 +169,37 @@ export const deleteUser = async (req: Request, res: Response) => {
 
     // Deletar em transação para garantir atomicidade
     await prisma.$transaction(async (tx) => {
-      // 1. Buscar IDs de todos os empréstimos do usuário
+      // 1. Restabelecer estoque de empréstimos pendentes ou ativos do usuário
+      const activeOrPendingLoans = await tx.loan.findMany({
+        where: {
+          borrowerId: id,
+          status: { in: ['pending', 'active', 'overdue'] },
+        },
+        include: { items: true },
+      });
+
+      for (const loan of activeOrPendingLoans) {
+        if (loan.status === 'pending') {
+          for (const item of loan.items) {
+            await tx.inventoryItem.update({
+              where: { id: item.inventoryItemId },
+              data: { availableQuantity: { increment: item.quantity } },
+            });
+          }
+        } else if (loan.status === 'active' || loan.status === 'overdue') {
+          for (const item of loan.items) {
+            await tx.inventoryItem.update({
+              where: { id: item.inventoryItemId },
+              data: {
+                availableQuantity: { increment: item.quantity },
+                loanedQuantity: { decrement: item.quantity },
+              },
+            });
+          }
+        }
+      }
+
+      // 2. Buscar IDs de todos os empréstimos do usuário
       const allLoans = await tx.loan.findMany({
         where: {
           borrowerId: id,
@@ -179,13 +209,13 @@ export const deleteUser = async (req: Request, res: Response) => {
 
       const loanIds = allLoans.map((l) => l.id);
 
-      // 2. Deletar LoanItems desses empréstimos (deleteMany não faz cascade)
+      // 3. Deletar LoanItems desses empréstimos (deleteMany não faz cascade)
       if (loanIds.length > 0) {
         await tx.loanItem.deleteMany({
           where: { loanId: { in: loanIds } },
         });
 
-        // 3. Deletar os empréstimos
+        // 4. Deletar os empréstimos
         await tx.loan.deleteMany({
           where: { id: { in: loanIds } },
         });
