@@ -71,6 +71,38 @@ export async function register(
   }
 }
 
+async function authenticateInstitutional(
+  userStr: string,
+  passStr: string,
+  tipoStr: 'L' | 'S'
+): Promise<boolean> {
+  try {
+    const params = new URLSearchParams();
+    params.append('user', userStr);
+    params.append('pass', passStr);
+    params.append('tipo', tipoStr);
+
+    const response = await fetch('https://www3.fw.iffarroupilha.edu.br/auth/index.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: params.toString(),
+    });
+
+    if (!response.ok) return false;
+    const responseText = await response.text();
+    const isError =
+      responseText.toLowerCase().includes('erro') ||
+      responseText.toLowerCase().includes('inválid') ||
+      responseText.toLowerCase().includes('incorret');
+    return !isError;
+  } catch (error) {
+    console.error('[authenticateInstitutional] Error calling external auth:', error);
+    return false;
+  }
+}
+
 export async function login(
   req: Request,
   res: Response,
@@ -78,13 +110,85 @@ export async function login(
 ): Promise<void> {
   try {
     const data = loginSchema.parse(req.body);
+    const userIdentifier = data.user || data.email || '';
+    const passwordInput = data.pass || data.password || '';
+    const tipo = data.tipo || 'local';
 
-    const user = await prisma.user.findUnique({
-      where: { email: data.email },
-    });
+    let user;
 
-    if (!user || !(await comparePassword(data.password, user.password))) {
-      throw new AppError('E-mail ou senha incorretos', 401);
+    if (tipo === 'L' || tipo === 'S') {
+      const isExtAuthenticated = await authenticateInstitutional(
+        userIdentifier,
+        passwordInput,
+        tipo
+      );
+
+      if (!isExtAuthenticated) {
+        // Fallback local por segurança / desenvolvimento
+        const localUser = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { email: userIdentifier },
+              { matricula: userIdentifier },
+            ],
+          },
+        });
+        if (localUser && (await comparePassword(passwordInput, localUser.password))) {
+          user = localUser;
+        } else {
+          throw new AppError('Credenciais inválidas no portal institucional', 401);
+        }
+      } else {
+        // Se autenticado externamente, busca ou provisiona o usuário no PostgreSQL local
+        user = await prisma.user.findFirst({
+          where: {
+            OR: [
+              { matricula: userIdentifier },
+              { email: userIdentifier },
+              { email: `${userIdentifier}@iffarroupilha.edu.br` },
+            ],
+          },
+        });
+
+        if (!user) {
+          const defaultTag = await prisma.tag.findFirst({
+            where: { name: { equals: 'Aluno', mode: 'insensitive' } },
+          });
+
+          const randomPassword = await hashPassword(
+            Math.random().toString(36).slice(-8) + Date.now().toString()
+          );
+
+          user = await prisma.user.create({
+            data: {
+              name: `Usuário ${userIdentifier}`,
+              email: userIdentifier.includes('@')
+                ? userIdentifier
+                : `${userIdentifier}@iffarroupilha.edu.br`,
+              matricula: userIdentifier,
+              password: randomPassword,
+              role: 'user',
+              tagId: defaultTag?.id,
+              isActive: true,
+              mustChangePassword: false,
+            },
+          });
+        }
+      }
+    } else {
+      // Login local tradicional
+      user = await prisma.user.findFirst({
+        where: {
+          OR: [
+            { email: userIdentifier },
+            { matricula: userIdentifier },
+          ],
+        },
+      });
+
+      if (!user || !(await comparePassword(passwordInput, user.password))) {
+        throw new AppError('E-mail/Matrícula ou senha incorretos', 401);
+      }
     }
 
     if (!user.isActive) {
