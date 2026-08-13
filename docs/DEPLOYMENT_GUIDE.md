@@ -97,6 +97,10 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 - **Causa**: Colisão de chave única no banco de dados (e-mail/matrícula) ou ausência de inserção inicial das tags de permissão.
 - **Solução**: Adicionada tratativa de fallback resiliente na rota de login e documentada a execução do `npx prisma db push` e `npx prisma db seed` no banco de dados.
 
+### 7. Erro `connect ENETUNREACH 2600:1f14:...` no Render (Conexão IPv6 do PostgreSQL)
+- **Causa**: O Node.js tenta se conectar ao hostname do Supabase via IPv6. Os servidores do Render não possuem roteamento de saída em IPv6 na camada gratuita.
+- **Solução**: O backend em `database.ts` força a resolução de nomes priorizando IPv4 (`dns.setDefaultResultOrder('ipv4first')`). Adicionalmente, utiliza-se a conexão com o Supabase Pooler na porta `6543` (Transaction Mode).
+
 ---
 
 ## 🔄 6. Atualizações Contínuas (Workflow de Manutenção)
