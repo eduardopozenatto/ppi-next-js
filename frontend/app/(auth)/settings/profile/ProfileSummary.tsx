@@ -246,7 +246,7 @@ export function ProfileSummary() {
   const avatarSrc = avatarPreview || getStaticUrl(user.avatarUrl);
 
   return (
-    <div className="max-w-2xl space-y-6">
+    <div className="w-full space-y-6">
       {/* Photo */}
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Foto de perfil</h3>

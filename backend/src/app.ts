@@ -1,6 +1,7 @@
 import express, { type Express } from 'express';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import fs from 'fs';
 import path from 'path';
 import { env } from './config/env';
 import { requestLogger } from './middlewares/requestLogger';
@@ -9,6 +10,12 @@ import { errorHandler } from './middlewares/errorHandler';
 import apiRouter from './routes/index';
 
 const app: Express = express();
+
+// ─── Ensure Upload Directories Exist ──────────
+const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
+if (!fs.existsSync(avatarsDir)) {
+  fs.mkdirSync(avatarsDir, { recursive: true });
+}
 
 // ─── Core middleware ──────────────────────────
 const allowedOrigins = env.CORS_ORIGIN.split(',').map((s) => s.trim());
