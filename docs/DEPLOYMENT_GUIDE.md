@@ -85,6 +85,10 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 - **Causa**: Presença de um arquivo `pnpm-lock.yaml` legado ou desatualizado no `frontend`.
 - **Solução**: O arquivo `pnpm-lock.yaml` foi removido do repositório para que a Vercel utilize o `npm` com `package.json` limpo.
 
+### 4. Erro HTTP `404: NOT_FOUND` na Rota Raiz `/` na Vercel (Conflito de Middleware `proxy.ts`)
+- **Causa**: Existência de arquivo com nome inconsistente como `proxy.ts` no frontend. O Next.js com Turbopack reconhece o arquivo como Middleware global, mas por não usar o nome padrão `middleware.ts`, intercepta a rota `/` e retorna HTTP 404 em produção.
+- **Solução**: O arquivo `proxy.ts` foi removido do projeto. A autenticação de rotas no LabControl é tratada nativamente no estado global (`AuthContext`) e nos layouts protegidos (`(auth)/layout.tsx`), dispensando interceptadores globais que possam causar 404.
+
 ---
 
 ## 🔄 6. Atualizações Contínuas (Workflow de Manutenção)
