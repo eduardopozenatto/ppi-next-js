@@ -89,6 +89,14 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 - **Causa**: Existência de arquivo com nome inconsistente como `proxy.ts` no frontend. O Next.js com Turbopack reconhece o arquivo como Middleware global, mas por não usar o nome padrão `middleware.ts`, intercepta a rota `/` e retorna HTTP 404 em produção.
 - **Solução**: O arquivo `proxy.ts` foi removido do projeto. A autenticação de rotas no LabControl é tratada nativamente no estado global (`AuthContext`) e nos layouts protegidos (`(auth)/layout.tsx`), dispensando interceptadores globais que possam causar 404.
 
+### 5. Bloqueio ou Timeout na Autenticação Institucional (SIGAA / LDAP)
+- **Causa**: O servidor do IFFarroupilha rejeita conexões de nuvem (como Render/AWS) se não houver um `User-Agent` de navegador identificado.
+- **Solução**: Inclusão do cabeçalho `User-Agent` de navegador e `AbortSignal.timeout(10000)` no proxy de autenticação do backend (`auth.controller.ts`).
+
+### 6. Erro HTTP 500 no Auto-Cadastro de Usuários Institucionais
+- **Causa**: Colisão de chave única no banco de dados (e-mail/matrícula) ou ausência de inserção inicial das tags de permissão.
+- **Solução**: Adicionada tratativa de fallback resiliente na rota de login e documentada a execução do `npx prisma db push` e `npx prisma db seed` no banco de dados.
+
 ---
 
 ## 🔄 6. Atualizações Contínuas (Workflow de Manutenção)
