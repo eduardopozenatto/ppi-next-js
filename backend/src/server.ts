@@ -1,6 +1,6 @@
 import app from './app';
 import { env } from './config/env';
-import { prisma } from './config/database';
+import { prisma, ensureInitialSeedData } from './config/database';
 
 const server = app.listen(env.PORT, () => {
   console.log('');
@@ -9,6 +9,9 @@ const server = app.listen(env.PORT, () => {
   console.log(`   Environment: ${env.NODE_ENV}`);
   console.log(`   CORS origin: ${env.CORS_ORIGIN}`);
   console.log('');
+
+  // Executa o auto-seed transparente caso o banco esteja limpo no Supabase
+  void ensureInitialSeedData();
 });
 
 // ─── Graceful shutdown ────────────────────────

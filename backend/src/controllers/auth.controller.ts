@@ -251,11 +251,12 @@ export async function login(
       }
     } else {
       // Login local tradicional (Conta Local / Admin)
+      const sanitizedIdentifier = userIdentifier.trim();
       user = await prisma.user.findFirst({
         where: {
           OR: [
-            { email: userIdentifier },
-            { matricula: userIdentifier },
+            { email: { equals: sanitizedIdentifier, mode: 'insensitive' } },
+            { matricula: { equals: sanitizedIdentifier, mode: 'insensitive' } },
           ],
         },
       });
