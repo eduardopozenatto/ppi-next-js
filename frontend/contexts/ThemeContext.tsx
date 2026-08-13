@@ -25,12 +25,23 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [themeMode, setThemeState] = useState<ThemeMode>("system");
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // Read saved theme on mount
+  // Read saved theme on mount & listen for cross-tab updates
   useEffect(() => {
     const saved = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
     if (saved && ["light", "dark", "system"].includes(saved)) {
       setThemeState(saved);
     }
+
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === STORAGE_KEY && e.newValue) {
+        if (["light", "dark", "system"].includes(e.newValue)) {
+          setThemeState(e.newValue as ThemeMode);
+        }
+      }
+    };
+
+    window.addEventListener("storage", handleStorageChange);
+    return () => window.removeEventListener("storage", handleStorageChange);
   }, []);
 
   // Update document element class & resolved theme
