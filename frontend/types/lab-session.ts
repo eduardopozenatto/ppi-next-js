@@ -13,6 +13,7 @@ export interface LabSessionUser {
   id: number;
   name: string;
   email: string;
+  phone?: string;
   matricula?: string;
   avatarUrl?: string | null;
   tag: LabUserTag;
