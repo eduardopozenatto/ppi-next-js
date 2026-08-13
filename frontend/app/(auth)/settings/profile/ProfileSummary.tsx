@@ -353,11 +353,11 @@ export function ProfileSummary() {
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Segurança e Senha</h3>
 
         {isInstitutional ? (
-          <div className="rounded-xl border border-azure-300 bg-azure-900/10 p-4 text-xs shadow-xs dark:border-azure-700/80 dark:bg-azure-950/70">
-            <p className="flex items-center gap-1.5 text-xs font-bold text-azure-950 dark:text-azure-50">
+          <div className="rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
+            <p className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)] sm:text-sm">
               <span>ℹ️</span> Autenticação Institucional Ativa (SIGAA / LDAP)
             </p>
-            <p className="mt-1.5 leading-relaxed font-medium text-azure-900 dark:text-azure-200">
+            <p className="mt-1.5 text-xs leading-relaxed font-medium text-[var(--color-text)] sm:text-sm">
               Sua conta utiliza as credenciais do portal do IFFarroupilha. Qualquer alteração de senha deve ser realizada diretamente no portal da instituição e será sincronizada automaticamente no seu próximo login no LabControl.
             </p>
           </div>

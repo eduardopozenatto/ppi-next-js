@@ -118,11 +118,11 @@ export function AuthFormBody() {
         </section>
 
         {tipo !== "local" && (
-          <div className="rounded-xl border border-azure-300 bg-azure-900/10 p-4 text-xs shadow-xs dark:border-azure-700/80 dark:bg-azure-950/70">
-            <p className="flex items-center gap-1.5 text-xs font-bold text-azure-950 dark:text-azure-50">
+          <div className="rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
+            <p className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)] sm:text-sm">
               <span>ℹ️</span> Primeiro acesso?
             </p>
-            <p className="mt-1.5 leading-relaxed font-medium text-azure-900 dark:text-azure-200">
+            <p className="mt-1.5 text-xs leading-relaxed font-medium text-[var(--color-text)] sm:text-sm">
               Alunos, professores e servidores efetuam login diretamente com o CPF e a senha institucional. Seu cadastro é criado automaticamente no primeiro login.
             </p>
           </div>
