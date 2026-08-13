@@ -9,6 +9,7 @@ import { NAV_ITEMS, navVisible } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { api } from "@/lib/api/client";
 import { getStaticUrl } from "@/lib/static-url";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import type { ApiResponse } from "@/types/api";
 import type { LabNotification } from "@/types/notification";
 
@@ -69,40 +70,43 @@ export function AppSidebar() {
         ))}
       </div>
 
-      <div className="mt-auto rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/60 p-3 sm:mx-1">
-        <div className="flex items-center gap-3">
-          {user.avatarUrl ? (
-            <img
-              src={getStaticUrl(user.avatarUrl) ?? ""}
-              alt={user.name}
-              className="h-10 w-10 shrink-0 rounded-xl object-cover"
-            />
-          ) : (
-            <div className="flex shrink-0 rounded-xl bg-[var(--color-bg-subtle)] p-2">
-              <Image
-                src="/buttonIcons/exit-account.svg"
-                alt=""
-                width={22}
-                height={22}
-                aria-hidden
+      <div className="mt-auto flex flex-col gap-3">
+        <ThemeToggle />
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/60 p-3 sm:mx-1">
+          <div className="flex items-center gap-3">
+            {user.avatarUrl ? (
+              <img
+                src={getStaticUrl(user.avatarUrl) ?? ""}
+                alt={user.name}
+                className="h-10 w-10 shrink-0 rounded-xl object-cover"
               />
+            ) : (
+              <div className="flex shrink-0 rounded-xl bg-[var(--color-bg-subtle)] p-2">
+                <Image
+                  src="/buttonIcons/exit-account.svg"
+                  alt=""
+                  width={22}
+                  height={22}
+                  aria-hidden
+                />
+              </div>
+            )}
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-medium text-[var(--color-text)]">{user.name}</p>
+              <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag?.colorClass || "text-[var(--color-text-muted)]")}>
+                {user.tag?.name || "Sem tag"}
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  logout();
+                  window.location.href = "/login";
+                }}
+                className="mt-1 text-xs font-semibold text-[var(--color-primary)] hover:underline"
+              >
+                Sair
+              </button>
             </div>
-          )}
-          <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium text-[var(--color-text)]">{user.name}</p>
-            <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag?.colorClass || "text-[var(--color-text-muted)]")}>
-              {user.tag?.name || "Sem tag"}
-            </p>
-            <button
-              type="button"
-              onClick={() => {
-                logout();
-                window.location.href = "/login";
-              }}
-              className="mt-1 text-xs font-semibold text-[var(--color-primary)] hover:underline"
-            >
-              Sair
-            </button>
           </div>
         </div>
       </div>

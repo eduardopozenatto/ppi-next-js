@@ -3,6 +3,7 @@
 import { useState, type ReactNode } from "react";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { Slogan } from "@/components/Body/Slogan";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { cn } from "@/lib/utils";
 
 export interface AppShellProps {
@@ -16,15 +17,18 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-dvh bg-[var(--color-bg)]">
       <header className="sticky top-0 z-30 flex items-center justify-between gap-3 border-b border-[var(--color-border)] bg-[var(--color-bg-subtle)]/95 px-4 py-3 backdrop-blur-md supports-[backdrop-filter]:bg-[var(--color-bg-subtle)]/80 lg:hidden">
         <Slogan compact />
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm font-semibold text-[var(--color-text)] shadow-sm transition-colors hover:bg-[var(--color-bg-subtle)]"
-          aria-expanded={open}
-          aria-controls="app-sidebar"
-        >
-          Menu
-        </button>
+        <div className="flex items-center gap-2">
+          <ThemeToggle compact />
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg)] px-3 py-2 text-sm font-semibold text-[var(--color-text)] shadow-sm transition-colors hover:bg-[var(--color-bg-subtle)]"
+            aria-expanded={open}
+            aria-controls="app-sidebar"
+          >
+            Menu
+          </button>
+        </div>
       </header>
 
       <div className="lg:grid lg:min-h-dvh lg:grid-cols-[minmax(0,17.5rem)_1fr]">

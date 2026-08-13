@@ -17,6 +17,22 @@
   --radius: 0.75rem;
 }
 
+/* Tokens semânticos para Modo Escuro (Slate Premium) */
+html.dark {
+  --color-primary: #38bdf8;
+  --color-primary-hover: #7dd3fc;
+  --color-danger: #ff8389;
+  --color-success: #42be65;
+  --color-warning: #fcdc53;
+  --color-bg: #0f172a;
+  --color-bg-subtle: #1e293b;
+  --color-text: #f8fafc;
+  --color-text-subtle: #94a3b8;
+  --color-border: #334155;
+  --color-border-strong: #475569;
+  --color-surface-elevated: #1e293b;
+}
+
 *,
 *::before,
 *::after {
@@ -48,6 +64,7 @@ body {
   font-family: var(--font-poppins), system-ui, sans-serif;
   color: var(--color-text);
   background-color: var(--color-bg);
+  transition: background-color 0.25s ease-in-out, color 0.25s ease-in-out, border-color 0.25s ease-in-out;
 }
 
 /* ─── Animation Keyframes & Micro-Interactions (SaaS Premium) ─── */
