@@ -71,21 +71,38 @@ export const updateUser = async (req: Request, res: Response) => {
 
     // If the requesting user is not an admin, they cannot update admin-restricted fields
     if (req.user?.role !== 'admin') {
+      delete validatedData.email;
       delete validatedData.tagId;
       delete validatedData.role;
       delete validatedData.isActive;
     }
 
+    if (validatedData.email) {
+      const normalizedEmail = validatedData.email.trim().toLowerCase();
+      const existingEmail = await prisma.user.findFirst({
+        where: {
+          email: { equals: normalizedEmail, mode: 'insensitive' },
+          id: { not: id },
+        },
+      });
+      if (existingEmail) {
+        return res.status(400).json({ success: false, message: 'Este e-mail já está em uso por outro usuário' });
+      }
+      validatedData.email = normalizedEmail;
+    }
+
     if (validatedData.matricula) {
+      const normalizedMatricula = validatedData.matricula.trim();
       const existingMatricula = await prisma.user.findFirst({
         where: {
-          matricula: validatedData.matricula,
+          matricula: { equals: normalizedMatricula, mode: 'insensitive' },
           id: { not: id },
         },
       });
       if (existingMatricula) {
-        return res.status(400).json({ success: false, message: 'Matrícula já está em uso' });
+        return res.status(400).json({ success: false, message: 'Matrícula já está em uso por outro usuário' });
       }
+      validatedData.matricula = normalizedMatricula;
     }
 
     const user = await prisma.user.update({
@@ -100,6 +117,9 @@ export const updateUser = async (req: Request, res: Response) => {
     if (error.code === 'P2025') {
       return res.status(404).json({ success: false, message: 'Usuário não encontrado' });
     }
+    if (error.code === 'P2002') {
+      return res.status(400).json({ success: false, message: 'Este e-mail ou matrícula já está em uso por outro usuário' });
+    }
     if (error.name === 'ZodError') {
       return res.status(400).json({ success: false, message: 'Dados inválidos', errors: error.errors });
     }
@@ -111,21 +131,25 @@ export const updateUser = async (req: Request, res: Response) => {
 export const createUser = async (req: Request, res: Response) => {
   try {
     const validatedData = createUserSchema.parse(req.body);
+    const normalizedEmail = validatedData.email.trim().toLowerCase();
+    const normalizedMatricula = validatedData.matricula ? validatedData.matricula.trim() : '';
 
     // 1. Check if email is in use
-    const existingEmail = await prisma.user.findUnique({
-      where: { email: validatedData.email },
+    const existingEmail = await prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
     });
     if (existingEmail) {
-      return res.status(400).json({ success: false, message: 'Este e-mail já está em uso' });
+      return res.status(400).json({ success: false, message: 'Este e-mail já está em uso por outro usuário' });
     }
 
     // 2. Check if matricula is in use
-    const existingMatricula = await prisma.user.findUnique({
-      where: { matricula: validatedData.matricula },
-    });
-    if (existingMatricula) {
-      return res.status(400).json({ success: false, message: 'Matrícula já está em uso' });
+    if (normalizedMatricula) {
+      const existingMatricula = await prisma.user.findFirst({
+        where: { matricula: { equals: normalizedMatricula, mode: 'insensitive' } },
+      });
+      if (existingMatricula) {
+        return res.status(400).json({ success: false, message: 'Matrícula já está em uso por outro usuário' });
+      }
     }
 
     // 3. Encrypt password "1234"
@@ -135,8 +159,8 @@ export const createUser = async (req: Request, res: Response) => {
     const user = await prisma.user.create({
       data: {
         name: validatedData.name,
-        email: validatedData.email,
-        matricula: validatedData.matricula,
+        email: normalizedEmail,
+        matricula: normalizedMatricula || null,
         tagId: validatedData.tagId,
         role: validatedData.role || 'user',
         isActive: validatedData.isActive !== undefined ? validatedData.isActive : true,
@@ -149,6 +173,9 @@ export const createUser = async (req: Request, res: Response) => {
     const { password, ...sanitizedUser } = user;
     return res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data: sanitizedUser });
   } catch (error: any) {
+    if (error.code === 'P2002') {
+      return res.status(400).json({ success: false, message: 'Este e-mail ou matrícula já está em uso por outro usuário' });
+    }
     if (error.name === 'ZodError') {
       return res.status(400).json({ success: false, message: 'Dados inválidos', errors: error.errors });
     }

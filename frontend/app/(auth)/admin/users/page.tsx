@@ -123,7 +123,7 @@ export default function AdminUsersPage() {
   }
 
   const inputClass = (field: string) =>
-    `w-full rounded-lg border px-4 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 ${
+    `w-full rounded-lg border bg-[var(--color-bg)] px-4 py-2.5 text-sm text-[var(--color-text)] focus:outline-none focus:ring-1 ${
       errors[field] ? "border-[var(--color-danger)] focus:ring-[var(--color-danger)]" : "border-[var(--color-border)] focus:border-[var(--color-primary)] focus:ring-[var(--color-primary)]"
     }`;
 

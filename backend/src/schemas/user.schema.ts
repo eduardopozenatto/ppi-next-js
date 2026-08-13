@@ -4,6 +4,7 @@ import { tagPermissionsSchema } from './tag.schema';
 
 export const updateUserSchema = z.object({
   name: z.string().min(2, 'O nome deve ter no mínimo 2 caracteres').optional(),
+  email: z.string().email('E-mail inválido').optional(),
   phone: z.string().optional(),
   avatarUrl: z.string().url('URL de avatar inválida').optional(),
   matricula: z.string().optional(),
