@@ -18,13 +18,13 @@ export function InventoryCatalogGrid({ items, className }: InventoryCatalogGridP
         return (
           <article
             key={key}
-            className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm transition-shadow hover:shadow-md sm:flex-row"
+            className="flex flex-col overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:border-[var(--color-border-strong)] sm:flex-row"
           >
             <div className="flex min-w-0 flex-1 flex-col gap-3 p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <span
                   className={cn(
-                    "rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1",
+                    "rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 transition-all duration-200",
                     available
                       ? "bg-emerald-50 text-emerald-800 ring-emerald-200"
                       : "bg-neutral-100 text-neutral-600 ring-neutral-200"
@@ -35,7 +35,7 @@ export function InventoryCatalogGrid({ items, className }: InventoryCatalogGridP
                 <Link
                   href={`/loans/new?item=${encodeURIComponent(item.id)}`}
                   className={cn(
-                    "rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-colors sm:text-sm",
+                    "rounded-lg px-3 py-1.5 text-xs font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:shadow-sm active:scale-[0.97] sm:text-sm",
                     available
                       ? "bg-[var(--color-primary)] hover:bg-[var(--color-primary-hover)]"
                       : "pointer-events-none bg-neutral-300"

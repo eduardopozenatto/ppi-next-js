@@ -181,8 +181,8 @@ export default function ApprovalsPage() {
 
       {/* Detail Modal */}
       {detailModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDetailModal(null)}>
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setDetailModal(null)}>
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Detalhes do empréstimo</h2>
             <dl className="mt-4 space-y-3 text-sm">
               <div><dt className="text-[var(--color-text-subtle)]">Item</dt> <dd className="font-medium text-[var(--color-text)]">{detailModal.items.map((i) => i.inventoryItemName).join(", ")}</dd></div>
@@ -200,8 +200,8 @@ export default function ApprovalsPage() {
 
       {/* Approve Modal */}
       {approveModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setApproveModal(null)}>
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setApproveModal(null)}>
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Aprovar empréstimo</h2>
             <div className="mt-3 rounded-lg bg-blue-50 p-3 text-sm text-[var(--color-text)] dark:bg-blue-900/20">
               <strong>{approveModal.items.map((i) => `${i.inventoryItemName} × ${i.quantity}`).join(", ")}</strong>
@@ -237,8 +237,8 @@ export default function ApprovalsPage() {
 
       {/* Reject Modal */}
       {rejectModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setRejectModal(null)}>
-          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setRejectModal(null)}>
+          <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Rejeitar empréstimo</h2>
             {rejectModal.notes && (
               <div className="mt-3 rounded-lg border-l-4 border-l-[var(--color-primary)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text)]">
@@ -256,7 +256,7 @@ export default function ApprovalsPage() {
             </div>
             <div className="mt-6 flex justify-end gap-3">
               <Button type="button" variant="secondary" onClick={() => setRejectModal(null)}>Cancelar</Button>
-              <button type="button" onClick={handleReject} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700">
+              <button type="button" onClick={handleReject} className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:-translate-y-0.5 hover:bg-red-700 active:scale-[0.98]">
                 Rejeitar
               </button>
             </div>
