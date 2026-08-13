@@ -209,18 +209,16 @@ export function TagsList() {
                 </div>
                 <div className="flex items-center gap-2">
                   <button
-                    className="rounded p-1 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
-                    title="Editar tag"
+                    className="rounded px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
                     onClick={() => openEdit(tag)}
                   >
-                    ✎
+                    Editar
                   </button>
                   <button
-                    className="rounded p-1 text-[var(--color-danger)] transition-colors hover:bg-red-50"
-                    title="Excluir tag"
+                    className="rounded px-2 py-1 text-xs font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
                     onClick={() => setDeleteModal(tag)}
                   >
-                    🗑
+                    Excluir
                   </button>
                 </div>
               </div>
@@ -361,7 +359,7 @@ export function TagsList() {
             )}
             {deleteModal.name.toLowerCase() === currentUserTagName && (
               <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
-                🛡️ Esta é sua tag de acesso. A exclusão será bloqueada.
+                Esta é sua tag de acesso. A exclusão será bloqueada.
               </p>
             )}
             <div className="mt-6 flex justify-end gap-3">

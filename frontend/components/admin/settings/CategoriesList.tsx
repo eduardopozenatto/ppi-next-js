@@ -157,18 +157,16 @@ export function CategoriesList() {
 
               <div className="flex gap-1 opacity-0 transition-opacity focus-within:opacity-100 group-hover:opacity-100">
                 <button
-                  className="rounded p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
-                  title="Editar"
+                  className="rounded px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
                   onClick={() => { setFormModal({ mode: "edit", category: { id: category.id, name: category.name } }); setError(""); }}
                 >
-                  ✎
+                  Editar
                 </button>
                 <button
-                  className="rounded p-1.5 text-[var(--color-danger)] hover:bg-red-50"
-                  title="Excluir"
+                  className="rounded px-2 py-1 text-xs font-medium text-[var(--color-danger)] hover:bg-red-50 dark:hover:bg-red-950/30"
                   onClick={() => setDeleteModal(category)}
                 >
-                  🗑
+                  Excluir
                 </button>
               </div>
             </div>

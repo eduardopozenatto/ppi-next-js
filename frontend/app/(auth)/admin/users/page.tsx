@@ -208,8 +208,8 @@ export default function AdminUsersPage() {
                 <td className="hidden px-4 py-3 text-[var(--color-text-subtle)] md:table-cell">{formatDate(u.createdAt)}</td>
                 <td className="px-4 py-3 text-right">
                   <div className="flex justify-end gap-1">
-                    <button type="button" onClick={() => setFormModal({ mode: "edit", user: { ...u } })} className="rounded p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]" title="Editar">✎</button>
-                    <button type="button" onClick={() => setDeleteModal(u)} className="rounded p-1.5 text-[var(--color-danger)] hover:bg-red-50" title="Excluir">🗑</button>
+                    <button type="button" onClick={() => setFormModal({ mode: "edit", user: { ...u } })} className="rounded px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]">Editar</button>
+                    <button type="button" onClick={() => setDeleteModal(u)} className="rounded px-2 py-1 text-xs font-medium text-[var(--color-danger)] hover:bg-red-50 dark:hover:bg-red-950/30">Excluir</button>
                   </div>
                 </td>
               </tr>

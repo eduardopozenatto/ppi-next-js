@@ -176,7 +176,9 @@ export function InventoryManagementTable() {
                         className="h-8 w-8 shrink-0 rounded object-cover"
                       />
                     ) : (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--color-bg-subtle)] text-xs">📦</div>
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--color-bg-subtle)] text-[10px] font-bold text-[var(--color-text-subtle)]">
+                        ITEM
+                      </div>
                     )}
                     <span className="font-medium text-[var(--color-text)]">{item.name}</span>
                   </div>
@@ -208,21 +210,18 @@ export function InventoryManagementTable() {
                   <div className="flex justify-end gap-1">
                     <Link
                       href={`/inventory/${item.id}`}
-                      className="rounded p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
-                      title="Ver"
-                    >👁</Link>
+                      className="rounded px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
+                    >Ver</Link>
                     <button
                       type="button"
                       onClick={() => openEditModal(item)}
-                      className="rounded p-1.5 text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
-                      title="Editar"
-                    >✎</button>
+                      className="rounded px-2 py-1 text-xs font-medium text-[var(--color-text-subtle)] hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
+                    >Editar</button>
                     <button
                       type="button"
                       onClick={() => setDeleteModal(item)}
-                      className="rounded p-1.5 text-[var(--color-danger)] hover:bg-red-50"
-                      title="Excluir"
-                    >🗑</button>
+                      className="rounded px-2 py-1 text-xs font-medium text-[var(--color-danger)] hover:bg-red-50 dark:hover:bg-red-950/30"
+                    >Excluir</button>
                   </div>
                 </td>
               </tr>

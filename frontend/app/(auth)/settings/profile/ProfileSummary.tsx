@@ -379,7 +379,7 @@ export function ProfileSummary() {
                   onClick={() => setShowPassword(!showPassword)}
                   aria-label={showPassword ? "Ocultar senha" : "Mostrar senha"}
                 >
-                  {showPassword ? "🙈" : "👁"}
+                  {showPassword ? "Ocultar" : "Mostrar"}
                 </button>
               </div>
             </div>

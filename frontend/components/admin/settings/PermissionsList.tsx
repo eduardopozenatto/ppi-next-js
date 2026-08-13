@@ -338,7 +338,7 @@ export function PermissionsList() {
                           variant="secondary"
                           onClick={() => openEditModal(userItem.id, userItem.name)}
                         >
-                          🛡️ Permissões
+                          Permissões
                         </Button>
                       </td>
                     </tr>

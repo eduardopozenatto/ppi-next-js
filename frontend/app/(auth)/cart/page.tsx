@@ -95,8 +95,8 @@ export default function CartPage() {
             <ul className="divide-y divide-[var(--color-border)] rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]">
               {lines.map((line) => (
                 <li key={line.id} className="flex items-center gap-4 p-4 sm:p-5">
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-bg-subtle)] text-lg">
-                    📦
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[var(--color-bg-subtle)] text-xs font-bold text-[var(--color-text-subtle)]">
+                    ITEM
                   </div>
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-[var(--color-text)]">{line.name}</p>
@@ -135,10 +135,10 @@ export default function CartPage() {
                   <button
                     type="button"
                     onClick={() => removeItem(line.id)}
-                    className="rounded p-1.5 text-[var(--color-danger)] transition-colors hover:bg-red-50"
+                    className="rounded px-2.5 py-1.5 text-xs font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50 dark:hover:bg-red-950/30"
                     title="Remover do carrinho"
                   >
-                    🗑
+                    Remover
                   </button>
                 </li>
               ))}

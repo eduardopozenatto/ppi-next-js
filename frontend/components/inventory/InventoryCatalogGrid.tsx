@@ -27,7 +27,10 @@ export function InventoryCatalogGrid({
   const [expandedImages, setExpandedImages] = useState<Record<string, boolean>>({});
 
   function toggleSingleImage(id: string) {
-    setExpandedImages((prev) => ({ ...prev, [id]: !prev[id] }));
+    setExpandedImages((prev) => {
+      const current = prev[id] ?? showImages;
+      return { ...prev, [id]: !current };
+    });
   }
 
   return (

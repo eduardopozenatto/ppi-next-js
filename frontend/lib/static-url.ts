@@ -37,5 +37,10 @@ export function getStaticUrl(relativePath: string | null | undefined): string | 
   // Normalize: remove leading slash if present
   const clean = relativePath.startsWith("/") ? relativePath.slice(1) : relativePath;
 
+  // If path is a local frontend static asset (e.g. buttonIcons/box.svg), return local path
+  if (!clean.startsWith("uploads/")) {
+    return `/${clean}`;
+  }
+
   return `${backendOrigin}/${clean}`;
 }
