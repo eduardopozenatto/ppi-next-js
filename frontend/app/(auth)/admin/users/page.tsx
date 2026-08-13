@@ -199,7 +199,7 @@ export default function AdminUsersPage() {
                 </td>
                 <td className="px-4 py-3">
                   <button type="button" onClick={() => toggleStatus(u)} aria-label={u.isActive ? "Desativar" : "Ativar"}
-                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${u.isActive ? "bg-[var(--color-primary)]" : "bg-gray-300"}`}
+                    className={`relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors ${u.isActive ? "bg-[var(--color-primary)]" : "bg-[var(--color-border-strong)]"}`}
                   >
                     <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transition ${u.isActive ? "translate-x-5" : "translate-x-0"}`} />
                   </button>

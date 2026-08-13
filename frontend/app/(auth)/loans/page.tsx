@@ -124,7 +124,7 @@ export default function LoansListPage() {
                 </h2>
                 <LoanStatusBadge status={loan.status} />
                 {loan.returnedLate && loan.status === "returned" && (
-                  <span className="rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-semibold text-yellow-800">
+                  <span className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-warning)]">
                     Com atraso
                   </span>
                 )}
@@ -142,7 +142,7 @@ export default function LoansListPage() {
                   </p>
                 )}
                 {loan.returnedDate && (
-                  <p className={loan.returnedLate ? "text-yellow-600" : "text-[var(--color-success)]"}>
+                  <p className={loan.returnedLate ? "text-[var(--color-warning)]" : "text-[var(--color-success)]"}>
                     <span className="font-medium">Devolvido em:</span> {formatDate(loan.returnedDate)}
                   </p>
                 )}
@@ -158,7 +158,7 @@ export default function LoansListPage() {
 
               {/* Lab observation */}
               {loan.labObservation && (
-                <div className="mt-2 rounded-lg border-l-4 border-l-[var(--color-success)] bg-emerald-50 p-3 text-sm text-[var(--color-text)] dark:bg-emerald-900/20">
+                <div className="mt-2 rounded-lg border-l-4 border-l-[var(--color-success)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text)]">
                   <p className="text-xs font-semibold text-[var(--color-text-subtle)]">Observação do laboratorista:</p>
                   {loan.labObservation}
                 </div>
@@ -166,7 +166,7 @@ export default function LoansListPage() {
 
               {/* Overdue alert */}
               {loan.status === "overdue" && (
-                <div className="mt-2 rounded-lg border-l-4 border-l-[var(--color-danger)] bg-red-50 p-3 text-sm text-[var(--color-danger)] dark:bg-red-900/20">
+                <div className="mt-2 rounded-lg border-l-4 border-l-[var(--color-danger)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-danger)]">
                   ⚠️ Este item está com a devolução atrasada. Regularize a situação o mais rápido possível.
                 </div>
               )}

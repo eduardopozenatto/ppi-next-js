@@ -7,23 +7,23 @@ const statusConfig: Record<
 > = {
   pending: {
     label: "Pendente",
-    className: "bg-amber-100 text-amber-900 ring-1 ring-amber-200",
+    className: "bg-[var(--color-bg-subtle)] text-[var(--color-warning)] border border-[var(--color-border-strong)]",
   },
   active: {
     label: "Ativo",
-    className: "bg-azure-100 text-azure-900 ring-1 ring-azure-200",
+    className: "bg-[var(--color-bg-subtle)] text-[var(--color-primary)] border border-[var(--color-border-strong)]",
   },
   overdue: {
     label: "Atrasado",
-    className: "bg-red-100 text-red-900 ring-1 ring-red-200",
+    className: "bg-[var(--color-bg-subtle)] text-[var(--color-danger)] border border-[var(--color-danger)]/50",
   },
   returned: {
     label: "Devolvido",
-    className: "bg-emerald-100 text-emerald-900 ring-1 ring-emerald-200",
+    className: "bg-[var(--color-bg-subtle)] text-[var(--color-success)] border border-[var(--color-border-strong)]",
   },
   cancelled: {
     label: "Cancelado",
-    className: "bg-neutral-100 text-neutral-700 ring-1 ring-neutral-200",
+    className: "bg-[var(--color-bg-subtle)] text-[var(--color-text-subtle)] border border-[var(--color-border)] opacity-70",
   },
 };
 

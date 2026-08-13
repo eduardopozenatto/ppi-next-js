@@ -129,7 +129,7 @@ export default function ApprovalsPage() {
                         Qtd: {loan.items.reduce((a, i) => a + i.quantity, 0)}
                       </span>
                       {isSelf && (
-                        <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-900/40 dark:text-amber-300">
+                        <span className="rounded-full border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-semibold text-[var(--color-warning)]">
                           Seu pedido (Auto-aprovação bloqueada)
                         </span>
                       )}
@@ -203,7 +203,7 @@ export default function ApprovalsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setApproveModal(null)}>
           <div className="w-full max-w-lg rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
             <h2 className="text-lg font-semibold text-[var(--color-text)]">Aprovar empréstimo</h2>
-            <div className="mt-3 rounded-lg bg-blue-50 p-3 text-sm text-[var(--color-text)] dark:bg-blue-900/20">
+            <div className="mt-3 rounded-lg border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3 text-sm text-[var(--color-text)]">
               <strong>{approveModal.items.map((i) => `${i.inventoryItemName} × ${i.quantity}`).join(", ")}</strong>
               <span className="text-[var(--color-text-subtle)]"> — {approveModal.borrowerName}</span>
             </div>
