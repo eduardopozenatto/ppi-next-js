@@ -44,7 +44,7 @@ export function AppShell({ children }: AppShellProps) {
         <aside
           id="app-sidebar"
           className={cn(
-            "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-subtle)] transition-transform duration-200 ease-out lg:static lg:z-0 lg:w-auto lg:translate-x-0 lg:rounded-r-3xl lg:border-r-0 lg:shadow-none",
+            "fixed inset-y-0 left-0 z-50 flex w-[min(18rem,88vw)] flex-col border-r border-[var(--color-border)] bg-[var(--color-bg-subtle)] transition-transform duration-200 ease-out lg:sticky lg:top-0 lg:h-dvh lg:max-h-dvh lg:overflow-hidden lg:z-0 lg:w-auto lg:translate-x-0 lg:rounded-r-3xl lg:border-r-0 lg:shadow-none",
             open ? "translate-x-0 shadow-2xl shadow-[var(--color-text)]/10" : "-translate-x-full lg:translate-x-0"
           )}
         >
