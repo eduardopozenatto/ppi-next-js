@@ -11,6 +11,7 @@ declare global {
         id: string;
         name: string;
         email: string;
+        phone: string | null;
         role: string;
         matricula: string | null;
         avatarUrl: string | null;
@@ -89,6 +90,7 @@ export async function requireAuth(
       id: currentUser.id,
       name: currentUser.name,
       email: currentUser.email,
+      phone: currentUser.phone,
       role: currentUser.role,
       matricula: currentUser.matricula,
       avatarUrl: currentUser.avatarUrl,

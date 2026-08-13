@@ -39,3 +39,33 @@ export type LoginInput = z.infer<typeof loginSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type ForgotPasswordInput = z.infer<typeof forgotPasswordSchema>;
 export type ResetPasswordInput = z.infer<typeof resetPasswordSchema>;
+
+export const updateProfileSchema = z.object({
+  name: z.string().min(2, 'O nome deve ter no mínimo 2 caracteres').optional(),
+  phone: z.string().optional(),
+});
+
+export const requestEmailChangeSchema = z.object({
+  newEmail: z.string().email('E-mail inválido'),
+});
+
+export const confirmEmailChangeSchema = z.object({
+  newEmail: z.string().email('E-mail inválido'),
+  code: z.string().length(6, 'O código deve ter 6 dígitos'),
+});
+
+export const requestPhoneChangeSchema = z.object({
+  newPhone: z.string().min(8, 'Número de telefone inválido'),
+});
+
+export const confirmPhoneChangeSchema = z.object({
+  newPhone: z.string().min(8, 'Número de telefone inválido'),
+  code: z.string().length(6, 'O código deve ter 6 dígitos'),
+});
+
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type RequestEmailChangeInput = z.infer<typeof requestEmailChangeSchema>;
+export type ConfirmEmailChangeInput = z.infer<typeof confirmEmailChangeSchema>;
+export type RequestPhoneChangeInput = z.infer<typeof requestPhoneChangeSchema>;
+export type ConfirmPhoneChangeInput = z.infer<typeof confirmPhoneChangeSchema>;
+

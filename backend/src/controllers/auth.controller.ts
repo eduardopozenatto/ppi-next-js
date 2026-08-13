@@ -10,6 +10,11 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  updateProfileSchema,
+  requestEmailChangeSchema,
+  confirmEmailChangeSchema,
+  requestPhoneChangeSchema,
+  confirmPhoneChangeSchema,
 } from '../schemas/auth.schema';
 import { sendResetCodeEmail } from '../utils/email';
 import { z } from 'zod';
@@ -295,6 +300,7 @@ export async function getMe(
       id: req.user.id,
       name: req.user.name,
       email: req.user.email,
+      phone: req.user.phone,
       matricula: req.user.matricula,
       avatarUrl: req.user.avatarUrl,
       tag: req.user.tag,
@@ -504,6 +510,245 @@ export async function resetPassword(
       next(
         new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any)
       );
+    } else {
+      next(err);
+    }
+  }
+}
+
+/* ─── Profile & Contact Verification Handlers ───────── */
+
+export async function updateProfile(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = updateProfileSchema.parse(req.body);
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: {
+        ...(data.name ? { name: data.name } : {}),
+        ...(data.phone !== undefined ? { phone: data.phone } : {}),
+      },
+    });
+
+    sendSuccess(
+      res,
+      {
+        id: updatedUser.id,
+        name: updatedUser.name,
+        email: updatedUser.email,
+        phone: updatedUser.phone,
+      },
+      'Perfil atualizado com sucesso'
+    );
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any));
+    } else {
+      next(err);
+    }
+  }
+}
+
+export async function requestEmailChange(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = requestEmailChangeSchema.parse(req.body);
+
+    const existing = await prisma.user.findUnique({
+      where: { email: data.newEmail },
+    });
+
+    if (existing && existing.id !== req.user.id) {
+      throw new AppError('Este e-mail já está em uso por outra conta', 400);
+    }
+
+    await prisma.passwordResetCode.updateMany({
+      where: { userId: req.user.id, used: false },
+      data: { used: true },
+    });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await prisma.passwordResetCode.create({
+      data: {
+        code,
+        userId: req.user.id,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    try {
+      await sendResetCodeEmail(data.newEmail, code);
+    } catch (emailErr) {
+      console.log(`[requestEmailChange] Código para ${data.newEmail}: ${code}`);
+    }
+
+    const isTestEnv = env.NODE_ENV !== 'production' && (!env.SMTP_PASS || !env.SMTP_USER);
+
+    sendSuccess(
+      res,
+      isTestEnv ? { devCode: code } : null,
+      'Código de verificação enviado para o novo e-mail'
+    );
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any));
+    } else {
+      next(err);
+    }
+  }
+}
+
+export async function confirmEmailChange(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = confirmEmailChangeSchema.parse(req.body);
+
+    const resetCode = await prisma.passwordResetCode.findFirst({
+      where: {
+        code: data.code,
+        userId: req.user.id,
+        used: false,
+        expiresAt: { gte: new Date() },
+      },
+    });
+
+    if (!resetCode) {
+      throw new AppError('Código inválido ou expirado', 400);
+    }
+
+    await prisma.passwordResetCode.update({
+      where: { id: resetCode.id },
+      data: { used: true },
+    });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { email: data.newEmail },
+    });
+
+    sendSuccess(
+      res,
+      { email: updatedUser.email },
+      'E-mail alterado com sucesso'
+    );
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any));
+    } else {
+      next(err);
+    }
+  }
+}
+
+export async function requestPhoneChange(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = requestPhoneChangeSchema.parse(req.body);
+
+    await prisma.passwordResetCode.updateMany({
+      where: { userId: req.user.id, used: false },
+      data: { used: true },
+    });
+
+    const code = Math.floor(100000 + Math.random() * 900000).toString();
+
+    await prisma.passwordResetCode.create({
+      data: {
+        code,
+        userId: req.user.id,
+        expiresAt: new Date(Date.now() + 15 * 60 * 1000),
+      },
+    });
+
+    console.log(`[requestPhoneChange] Código SMS enviado para ${data.newPhone}: ${code}`);
+
+    sendSuccess(
+      res,
+      { devCode: code },
+      'Código de verificação enviado via SMS para o novo número'
+    );
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any));
+    } else {
+      next(err);
+    }
+  }
+}
+
+export async function confirmPhoneChange(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const data = confirmPhoneChangeSchema.parse(req.body);
+
+    const resetCode = await prisma.passwordResetCode.findFirst({
+      where: {
+        code: data.code,
+        userId: req.user.id,
+        used: false,
+        expiresAt: { gte: new Date() },
+      },
+    });
+
+    if (!resetCode) {
+      throw new AppError('Código inválido ou expirado', 400);
+    }
+
+    await prisma.passwordResetCode.update({
+      where: { id: resetCode.id },
+      data: { used: true },
+    });
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: { phone: data.newPhone },
+    });
+
+    sendSuccess(
+      res,
+      { phone: updatedUser.phone },
+      'Telefone alterado e verificado com sucesso'
+    );
+  } catch (err) {
+    if (err instanceof z.ZodError) {
+      next(new AppError('Dados inválidos', 400, err.flatten().fieldErrors as any));
     } else {
       next(err);
     }

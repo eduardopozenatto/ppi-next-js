@@ -8,6 +8,11 @@ import {
   changePassword,
   forgotPassword,
   resetPassword,
+  updateProfile,
+  requestEmailChange,
+  confirmEmailChange,
+  requestPhoneChange,
+  confirmPhoneChange,
 } from '../controllers/auth.controller';
 import { requireAuth } from '../middlewares/auth';
 import multer from 'multer';
@@ -51,7 +56,12 @@ router.post('/reset-password', resetPassword);
 // ─── Protected routes ────────────────────────────────
 router.post('/logout', requireAuth, logout);
 router.get('/me', requireAuth, getMe);
+router.patch('/me', requireAuth, updateProfile);
 router.post('/avatar', requireAuth, uploadAvatar.single('avatar'), uploadAvatarHandler);
 router.post('/change-password', requireAuth, changePassword);
+router.post('/request-email-change', requireAuth, requestEmailChange);
+router.post('/confirm-email-change', requireAuth, confirmEmailChange);
+router.post('/request-phone-change', requireAuth, requestPhoneChange);
+router.post('/confirm-phone-change', requireAuth, confirmPhoneChange);
 
 export default router;
