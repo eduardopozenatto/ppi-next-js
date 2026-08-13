@@ -42,10 +42,10 @@ export function InventoryCatalogGrid({
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <span
                     className={cn(
-                      "rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 transition-all duration-200",
+                      "rounded-full px-2.5 py-0.5 text-xs font-semibold border transition-all duration-200",
                       available
-                        ? "bg-emerald-50 text-emerald-800 ring-emerald-200 dark:bg-emerald-950/40 dark:text-emerald-300 dark:ring-emerald-800"
-                        : "bg-neutral-100 text-neutral-600 ring-neutral-200 dark:bg-neutral-900 dark:text-neutral-400 dark:ring-neutral-800"
+                        ? "bg-[var(--color-bg-subtle)] text-[var(--color-success)] border-[var(--color-border-strong)]"
+                        : "bg-[var(--color-bg-subtle)] text-[var(--color-text-subtle)] border-[var(--color-border)] opacity-70"
                     )}
                   >
                     {available ? `${item.availableQuantity} disp.` : "Indisponível"}

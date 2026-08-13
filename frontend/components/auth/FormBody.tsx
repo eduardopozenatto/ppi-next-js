@@ -6,6 +6,7 @@ import { FormCard } from "@/components/Body/FormCard";
 import { AuthFormFooter } from "@/components/auth/AuthFormFooter";
 import { AuthTabsHeader } from "@/components/auth/Header";
 import { Input } from "@/components/Input/Input";
+import { CollapsibleNotice } from "@/components/shared/CollapsibleNotice";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
@@ -118,14 +119,11 @@ export function AuthFormBody() {
         </section>
 
         {tipo !== "local" && (
-          <div className="rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
-            <p className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)] sm:text-sm">
-              <span>ℹ️</span> Primeiro acesso?
+          <CollapsibleNotice title="Primeiro acesso no LabControl?">
+            <p>
+              Alunos, professores e servidores efetuam login diretamente com o CPF e a senha institucional (SIGAA/LDAP). Seu cadastro é criado e ativado automaticamente no seu primeiro acesso.
             </p>
-            <p className="mt-1.5 text-xs leading-relaxed font-medium text-[var(--color-text)] sm:text-sm">
-              Alunos, professores e servidores efetuam login diretamente com o CPF e a senha institucional. Seu cadastro é criado automaticamente no primeiro login.
-            </p>
-          </div>
+          </CollapsibleNotice>
         )}
 
         <AuthFormFooter loading={loading} error={error} />

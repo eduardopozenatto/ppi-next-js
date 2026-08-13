@@ -5,6 +5,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
+import { CollapsibleNotice } from "@/components/shared/CollapsibleNotice";
 import { api, BASE_URL } from "@/lib/api/client";
 import { getStaticUrl } from "@/lib/static-url";
 
@@ -353,14 +354,11 @@ export function ProfileSummary() {
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Segurança e Senha</h3>
 
         {isInstitutional ? (
-          <div className="rounded-2xl border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] p-4 shadow-sm">
-            <p className="flex items-center gap-2 text-xs font-bold text-[var(--color-primary)] sm:text-sm">
-              <span>ℹ️</span> Autenticação Institucional Ativa (SIGAA / LDAP)
-            </p>
-            <p className="mt-1.5 text-xs leading-relaxed font-medium text-[var(--color-text)] sm:text-sm">
+          <CollapsibleNotice title="Autenticação Institucional Ativa (SIGAA / LDAP)">
+            <p>
               Sua conta utiliza as credenciais do portal do IFFarroupilha. Qualquer alteração de senha deve ser realizada diretamente no portal da instituição e será sincronizada automaticamente no seu próximo login no LabControl.
             </p>
-          </div>
+          </CollapsibleNotice>
         ) : (
           <div className="space-y-4">
             <div>
