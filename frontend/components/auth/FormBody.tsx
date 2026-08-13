@@ -1,24 +1,55 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
 import { FormCard } from "@/components/Body/FormCard";
 import { AuthFormFooter } from "@/components/auth/AuthFormFooter";
 import { AuthTabsHeader } from "@/components/auth/Header";
 import { Input } from "@/components/Input/Input";
+import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 
 export function AuthFormBody() {
+  const { login } = useAuth();
+  const router = useRouter();
   const [tipo, setTipo] = useState<"L" | "S" | "local">("S");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
   const inputPlaceholder =
     tipo === "local" ? "E-mail ou Usuário local" : "CPF / Matrícula";
 
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setError(null);
+
+    if (!email.trim()) {
+      setError(tipo === "local" ? "Informe o e-mail ou usuário." : "Informe o CPF ou matrícula.");
+      return;
+    }
+
+    if (!password.trim()) {
+      setError("Informe a senha.");
+      return;
+    }
+
+    setLoading(true);
+
+    const err = await login(email, password, tipo);
+    if (err) {
+      setError(err);
+      setLoading(false);
+    } else {
+      router.push("/dashboard");
+    }
+  }
+
   return (
     <FormCard className="w-full max-w-md">
-      <div className="flex w-full flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex w-full flex-col gap-6">
         <AuthTabsHeader />
 
         <div className="flex rounded-xl bg-[var(--color-bg-subtle)] p-1" role="tablist">
@@ -60,24 +91,22 @@ export function AuthFormBody() {
           </button>
         </div>
 
-        <section className="flex w-full flex-col">
-          <form className="flex flex-col gap-4" action="#" onSubmit={(e) => e.preventDefault()}>
-            <Input
-              type="text"
-              placeholder={inputPlaceholder}
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-            <Input
-              type="password"
-              placeholder="Senha"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </form>
+        <section className="flex w-full flex-col gap-4">
+          <Input
+            type="text"
+            placeholder={inputPlaceholder}
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+          <Input
+            type="password"
+            placeholder="Senha"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
 
           {tipo === "local" && (
-            <div className="mt-3 flex justify-end">
+            <div className="flex justify-end">
               <Link
                 href="/recovery"
                 className="text-sm font-semibold text-[var(--color-primary)] underline-offset-2 hover:underline"
@@ -96,13 +125,9 @@ export function AuthFormBody() {
             </p>
           </div>
         )}
-      </div>
 
-      <AuthFormFooter
-        tipo={tipo}
-        email={email}
-        password={password}
-      />
+        <AuthFormFooter loading={loading} error={error} />
+      </form>
     </FormCard>
   );
 }
