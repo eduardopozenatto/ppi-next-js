@@ -104,37 +104,37 @@ export default function AdminReportsPage() {
 
       {/* KPI Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        <div className="rounded-2xl border border-blue-200 bg-white p-5 dark:border-blue-900 dark:bg-blue-900/20">
-          <p className="text-sm font-medium text-blue-700 dark:text-blue-400">Total de itens</p>
-          <p className="mt-1 text-3xl font-bold text-blue-800 dark:text-blue-300">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Total de itens</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-text)]">
             {loading ? "..." : invReport?.summary.totalItems ?? 0}
           </p>
-          <p className="mt-1 text-xs text-blue-600 dark:text-blue-400">
+          <p className="mt-1.5 text-xs font-semibold text-[var(--color-primary)]">
             {loading ? "..." : invReport?.summary.availableQuantity ?? 0} disponíveis
           </p>
         </div>
-        <div className="rounded-2xl border border-green-200 bg-green-50 p-5 dark:border-green-900 dark:bg-green-900/20">
-          <p className="text-sm font-medium text-green-700 dark:text-green-400">Empréstimos</p>
-          <p className="mt-1 text-3xl font-bold text-green-800 dark:text-green-300">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Empréstimos</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-text)]">
             {loading ? "..." : loansReport?.summary.totalLoans ?? 0}
           </p>
-          <p className="mt-1 text-xs text-green-600 dark:text-green-400">
+          <p className="mt-1.5 text-xs font-semibold text-[var(--color-success)]">
             {loading ? "..." : loansReport?.summary.activeLoans ?? 0} ativos
           </p>
         </div>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-900 dark:bg-red-900/20">
-          <p className="text-sm font-medium text-red-700 dark:text-red-400">Atrasados</p>
-          <p className="mt-1 text-3xl font-bold text-red-800 dark:text-red-300">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Atrasados</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-text)]">
             {loading ? "..." : loansReport?.summary.overdueLoans ?? 0}
           </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">Requerem atenção</p>
+          <p className="mt-1.5 text-xs font-semibold text-[var(--color-danger)]">Requerem atenção</p>
         </div>
-        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-900 dark:bg-yellow-900/20">
-          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Usuários</p>
-          <p className="mt-1 text-3xl font-bold text-yellow-800 dark:text-yellow-300">
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Usuários</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-text)]">
             {loading ? "..." : invReport?.summary.totalUsers ?? 0}
           </p>
-          <p className="mt-1 text-xs text-yellow-600 dark:text-yellow-400">
+          <p className="mt-1.5 text-xs font-semibold text-[var(--color-warning)]">
             {loading ? "..." : invReport?.summary.activeUsers ?? 0} ativos
           </p>
         </div>

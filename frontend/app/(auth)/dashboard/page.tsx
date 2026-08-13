@@ -81,10 +81,10 @@ export default function DashboardPage() {
           <Link
             key={s.label}
             href={s.href}
-            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-sm transition-shadow hover:shadow-md"
+            className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]"
           >
             <p className="text-sm font-medium text-[var(--color-text-subtle)]">{s.label}</p>
-            <p className="mt-2 text-3xl font-bold text-[var(--color-text)]">{s.value}</p>
+            <p className="mt-1.5 text-3xl font-bold text-[var(--color-text)]">{s.value}</p>
             <span className="mt-3 inline-flex text-sm font-semibold text-[var(--color-primary)]">
               Ver detalhes →
             </span>

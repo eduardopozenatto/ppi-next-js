@@ -92,17 +92,17 @@ export default function ApprovalsPage() {
 
       {/* Counter Cards */}
       <div className="mb-6 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-yellow-200 bg-yellow-50 p-5 dark:border-yellow-900 dark:bg-yellow-900/20">
-          <p className="text-sm font-medium text-yellow-700 dark:text-yellow-400">Pendentes</p>
-          <p className="mt-1 text-3xl font-bold text-yellow-800 dark:text-yellow-300">{pending.length}</p>
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Pendentes</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-warning)]">{pending.length}</p>
         </div>
-        <div className="rounded-2xl border border-green-200 bg-green-50 p-5 dark:border-green-900 dark:bg-green-900/20">
-          <p className="text-sm font-medium text-green-700 dark:text-green-400">Aprovados</p>
-          <p className="mt-1 text-3xl font-bold text-green-800 dark:text-green-300">{approved.length}</p>
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Aprovados</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-success)]">{approved.length}</p>
         </div>
-        <div className="rounded-2xl border border-red-200 bg-red-50 p-5 dark:border-red-900 dark:bg-red-900/20">
-          <p className="text-sm font-medium text-red-700 dark:text-red-400">Rejeitados</p>
-          <p className="mt-1 text-3xl font-bold text-red-800 dark:text-red-300">{rejected.length}</p>
+        <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-5 shadow-xs transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md hover:border-[var(--color-border-strong)]">
+          <p className="text-sm font-medium text-[var(--color-text-subtle)]">Rejeitados</p>
+          <p className="mt-1.5 text-3xl font-bold text-[var(--color-danger)]">{rejected.length}</p>
         </div>
       </div>
 
