@@ -6,40 +6,21 @@ import { EmptyState } from "@/components/shared/EmptyState";
 import { Button } from "@/components/Button/Button";
 import { api } from "@/lib/api/client";
 import { useToast } from "@/components/shared/Toast";
+import { useCart } from "@/contexts/CartContext";
 import Link from "next/link";
 
-/** Cart line — kept in local state (client-side only). */
-export interface CartLine {
-  id: string;
-  name: string;
-  category: string;
-  quantity: number;
-  availableQuantity: number;
-}
-
 export default function CartPage() {
-  const [lines, setLines] = useState<CartLine[]>([]);
+  const { items: lines, updateQuantity, removeItem, clearCart, totalCount: totalUnits, totalDistinct: totalItems } = useCart();
   const [showModal, setShowModal] = useState(false);
   const [message, setMessage] = useState("");
   const [messageError, setMessageError] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const { addToast } = useToast();
 
-  const totalItems = lines.length;
-  const totalUnits = lines.reduce((acc, l) => acc + l.quantity, 0);
-
   function updateQty(id: string, delta: number) {
-    setLines((prev) =>
-      prev.map((l) => {
-        if (l.id !== id) return l;
-        const next = Math.max(1, Math.min(l.availableQuantity, l.quantity + delta));
-        return { ...l, quantity: next };
-      })
-    );
-  }
-
-  function removeLine(id: string) {
-    setLines((prev) => prev.filter((l) => l.id !== id));
+    const current = lines.find((l) => String(l.id) === String(id));
+    if (!current) return;
+    updateQuantity(id, current.quantity + delta);
   }
 
   async function handleConfirm() {
@@ -62,7 +43,7 @@ export default function CartPage() {
       });
       setShowModal(false);
       setMessage("");
-      setLines([]);
+      clearCart();
       setSubmitted(true);
       addToast({ title: "Sucesso", message: "Empréstimo criado com sucesso", variant: "success" });
     } catch (err) {
@@ -153,7 +134,7 @@ export default function CartPage() {
                   {/* Delete */}
                   <button
                     type="button"
-                    onClick={() => removeLine(line.id)}
+                    onClick={() => removeItem(line.id)}
                     className="rounded p-1.5 text-[var(--color-danger)] transition-colors hover:bg-red-50"
                     title="Remover do carrinho"
                   >

@@ -10,12 +10,14 @@ import { cn } from "@/lib/utils";
 import { api } from "@/lib/api/client";
 import { getStaticUrl } from "@/lib/static-url";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { useCart } from "@/contexts/CartContext";
 import type { ApiResponse } from "@/types/api";
 import type { LabNotification } from "@/types/notification";
 
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { totalCount: cartCount } = useCart();
   const [unreadCount, setUnreadCount] = useState(0);
 
   // Poll for unread notifications every 60 seconds
@@ -43,11 +45,17 @@ export function AppSidebar() {
   const admin = NAV_ITEMS.filter((i) => i.section === "admin" && navVisible(i, user));
   const footer = NAV_ITEMS.filter((i) => i.section === "footer" && navVisible(i, user));
 
+  function getBadge(id: string) {
+    if (id === "notifications") return unreadCount;
+    if (id === "cart") return cartCount;
+    return 0;
+  }
+
   return (
     <div className="flex h-full min-h-0 flex-col gap-6 pb-4">
       <div className="flex flex-col gap-1 sm:gap-2">
         {main.map((item) => (
-          <SidebarLink key={item.id} item={item} pathname={pathname} badge={item.id === "notifications" ? unreadCount : 0} />
+          <SidebarLink key={item.id} item={item} pathname={pathname} badge={getBadge(item.id)} />
         ))}
       </div>
 
@@ -57,7 +65,7 @@ export function AppSidebar() {
             Administração
           </p>
           {admin.map((item) => (
-            <SidebarLink key={item.id} item={item} pathname={pathname} badge={0} />
+            <SidebarLink key={item.id} item={item} pathname={pathname} badge={getBadge(item.id)} />
           ))}
         </div>
       ) : null}
@@ -66,7 +74,7 @@ export function AppSidebar() {
 
       <div className="flex flex-col gap-1 sm:gap-2">
         {footer.map((item) => (
-          <SidebarLink key={item.id} item={item} pathname={pathname} badge={0} />
+          <SidebarLink key={item.id} item={item} pathname={pathname} badge={getBadge(item.id)} />
         ))}
       </div>
 
