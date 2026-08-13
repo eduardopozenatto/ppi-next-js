@@ -14,6 +14,7 @@ export default function CatalogPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [category, setCategory] = useState("all");
   const [categoryName, setCategoryName] = useState("Todos");
+  const [showImages, setShowImages] = useState(true);
 
   useEffect(() => {
     async function load() {
@@ -33,12 +34,23 @@ export default function CatalogPage() {
     load();
   }, []);
 
+  const filteredEntries = Object.entries(items).filter(([_, item]) => {
+    const matchesSearch =
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
+    const matchesCategory = category === "all" || item.category === categoryName;
+    return item.isActive && matchesSearch && matchesCategory;
+  });
+
+  const filteredCount = filteredEntries.length;
+
   return (
-    <div>
+    <div className="space-y-6">
       <PageHeader
         title="Buscar itens"
-        description="Encontre equipamento disponível e solicite empréstimo para o laboratório."
+        description="Encontre equipamentos disponíveis no laboratório e faça seu pedido de empréstimo."
       />
+
       <CatalogSearchBar
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
@@ -49,24 +61,32 @@ export default function CatalogPage() {
         }}
         categoryName={categoryName}
       />
-      <div className="mt-8">
+
+      <div className="flex items-center justify-between gap-3 pt-2">
+        <p className="text-xs font-semibold text-[var(--color-text-subtle)] sm:text-sm">
+          {filteredCount} {filteredCount === 1 ? "equipamento encontrado" : "equipamentos encontrados"}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => setShowImages(!showImages)}
+          className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] shadow-xs transition-all hover:bg-[var(--color-bg-subtle)] hover:border-[var(--color-border-strong)] active:scale-[0.98]"
+        >
+          {showImages ? "📷 Ocultar fotos (Lista)" : "🖼️ Mostrar fotos"}
+        </button>
+      </div>
+
+      <div>
         {loading ? (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} className="h-48 animate-pulse rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
+              <div key={i} className="h-32 animate-pulse rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)]" />
             ))}
           </div>
         ) : (
           <InventoryCatalogGrid
-            items={Object.fromEntries(
-              Object.entries(items).filter(([_, item]) => {
-                const matchesSearch = item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                  (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));
-                const matchesCategory = category === "all" || item.category === categoryName;
-                // Ocultar itens inativos do catálogo
-                return item.isActive && matchesSearch && matchesCategory;
-              })
-            )}
+            items={Object.fromEntries(filteredEntries)}
+            showImages={showImages}
           />
         )}
       </div>
