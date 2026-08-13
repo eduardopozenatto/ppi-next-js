@@ -135,7 +135,7 @@ export default function ApprovalsPage() {
                       )}
                     </div>
                     <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
-                      👤 {loan.borrowerName} · 📅 {formatDate(loan.loanDate)}
+                      {loan.borrowerName} · Data: {formatDate(loan.loanDate)}
                     </p>
 
                     {/* Student message */}
@@ -147,11 +147,11 @@ export default function ApprovalsPage() {
                   </div>
 
                   <div className="flex flex-wrap gap-2 sm:flex-col sm:items-end">
-                    <button type="button" onClick={() => setDetailModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-bg-subtle)]" title="Ver detalhes">
-                      👁 Detalhes
+                    <button type="button" onClick={() => setDetailModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-primary)] transition-colors hover:bg-[var(--color-bg-subtle)]">
+                      Detalhes
                     </button>
-                    <button type="button" onClick={() => setRejectModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50" title="Rejeitar">
-                      ✕ Rejeitar
+                    <button type="button" onClick={() => setRejectModal(loan)} className="rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-danger)] transition-colors hover:bg-red-50">
+                      Rejeitar
                     </button>
                     <button
                       type="button"
@@ -169,7 +169,7 @@ export default function ApprovalsPage() {
                       )}
                       title={isSelf ? "Não é possível auto-aprovar seu próprio empréstimo" : "Aprovar"}
                     >
-                      ✓ Aprovar
+                      Aprovar
                     </button>
                   </div>
                 </div>

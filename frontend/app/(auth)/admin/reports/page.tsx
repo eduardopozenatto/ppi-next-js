@@ -142,7 +142,7 @@ export default function AdminReportsPage() {
 
       {/* Period Filter */}
       <div className="mb-4 flex items-center gap-3">
-        <span className="text-sm text-[var(--color-text-subtle)]">📅 Período:</span>
+        <span className="text-sm text-[var(--color-text-subtle)]">Período:</span>
         <select
           value={period}
           onChange={(e) => setPeriod(e.target.value as Period)}

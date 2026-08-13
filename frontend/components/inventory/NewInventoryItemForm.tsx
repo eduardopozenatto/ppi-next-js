@@ -184,9 +184,8 @@ export function NewInventoryItemForm() {
             <button
               type="button"
               onClick={() => fileInputRef.current?.click()}
-              className="flex flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-8 text-sm text-[var(--color-text-subtle)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)]"
+              className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-6 text-sm text-[var(--color-text-subtle)] transition-colors hover:border-[var(--color-primary)] hover:text-[var(--color-primary)] font-medium"
             >
-              <span className="text-2xl">📷</span>
               <span>Clique para selecionar uma imagem</span>
               <span className="text-xs">PNG, JPG ou WEBP — máx. 5 MB</span>
             </button>

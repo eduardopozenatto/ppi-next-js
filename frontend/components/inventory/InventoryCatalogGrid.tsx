@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LabInventoryList } from "@/types/lab-inventory";
@@ -25,6 +25,13 @@ export function InventoryCatalogGrid({
   const { addToast } = useToast();
   // Estado local para controle individual de exibição de foto por item (ID -> boolean)
   const [expandedImages, setExpandedImages] = useState<Record<string, boolean>>({});
+  // Mapa de erros de carregamento de imagem para fallback gracioso
+  const [imgErrorMap, setImgErrorMap] = useState<Record<string, boolean>>({});
+
+  // Reset de overrides manuais quando o alternador global de fotos mudar
+  useEffect(() => {
+    setExpandedImages({});
+  }, [showImages]);
 
   function toggleSingleImage(id: string) {
     setExpandedImages((prev) => {
@@ -36,7 +43,8 @@ export function InventoryCatalogGrid({
   return (
     <section className={cn("grid grid-cols-1 gap-3.5 sm:gap-4 md:grid-cols-2 xl:grid-cols-3", className)}>
       {Object.entries(items).map(([key, item]) => {
-        const src = getStaticUrl(item.image) || "/buttonIcons/box.svg";
+        const rawSrc = getStaticUrl(item.image);
+        const src = imgErrorMap[item.id] || !rawSrc ? "/buttonIcons/box.svg" : rawSrc;
         const available = item.availableQuantity > 0;
         const isImageVisible = expandedImages[item.id] ?? showImages;
 
@@ -79,7 +87,7 @@ export function InventoryCatalogGrid({
                 <button
                   type="button"
                   onClick={() => toggleSingleImage(item.id)}
-                  className="text-xs font-medium text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] underline underline-offset-2"
+                  className="text-xs font-medium text-[var(--color-text-subtle)] hover:text-[var(--color-primary)] underline underline-offset-2 cursor-pointer"
                 >
                   {isImageVisible ? "Ocultar foto" : "Ver foto"}
                 </button>
@@ -142,6 +150,7 @@ export function InventoryCatalogGrid({
                   height={300}
                   className="h-36 w-full object-cover sm:h-full"
                   unoptimized
+                  onError={() => setImgErrorMap((prev) => ({ ...prev, [item.id]: true }))}
                 />
               </Link>
             )}

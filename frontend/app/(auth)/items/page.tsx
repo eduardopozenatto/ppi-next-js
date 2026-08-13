@@ -72,7 +72,7 @@ export default function CatalogPage() {
           onClick={() => setShowImages(!showImages)}
           className="inline-flex items-center gap-1.5 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] shadow-xs transition-all hover:bg-[var(--color-bg-subtle)] hover:border-[var(--color-border-strong)] active:scale-[0.98]"
         >
-          {showImages ? "📷 Ocultar fotos (Lista)" : "🖼️ Mostrar fotos"}
+          {showImages ? "Ocultar fotos" : "Mostrar fotos"}
         </button>
       </div>
 
