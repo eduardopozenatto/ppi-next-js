@@ -197,13 +197,17 @@ export async function login(
         throw new AppError('CPF/Matrícula ou senha incorretos no portal institucional', 401);
       }
 
+      const generatedEmail = authResult.email || (userIdentifier.includes('@')
+        ? userIdentifier
+        : `${userIdentifier}@iffarroupilha.edu.br`);
+
       // Se autenticado com sucesso no portal institucional, busca ou auto-provisiona no PostgreSQL local
       user = await prisma.user.findFirst({
         where: {
           OR: [
             { matricula: userIdentifier },
             { email: userIdentifier },
-            { email: `${userIdentifier}@iffarroupilha.edu.br` },
+            { email: generatedEmail },
           ],
         },
       });
@@ -217,20 +221,33 @@ export async function login(
           Math.random().toString(36).slice(-8) + Date.now().toString()
         );
 
-        user = await prisma.user.create({
-          data: {
-            name: authResult.name || `Usuário ${userIdentifier}`,
-            email: authResult.email || (userIdentifier.includes('@')
-              ? userIdentifier
-              : `${userIdentifier}@iffarroupilha.edu.br`),
-            matricula: userIdentifier,
-            password: randomPassword,
-            role: 'user',
-            tagId: defaultTag?.id,
-            isActive: true,
-            mustChangePassword: false,
-          },
-        });
+        try {
+          user = await prisma.user.create({
+            data: {
+              name: authResult.name || `Usuário ${userIdentifier}`,
+              email: generatedEmail,
+              matricula: userIdentifier,
+              password: randomPassword,
+              role: 'user',
+              tagId: defaultTag?.id,
+              isActive: true,
+              mustChangePassword: false,
+            },
+          });
+        } catch (createErr) {
+          console.warn('[login] Auto-provisioning fallback triggered:', createErr);
+          user = await prisma.user.findFirst({
+            where: {
+              OR: [
+                { matricula: userIdentifier },
+                { email: generatedEmail },
+              ],
+            },
+          });
+          if (!user) {
+            throw new AppError('Não foi possível finalizar o auto-cadastro da sua conta no banco de dados local.', 500);
+          }
+        }
       }
     } else {
       // Login local tradicional (Conta Local / Admin)
