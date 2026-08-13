@@ -21,19 +21,16 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 
 1. Acesse [supabase.com](https://supabase.com) e crie uma conta gratuita.
 2. Crie um novo projeto chamado `labcontrol-db` na região **South America (São Paulo)**.
-3. Escolha uma senha forte para o banco e guarde-a.
-4. Em **Project Settings ⚙️ ➔ Database ➔ Connection String (URI)**, copie a URL no formato:
+3. Escolha uma senha forte para o banco de dados e guarde-a.
+4. Em **Project Settings ⚙️ ➔ Database ➔ Connection String**, selecione a aba **Transaction** (ou **Session**).
+5. Copie a URL do Connection Pooler na porta **`6543`** (compatível com IPv4):
    ```text
-   postgresql://postgres:[SUA-SENHA]@db.xxxxxxxx.supabase.co:5432/postgres
+   postgresql://postgres.xxxxxxxx:[SUA-SENHA]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres
    ```
-5. No seu computador local, abra o arquivo `backend/.env` e cole a URL na variável `DATABASE_URL`.
-6. No terminal dentro da pasta `backend/`, execute as migrações e o seed inicial:
+   *(⚠️ IMPORTANTE: Usar o Pooler na porta 6543 evita o erro `ENETUNREACH` no Render).*
+6. No terminal dentro da pasta `backend/`, execute as migrações:
    ```bash
-   # Aplica a estrutura de tabelas no Supabase
    npx prisma db push
-
-   # Popula os dados iniciais (admin, tags, categorias e itens de teste)
-   npx prisma db seed
    ```
 
 ---
@@ -49,11 +46,12 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
    - **Build Command**: `npm install && npm run build`
    - **Start Command**: `npm start`
 4. Em **Environment Variables**, insira:
-   - `DATABASE_URL`: *(A URL do Supabase obtida no Passo 2)*
-   - `JWT_SECRET`: *(Uma chave secreta para tokens)*
+   - `DATABASE_URL`: *(A URL do Supabase Connection Pooler obtida no Passo 2 na porta 6543)*
+   - `JWT_SECRET`: *(Uma chave secreta com no mínimo 16 caracteres)*
    - `NODE_ENV`: `production`
    - `PORT`: `3001`
-   - `CORS_ORIGIN`: `*` *(ou a URL do frontend na Vercel)*
+   - `CORS_ORIGIN`: `https://ppi-next-js-one.vercel.app` *(⚠️ OBRIGATÓRIO: não usar `*` com cookies de sessão)*
+   - `NODE_OPTIONS`: `--dns-result-order=ipv4first`
 5. Clique em **Create Web Service**. Guarde a URL gerada (ex: `https://labcontrol-backend.onrender.com`).
 
 ---
