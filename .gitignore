@@ -5,9 +5,10 @@ build/
 .next/
 *.tsbuildinfo
 
-# Environment variables
+# Environment variables & Local Credentials
 .env
 .env*.local
+*.local.md
 
 # System and editor files
 .DS_Store
