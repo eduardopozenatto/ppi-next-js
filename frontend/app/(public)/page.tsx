@@ -31,8 +31,7 @@ export default function LandingPage() {
               <span className="text-[var(--color-primary)]">do estoque ao empréstimo</span>
             </h1>
             <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-[var(--color-text-subtle)] sm:text-xl">
-              Controle de materiais, pedidos de alunos e aprovações numa interface pensada para equipas
-              académicas — responsiva e pronta para integrar com a tua API.
+              Controle de materiais, pedidos de alunos e aprovações de empréstimo em uma interface pensada para ambientes acadêmicos.
             </p>
             <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
               <Link
@@ -87,7 +86,7 @@ export default function LandingPage() {
       </main>
 
       <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-8 text-center text-sm text-[var(--color-text-subtle)] sm:px-6">
-        <p>LabControl — software open source para laboratórios de informática.</p>
+        <p>LabControl — Prática Profissional Integrada para auxílio ao Laboratório de Hardware.</p>
 j      </footer>
     </div>
   );
