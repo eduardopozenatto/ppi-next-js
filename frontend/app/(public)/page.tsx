@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 
 export default function LandingPage() {
   return (
@@ -6,20 +7,9 @@ export default function LandingPage() {
       <header className="border-b border-[var(--color-border)] bg-[var(--color-bg)]/90 backdrop-blur-sm">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
           <span className="text-lg font-bold tracking-tight text-[var(--color-text)]">LabControl</span>
-          <nav className="flex items-center gap-2 sm:gap-3">
-            <Link
-              href="/login"
-              className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--color-text)] hover:bg-[var(--color-bg-subtle)]"
-            >
-              Entrar
-            </Link>
-            <Link
-              href="/register"
-              className="rounded-xl bg-[var(--color-primary)] px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-[var(--color-primary-hover)]"
-            >
-              Criar conta
-            </Link>
-          </nav>
+          <div className="flex items-center gap-2">
+            <ThemeToggle compact />
+          </div>
         </div>
       </header>
 
@@ -87,7 +77,7 @@ export default function LandingPage() {
 
       <footer className="border-t border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-8 text-center text-sm text-[var(--color-text-subtle)] sm:px-6">
         <p>LabControl — Prática Profissional Integrada para auxílio ao Laboratório de Hardware.</p>
-j      </footer>
+      </footer>
     </div>
   );
 }
