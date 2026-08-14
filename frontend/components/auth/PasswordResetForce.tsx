@@ -32,9 +32,8 @@ export function PasswordResetForce() {
 
     setLoading(true);
     try {
-      // Usamos a senha temporária padrão "1234" como a senha atual do primeiro acesso
       await api.post("/auth/change-password", {
-        currentPassword: "1234",
+        currentPassword: newPassword,
         newPassword,
       });
 

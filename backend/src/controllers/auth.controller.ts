@@ -382,9 +382,11 @@ export async function changePassword(
       throw new AppError('Usuário não encontrado', 404);
     }
 
-    const isValid = await comparePassword(data.currentPassword, user.password);
-    if (!isValid) {
-      throw new AppError('Senha atual incorreta', 400);
+    if (!user.mustChangePassword) {
+      const isValid = await comparePassword(data.currentPassword, user.password);
+      if (!isValid) {
+        throw new AppError('Senha atual incorreta', 400);
+      }
     }
 
     const hashedNew = await hashPassword(data.newPassword);
