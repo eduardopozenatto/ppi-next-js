@@ -59,4 +59,4 @@ Abra o navegador em `http://localhost:3000` para utilizar o sistema. Para mais i
 ---
 
 ## 👥 Projeto Acadêmico (PPI)
-Desenvolvido pela equipe do curso de Ciência da Computação / Informática no Instituto Federal Farroupilha (IFFarroupilha).
+Desenvolvido por Rafael Baccin, Lucas Gnoatto Bortolini, Carlos Eduardo Martins Pozenatto e Gabriel Luiz Bottezini do curso técnico em informática do Instituto Federal Farroupilha Campus Frederico Westphalen (IFFar-FW).
