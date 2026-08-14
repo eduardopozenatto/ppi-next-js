@@ -17,6 +17,7 @@ import {
   confirmPhoneChangeSchema,
 } from '../schemas/auth.schema';
 import { sendResetCodeEmail } from '../utils/email';
+import { sendSmsCode } from '../utils/sms';
 import { z } from 'zod';
 import { env } from '../config/env';
 
@@ -710,11 +711,13 @@ export async function requestPhoneChange(
       },
     });
 
-    console.log(`[requestPhoneChange] Código SMS enviado para ${data.newPhone}: ${code}`);
+    await sendSmsCode(data.newPhone, code);
+
+    const isTestEnv = env.NODE_ENV !== 'production' && (!env.TWILIO_ACCOUNT_SID || !env.TWILIO_AUTH_TOKEN);
 
     sendSuccess(
       res,
-      { devCode: code },
+      isTestEnv ? { devCode: code } : {},
       'Código de verificação enviado via SMS para o novo número'
     );
   } catch (err) {
