@@ -1,36 +1,50 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# LabControl Frontend (Aplicação Web)
 
-## Getting Started
+Esta é a interface de usuário da plataforma **LabControl**, desenvolvida para proporcionar uma navegação fluida, responsiva (Mobile-First) e integrada com suporte completo a Tema Claro e Tema Escuro (Dark Mode).
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## 🛠️ Tecnologias Utilizadas (Stack)
+
+- **React 19** & **Next.js** (App Router)
+- **TypeScript** (Tipagem estática em toda a aplicação)
+- **Tailwind CSS v4** (Estilização via tokens semânticos de CSS)
+- **Context API** (Gerenciamento global de autenticação, carrinho, tema e toasts)
+
+---
+
+## ⚙️ Configuração de Variáveis de Ambiente (`.env.local`)
+
+Na raiz da pasta `frontend/`, crie um arquivo chamado `.env.local` contendo a URL da API backend:
+
+```env
+# URL da API Backend local
+NEXT_PUBLIC_API_URL="http://localhost:3001/api"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 🚀 Como Executar Localmente
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 1. Instalar Dependências
+```bash
+npm install
+```
 
-## Learn More
+### 2. Iniciar o Servidor de Desenvolvimento
+```bash
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Abra o seu navegador e acesse `http://localhost:3000`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 📁 Estrutura da Aplicação
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `app/`: Estrutura de rotas do Next.js App Router (páginas públicas e rotas autenticadas).
+- `components/`: Componentes visuais reutilizáveis (botões, modais, cartões, tabelas, cabeçalhos, sidebar).
+- `contexts/`: Contextos globais da aplicação (`AuthContext`, `CartContext`, `ThemeContext`).
+- `hooks/`: Hooks customizados para facilitação de lógica (`useAuth`, `useCart`, `useTheme`).
+- `lib/`: Cliente de requisições HTTP (`api`) e funções utilitárias.
+- `types/`: Interfaces e definições de tipos em TypeScript.
