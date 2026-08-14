@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 export interface CollapsibleNoticeProps {
   title: string;
-  icon?: string;
+  icon?: ReactNode;
   children: ReactNode;
   defaultOpen?: boolean;
   className?: string;
@@ -13,7 +13,7 @@ export interface CollapsibleNoticeProps {
 
 export function CollapsibleNotice({
   title,
-  icon = "ℹ️",
+  icon,
   children,
   defaultOpen = false,
   className,
@@ -30,11 +30,27 @@ export function CollapsibleNotice({
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between gap-3 p-3.5 text-left transition-colors hover:bg-[var(--color-bg)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]"
+        className="flex w-full items-center justify-between gap-3 p-3.5 text-left transition-colors hover:bg-[var(--color-bg)]/40 focus:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)] cursor-pointer"
         aria-expanded={isOpen}
       >
         <div className="flex items-center gap-2.5 min-w-0">
-          <span className="text-base shrink-0">{icon}</span>
+          {icon && icon !== "ℹ️" ? (
+            <span className="text-base shrink-0">{icon}</span>
+          ) : (
+            <svg
+              className="h-4.5 w-4.5 shrink-0 text-[var(--color-primary)]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth="2.5"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          )}
           <span className="truncate text-xs font-bold text-[var(--color-primary)] sm:text-sm">
             {title}
           </span>

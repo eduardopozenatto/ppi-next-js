@@ -175,7 +175,7 @@ export default function SettingsPage() {
             </section>
 
             <Button type="button" onClick={handleSaveNotifications}>
-              💾 Salvar preferências
+              Salvar preferências
             </Button>
           </div>
         )}
