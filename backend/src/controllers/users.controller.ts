@@ -4,6 +4,7 @@ import { sendPaginated } from '../utils/response';
 import { getParam } from '../utils/params';
 import { updateUserSchema, updatePermissionOverrideSchema, createUserSchema } from '../schemas/user.schema';
 import { hashPassword } from '../utils/crypto';
+import { sendNewAccountEmail } from '../utils/email';
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
@@ -152,8 +153,9 @@ export const createUser = async (req: Request, res: Response) => {
       }
     }
 
-    // 3. Encrypt password "1234"
-    const hashedPassword = await hashPassword('1234');
+    // 3. Gerar senha provisória aleatória de 6 dígitos
+    const tempPassword = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedPassword = await hashPassword(tempPassword);
 
     // 4. Create user
     const user = await prisma.user.create({
@@ -170,8 +172,20 @@ export const createUser = async (req: Request, res: Response) => {
       include: { tag: true },
     });
 
+    // Tenta enviar e-mail de boas-vindas em segundo plano
+    sendNewAccountEmail(normalizedEmail, validatedData.name, tempPassword).catch((err) => {
+      console.error('[sendNewAccountEmail error]', err);
+    });
+
     const { password, ...sanitizedUser } = user;
-    return res.status(201).json({ success: true, message: 'Usuário criado com sucesso', data: sanitizedUser });
+    return res.status(201).json({
+      success: true,
+      message: 'Usuário criado com sucesso',
+      data: {
+        ...sanitizedUser,
+        tempPassword,
+      },
+    });
   } catch (error: any) {
     if (error.code === 'P2002') {
       return res.status(400).json({ success: false, message: 'Este e-mail ou matrícula já está em uso por outro usuário' });

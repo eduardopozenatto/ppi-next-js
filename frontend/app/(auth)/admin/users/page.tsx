@@ -24,6 +24,7 @@ export default function AdminUsersPage() {
   const [filterTag, setFilterTag] = useState("all");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; user: Omit<User, "id" | "createdAt"> & { id?: string } } | null>(null);
   const [deleteModal, setDeleteModal] = useState<User | null>(null);
+  const [createdTempPasswordModal, setCreatedTempPasswordModal] = useState<{ name: string; email: string; tempPassword: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { addToast } = useToast();
 
@@ -64,26 +65,28 @@ export default function AdminUsersPage() {
   async function toggleStatus(user: User) {
     try {
       await api.put(`/users/${user.id}`, { isActive: !user.isActive });
-      addToast({ title: "Atualizado", message: "Status alterado", variant: "success" });
-      await fetchUsersAndTags();
-    } catch (err) {
-      addToast({ title: "Erro", message: err instanceof Error ? err.message : "Falha ao alterar status", variant: "error" });
+      setUsers((prev) => prev.map((u) => (u.id === user.id ? { ...u, isActive: !user.isActive } : u)));
+      addToast({ title: "Status alterado", message: `Usuário ${!user.isActive ? "ativado" : "desativado"} com sucesso.`, variant: "success" });
+    } catch {
+      addToast({ title: "Erro", message: "Não foi possível alterar o status", variant: "error" });
     }
   }
 
-  async function handleSave() {
-    if (!formModal) return;
-    const errs: Record<string, string> = {};
-    if (!formModal.user.name.trim()) errs.name = "Nome é obrigatório";
-    if (!formModal.user.email.trim()) errs.email = "E-mail é obrigatório";
-    if (!formModal.user.matricula?.trim()) errs.matricula = "Matrícula é obrigatória";
-    if (!formModal.user.tagId) errs.tagId = "Perfil é obrigatório";
-    setErrors(errs);
-    if (Object.keys(errs).length > 0) return;
+  function validateForm() {
+    const newErrors: Record<string, string> = {};
+    if (!formModal?.user.name.trim()) newErrors.name = "Nome é obrigatório";
+    if (!formModal?.user.email.trim()) newErrors.email = "E-mail é obrigatório";
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formModal.user.email)) newErrors.email = "E-mail inválido";
+    if (!formModal?.user.tagId) newErrors.tagId = "Perfil é obrigatório";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
+  async function handleSave() {
+    if (!validateForm() || !formModal) return;
     try {
       if (formModal.mode === "create") {
-        await api.post("/users", {
+        const res = await api.post<ApiResponse<User & { tempPassword?: string }>>("/users", {
           name: formModal.user.name,
           email: formModal.user.email,
           matricula: formModal.user.matricula,
@@ -91,7 +94,16 @@ export default function AdminUsersPage() {
           role: formModal.user.role,
           isActive: formModal.user.isActive,
         });
-        addToast({ title: "Criado", message: "Usuário cadastrado com sucesso", variant: "success" });
+
+        if (res.data?.tempPassword) {
+          setCreatedTempPasswordModal({
+            name: res.data.name,
+            email: res.data.email,
+            tempPassword: res.data.tempPassword,
+          });
+        } else {
+          addToast({ title: "Criado", message: "Usuário cadastrado com sucesso", variant: "success" });
+        }
       } else if (formModal.user.id) {
         await api.put(`/users/${formModal.user.id}`, {
           name: formModal.user.name,
@@ -258,12 +270,53 @@ export default function AdminUsersPage() {
         </div>
       )}
 
+      {/* Modal de Senha Provisória Gerada */}
+      {createdTempPasswordModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setCreatedTempPasswordModal(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div>
+              <h2 className="text-lg font-bold text-[var(--color-text)]">Usuário Cadastrado com Sucesso!</h2>
+              <p className="mt-1 text-xs text-[var(--color-text-subtle)]">{createdTempPasswordModal.name} ({createdTempPasswordModal.email})</p>
+            </div>
+
+            <div className="rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg-subtle)] p-4 text-center">
+              <p className="text-xs font-semibold text-[var(--color-text-subtle)]">Senha Provisória Gerada (6 dígitos):</p>
+              <div className="mt-2 flex items-center justify-center gap-3">
+                <span className="font-mono text-2xl font-extrabold tracking-widest text-[var(--color-primary)]">
+                  {createdTempPasswordModal.tempPassword}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(createdTempPasswordModal.tempPassword);
+                    addToast({ title: "Copiado!", message: "Senha copiada para a área de transferência", variant: "success" });
+                  }}
+                  className="rounded-xl border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-1.5 text-xs font-semibold text-[var(--color-text)] transition-all hover:bg-[var(--color-bg-subtle)] active:scale-95"
+                >
+                  Copiar
+                </button>
+              </div>
+            </div>
+
+            <p className="text-xs leading-relaxed text-[var(--color-warning)] font-medium bg-amber-500/10 p-3 rounded-xl border border-amber-500/20">
+              Aviso: Esta senha de 6 dígitos só é exibida <strong>uma única vez nesta tela</strong>. Forneça-a ao usuário para que ele possa realizar a troca obrigatória no primeiro acesso.
+            </p>
+
+            <div className="flex justify-end pt-2">
+              <Button type="button" onClick={() => setCreatedTempPasswordModal(null)}>
+                Entendido
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Delete Modal */}
       {deleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteModal(null)}>
           <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-[var(--color-text)]">
-              <span className="text-xl">⚠️</span> Confirmar Exclusão Permanente
+            <h2 className="text-lg font-semibold text-[var(--color-text)]">
+              Confirmar Exclusão Permanente
             </h2>
             <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
               Tem certeza que deseja excluir permanentemente o usuário &quot;{deleteModal.name}&quot;?
