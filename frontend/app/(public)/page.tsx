@@ -23,19 +23,16 @@ export default function LandingPage() {
             <p className="mx-auto mt-6 max-w-2xl text-pretty text-lg text-[var(--color-text-subtle)] sm:text-xl">
               Controle de materiais, pedidos de alunos e aprovações de empréstimo em uma interface pensada para ambientes acadêmicos.
             </p>
-            <div className="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row">
-              <Link
-                href="/register"
-                className="w-full rounded-xl bg-[var(--color-primary)] px-8 py-3.5 text-center text-base font-semibold text-white shadow-lg shadow-azure-500/20 transition-transform active:scale-[0.99] sm:w-auto sm:min-w-[11rem]"
-              >
-                Começar agora
-              </Link>
+            <div className="mt-10 flex flex-col items-center justify-center gap-3">
               <Link
                 href="/login"
-                className="w-full rounded-xl border border-[var(--color-border-strong)] bg-[var(--color-bg)] px-8 py-3.5 text-center text-base font-semibold text-[var(--color-text)] transition-colors hover:bg-[var(--color-bg-subtle)] sm:w-auto sm:min-w-[11rem]"
+                className="w-full rounded-xl bg-[var(--color-primary)] px-10 py-4 text-center text-base font-semibold text-white shadow-lg shadow-azure-500/20 transition-transform active:scale-[0.99] sm:w-auto sm:min-w-[14rem]"
               >
-                Já tenho conta
+                Acessar o LabControl
               </Link>
+              <p className="mt-2 text-xs text-[var(--color-text-subtle)] sm:text-sm">
+                Login direto com CPF e senha institucional (SIGAA / LDAP). O seu cadastro é ativado automaticamente no primeiro acesso.
+              </p>
             </div>
           </div>
         </section>

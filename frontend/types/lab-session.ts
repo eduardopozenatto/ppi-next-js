@@ -19,4 +19,5 @@ export interface LabSessionUser {
   tag: LabUserTag;
   userPermissions: LabUserPermissions;
   mustChangePassword?: boolean;
+  mustCompleteProfile?: boolean;
 }

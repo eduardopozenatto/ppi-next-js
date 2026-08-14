@@ -233,6 +233,7 @@ export async function login(
               tagId: defaultTag?.id,
               isActive: true,
               mustChangePassword: false,
+              mustCompleteProfile: true,
             },
           });
         } catch (createErr) {
@@ -327,9 +328,50 @@ export async function getMe(
       tag: req.user.tag,
       userPermissions: req.user.userPermissions,
       mustChangePassword: req.user.mustChangePassword,
+      mustCompleteProfile: req.user.mustCompleteProfile,
     },
     'Sessão ativa recuperada'
   );
+}
+
+export async function completeProfile(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    if (!req.user) {
+      throw new AppError('Usuário não autenticado', 401);
+    }
+
+    const { name, email, phone, avatarUrl } = req.body;
+
+    const dataToUpdate: Record<string, any> = {
+      mustCompleteProfile: false,
+    };
+
+    if (typeof name === 'string' && name.trim()) {
+      dataToUpdate.name = name.trim();
+    }
+    if (typeof email === 'string' && email.trim()) {
+      dataToUpdate.email = email.trim().toLowerCase();
+    }
+    if (typeof phone === 'string') {
+      dataToUpdate.phone = phone.trim();
+    }
+    if (typeof avatarUrl === 'string' && avatarUrl.trim()) {
+      dataToUpdate.avatarUrl = avatarUrl.trim();
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: req.user.id },
+      data: dataToUpdate,
+    });
+
+    sendSuccess(res, updatedUser, 'Perfil atualizado com sucesso');
+  } catch (err) {
+    next(err);
+  }
 }
 
 /* ─── Avatar Upload ────────────────────────────────── */

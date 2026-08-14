@@ -21,6 +21,7 @@ declare global {
         } | null;
         userPermissions: Record<string, boolean>;
         mustChangePassword: boolean;
+        mustCompleteProfile: boolean;
       };
     }
   }
@@ -102,6 +103,7 @@ export async function requireAuth(
         : null,
       userPermissions: resolvedPermissions,
       mustChangePassword: currentUser.mustChangePassword,
+      mustCompleteProfile: currentUser.mustCompleteProfile,
     };
 
     next();

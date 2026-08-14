@@ -46,6 +46,7 @@ model User {
   avatarUrl String?
   isActive  Boolean  @default(true)
   mustChangePassword Boolean @default(false)
+  mustCompleteProfile Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -5,6 +5,7 @@ import { useEffect, type ReactNode } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { cn } from "@/lib/utils";
 import { PasswordResetForce } from "../auth/PasswordResetForce";
+import { FirstLoginWelcomeModal } from "../auth/FirstLoginWelcomeModal";
 
 export interface AuthGateProps {
   children: ReactNode;
@@ -39,5 +40,10 @@ export function AuthGate({ children }: AuthGateProps) {
     return <PasswordResetForce />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      {children}
+      {user?.mustCompleteProfile && <FirstLoginWelcomeModal />}
+    </>
+  );
 }

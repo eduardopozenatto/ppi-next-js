@@ -13,6 +13,7 @@ import {
   confirmEmailChange,
   requestPhoneChange,
   confirmPhoneChange,
+  completeProfile,
 } from '../controllers/auth.controller';
 import { requireAuth } from '../middlewares/auth';
 import multer from 'multer';
@@ -63,5 +64,6 @@ router.post('/request-email-change', requireAuth, requestEmailChange);
 router.post('/confirm-email-change', requireAuth, confirmEmailChange);
 router.post('/request-phone-change', requireAuth, requestPhoneChange);
 router.post('/confirm-phone-change', requireAuth, confirmPhoneChange);
+router.post('/complete-profile', requireAuth, completeProfile);
 
 export default router;
