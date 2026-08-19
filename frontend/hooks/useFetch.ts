@@ -20,7 +20,7 @@ interface UseFetchResult<T> {
  */
 export function useFetch<T>(
   path: string | null,
-  extractor: (res: unknown) => T = (res: any) => res.data,
+  extractor: (res: unknown) => T = (res) => (res as { data: T }).data,
 ): UseFetchResult<T> {
   const [data, setData] = useState<T | null>(null);
   const [loading, setLoading] = useState(true);

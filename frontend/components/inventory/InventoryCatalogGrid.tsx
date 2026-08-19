@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { LabInventoryList } from "@/types/lab-inventory";
@@ -28,10 +28,13 @@ export function InventoryCatalogGrid({
   // Mapa de erros de carregamento de imagem para fallback gracioso
   const [imgErrorMap, setImgErrorMap] = useState<Record<string, boolean>>({});
 
+  const [prevShowImages, setPrevShowImages] = useState(showImages);
+
   // Reset de overrides manuais quando o alternador global de fotos mudar
-  useEffect(() => {
+  if (prevShowImages !== showImages) {
+    setPrevShowImages(showImages);
     setExpandedImages({});
-  }, [showImages]);
+  }
 
   function toggleSingleImage(id: string) {
     setExpandedImages((prev) => {

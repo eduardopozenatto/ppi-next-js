@@ -2,12 +2,12 @@
 
 import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
 import { CollapsibleNotice } from "@/components/shared/CollapsibleNotice";
 import { api, BASE_URL } from "@/lib/api/client";
 import { getStaticUrl } from "@/lib/static-url";
+import type { ApiResponse } from "@/types/api";
 
 function formatPhone(value: string): string {
   const digits = value.replace(/\D/g, "").slice(0, 11);
@@ -87,12 +87,12 @@ export function ProfileSummary() {
 
     setRequestingEmail(true);
     try {
-      const res: any = await api.post("/auth/request-email-change", { newEmail: email.trim() });
+      const res = await api.post<ApiResponse<{ devCode?: string }>>("/auth/request-email-change", { newEmail: email.trim() });
       setPendingEmail(email.trim());
       setEmailCode("");
       setEmailModalOpen(true);
       
-      const devCodeMessage = res?.devCode ? ` [Código DEV: ${res.devCode}]` : "";
+      const devCodeMessage = res.data?.devCode ? ` [Código DEV: ${res.data.devCode}]` : "";
       addToast({
         variant: "info",
         title: "Código enviado",
@@ -139,12 +139,12 @@ export function ProfileSummary() {
 
     setRequestingPhone(true);
     try {
-      const res: any = await api.post("/auth/request-phone-change", { newPhone: phone.trim() });
+      const res = await api.post<ApiResponse<{ devCode?: string }>>("/auth/request-phone-change", { newPhone: phone.trim() });
       setPendingPhone(phone.trim());
       setPhoneCode("");
       setPhoneModalOpen(true);
 
-      const devCodeMessage = res?.devCode ? ` [Código SMS DEV: ${res.devCode}]` : "";
+      const devCodeMessage = res.data?.devCode ? ` [Código SMS DEV: ${res.data.devCode}]` : "";
       addToast({
         variant: "info",
         title: "Código SMS enviado",

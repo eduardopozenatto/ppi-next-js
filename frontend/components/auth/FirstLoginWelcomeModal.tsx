@@ -82,7 +82,7 @@ export function FirstLoginWelcomeModal() {
 
       // 3. Atualiza a sessão para limpar o modal
       await refreshUser();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Falha ao salvar as informações do perfil.");
     } finally {
       setLoading(false);

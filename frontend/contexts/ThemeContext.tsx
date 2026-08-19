@@ -22,16 +22,15 @@ const STORAGE_KEY = "labcontrol-theme";
 const ThemeContext = createContext<ThemeContextValue | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [themeMode, setThemeState] = useState<ThemeMode>("system");
+  const [themeMode, setThemeState] = useState<ThemeMode>(() => {
+    if (typeof window === "undefined") return "system";
+    const saved = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
+    return saved && ["light", "dark", "system"].includes(saved) ? saved : "system";
+  });
   const [resolvedTheme, setResolvedTheme] = useState<"light" | "dark">("light");
 
-  // Read saved theme on mount & listen for cross-tab updates
+  // Listen for cross-tab updates
   useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY) as ThemeMode | null;
-    if (saved && ["light", "dark", "system"].includes(saved)) {
-      setThemeState(saved);
-    }
-
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === STORAGE_KEY && e.newValue) {
         if (["light", "dark", "system"].includes(e.newValue)) {

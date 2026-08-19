@@ -45,7 +45,7 @@ export function PasswordResetForce() {
 
       // Recarrega o usuário para limpar a flag mustChangePassword da sessão
       await refreshUser();
-    } catch (err: any) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Falha ao redefinir a senha");
     } finally {
       setLoading(false);
