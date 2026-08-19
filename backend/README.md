@@ -79,3 +79,17 @@ O servidor estará rodando em `http://localhost:3001`.
 - **Gerenciamento de Empréstimos**: Solicitação, aprovação, rejeição com justificativa, baixa em estoque e devoluções.
 - **Controle de Acesso**: Permissões granulares divididas em 11 permissões distintas via Tags.
 - **Notificações**: Sistema centralizado de avisos na plataforma (In-App), e-mails (SMTP) e mensagens SMS (Twilio).
+
+---
+
+## 🗺️ Mapa de Rotas da API
+
+| Prefixo de Rota | Métodos HTTP | Descrição do Módulo |
+|---|---|---|
+| `/api/auth` | `POST`, `GET`, `PATCH` | Autenticação (Local e SIGAA/LDAP), recuperação de senha e alteração de dados |
+| `/api/users` | `GET`, `POST`, `PUT`, `DELETE` | Gerenciamento administrativo de usuários, tags e permissões |
+| `/api/inventory` | `GET`, `POST`, `PUT`, `DELETE` | Catálogo de itens do estoque, ativação/desativação e categorias |
+| `/api/loans` | `GET`, `POST`, `PUT`, `DELETE` | Solicitações, aprovações, rejeições e devoluções de empréstimos |
+| `/api/notifications` | `GET`, `PATCH`, `DELETE` | Central de notificações in-app dos usuários |
+| `/api/reports` | `GET` | Relatórios com KPIs do sistema e exportação de planilhas XLSX |
+
