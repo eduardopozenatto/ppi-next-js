@@ -34,7 +34,7 @@ export default function CatalogPage() {
     load();
   }, []);
 
-  const filteredEntries = Object.entries(items).filter(([_, item]) => {
+  const filteredEntries = Object.entries(items).filter(([, item]) => {
     const matchesSearch =
       item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.description && item.description.toLowerCase().includes(searchQuery.toLowerCase()));

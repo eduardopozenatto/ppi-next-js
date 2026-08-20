@@ -106,7 +106,9 @@ export default function LoansListPage() {
       </div>
 
       {/* Loan List */}
-      {currentLoans.length === 0 ? (
+      {loading ? (
+        <div className="p-8 text-center text-sm text-[var(--color-text-subtle)]">Carregando empréstimos...</div>
+      ) : currentLoans.length === 0 ? (
         <EmptyState
           title="Nenhum empréstimo encontrado"
           description={tab === "active" ? "Você não possui empréstimos ativos." : "Nenhum empréstimo no histórico."}

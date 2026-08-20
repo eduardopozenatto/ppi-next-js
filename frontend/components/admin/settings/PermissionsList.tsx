@@ -63,8 +63,6 @@ export function PermissionsList() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => { fetchData(); }, []);
 
-  const currentUserId = sessionUser?.id?.toString() ?? "";
-
   function getOverrideCount(userId: string) {
     const user = users.find((u) => u.id === userId);
     if (!user || !user.permissionOverrides) return 0;
@@ -141,7 +139,8 @@ export function PermissionsList() {
     const tagDefault = getTagPermission(editModal.tagId, key);
 
     if (key in current) {
-      const { [key]: _, ...rest } = current;
+      const rest = { ...current };
+      delete rest[key];
       setEditModal({ ...editModal, overrides: rest });
     } else {
       setEditModal({ ...editModal, overrides: { ...current, [key]: !tagDefault } });

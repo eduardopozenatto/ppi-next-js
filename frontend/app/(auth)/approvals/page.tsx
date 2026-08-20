@@ -107,7 +107,9 @@ export default function ApprovalsPage() {
       </div>
 
       {/* Pending List */}
-      {pending.length === 0 ? (
+      {loading ? (
+        <div className="p-8 text-center text-sm text-[var(--color-text-subtle)]">Carregando solicitações...</div>
+      ) : pending.length === 0 ? (
         <EmptyState
           title="Nenhum empréstimo encontrado"
           description="Nenhum usuário solicitou empréstimo até o momento."
