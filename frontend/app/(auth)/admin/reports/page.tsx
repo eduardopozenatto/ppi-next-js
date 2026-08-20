@@ -46,7 +46,7 @@ export default function AdminReportsPage() {
         setInvReport(invRes.data);
         setLoansReport(loansRepRes.data);
         setLoansTable(loansRes.data ?? []);
-      } catch (err) {
+      } catch {
         addToast({ title: "Erro", message: "Falha ao carregar relatórios", variant: "error" });
       } finally {
         setLoading(false);

@@ -225,8 +225,8 @@ export function NewInventoryItemForm() {
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancelar
         </Button>
-        <Button type="submit" variant="primary">
-          Guardar item
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? "Salvando..." : "Guardar item"}
         </Button>
       </div>
     </form>

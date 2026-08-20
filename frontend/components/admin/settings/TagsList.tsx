@@ -26,7 +26,7 @@ type FormTag = { id?: string; name: string; color: string; description: string; 
 
 export function TagsList() {
   const { addToast } = useToast();
-  const { user, updateSessionPermissions, updateSessionTag } = useAuth();
+  const { user, updateSessionPermissions } = useAuth();
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -195,7 +195,9 @@ export function TagsList() {
 
       {/* Grid */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {filtered.length === 0 ? (
+        {loading ? (
+          <p className="col-span-full py-8 text-center text-sm text-[var(--color-text-subtle)]">Carregando tags...</p>
+        ) : filtered.length === 0 ? (
           <p className="col-span-full py-8 text-center text-sm text-[var(--color-text-subtle)]">Nenhuma tag encontrada.</p>
         ) : (
           filtered.map((tag) => (

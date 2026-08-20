@@ -156,8 +156,8 @@ export function NewLoanForm() {
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancelar
         </Button>
-        <Button type="submit" variant="primary">
-          Submeter pedido
+        <Button type="submit" variant="primary" disabled={isSubmitting}>
+          {isSubmitting ? "Enviando..." : "Submeter pedido"}
         </Button>
       </div>
     </form>

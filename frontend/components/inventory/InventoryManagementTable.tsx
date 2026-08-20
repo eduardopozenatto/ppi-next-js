@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useRef } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { cn } from "@/lib/utils";
 import { api, BASE_URL } from "@/lib/api/client";
 import { getStaticUrl } from "@/lib/static-url";
@@ -43,7 +42,7 @@ export function InventoryManagementTable() {
       ]);
       setRows(invRes.data ?? []);
       setCategories(catRes.data ?? []);
-    } catch (err) {
+    } catch {
       addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });
     } finally {
       setLoading(false);
