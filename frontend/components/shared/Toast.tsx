@@ -59,24 +59,56 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 }
 
 /* ---------- Single toast ---------- */
-const variantStyles: Record<ToastVariant, { bg: string; border: string; icon: string; titleColor: string }> = {
+function SuccessIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+    </svg>
+  );
+}
+
+function ErrorIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+  );
+}
+
+const variantConfig: Record<
+  ToastVariant,
+  {
+    borderLeft: string;
+    iconBg: string;
+    titleColor: string;
+    Icon: () => React.JSX.Element;
+  }
+> = {
   success: {
-    bg: "bg-white",
-    border: "border-l-4 border-l-emerald-500",
-    icon: "✓",
-    titleColor: "text-emerald-600",
+    borderLeft: "border-l-emerald-500",
+    iconBg: "bg-emerald-500 text-white",
+    titleColor: "text-emerald-700 dark:text-emerald-400",
+    Icon: SuccessIcon,
   },
   error: {
-    bg: "bg-white",
-    border: "border-l-4 border-l-red-500",
-    icon: "✕",
-    titleColor: "text-red-600",
+    borderLeft: "border-l-red-500",
+    iconBg: "bg-red-500 text-white",
+    titleColor: "text-red-700 dark:text-red-400",
+    Icon: ErrorIcon,
   },
   info: {
-    bg: "bg-white",
-    border: "border-l-4 border-l-blue-500",
-    icon: "ℹ",
-    titleColor: "text-blue-600",
+    borderLeft: "border-l-[var(--color-primary)]",
+    iconBg: "bg-[var(--color-primary)] text-white",
+    titleColor: "text-[var(--color-primary)] dark:text-blue-400",
+    Icon: InfoIcon,
   },
 };
 
@@ -92,33 +124,34 @@ function ToastItem({ toast, onDismiss }: { toast: ToastData; onDismiss: () => vo
     return () => clearTimeout(timer);
   }, [onDismiss]);
 
-  const v = variantStyles[toast.variant];
+  const config = variantConfig[toast.variant];
+  const IconComponent = config.Icon;
 
   return (
     <div
-      className={`pointer-events-auto flex w-80 items-start gap-3 rounded-xl ${v.bg} ${v.border} border border-[var(--color-border)] p-4 shadow-lg transition-all duration-300 ${
-        show ? "translate-x-0 opacity-100" : "translate-x-8 opacity-0"
+      className={`pointer-events-auto flex w-84 max-w-[calc(100vw-2rem)] items-start gap-3 rounded-2xl bg-[var(--color-bg)] dark:bg-[var(--color-surface-elevated)] border border-[var(--color-border)] border-l-4 ${config.borderLeft} p-4 shadow-xl backdrop-blur-sm transition-all duration-300 ${
+        show ? "translate-x-0 opacity-100 scale-100" : "translate-x-8 opacity-0 scale-95"
       }`}
       role="alert"
     >
-      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold text-white ${
-        toast.variant === "success" ? "bg-emerald-500" : toast.variant === "error" ? "bg-red-500" : "bg-blue-500"
-      }`}>
-        {v.icon}
+      <span className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-bold shadow-sm ${config.iconBg}`}>
+        <IconComponent />
       </span>
       <div className="flex-1 min-w-0">
-        <p className={`text-sm font-semibold ${v.titleColor}`}>{toast.title}</p>
+        <p className={`text-sm font-bold ${config.titleColor}`}>{toast.title}</p>
         {toast.message && (
-          <p className="mt-0.5 text-xs text-[var(--color-text-subtle)]">{toast.message}</p>
+          <p className="mt-0.5 text-xs leading-relaxed text-[var(--color-text-subtle)]">{toast.message}</p>
         )}
       </div>
       <button
         type="button"
         onClick={() => { setShow(false); setTimeout(onDismiss, 300); }}
-        className="shrink-0 rounded p-0.5 text-[var(--color-text-subtle)] transition-colors hover:text-[var(--color-text)]"
+        className="shrink-0 rounded-lg p-1 text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-bg-subtle)] hover:text-[var(--color-text)]"
         aria-label="Fechar notificação"
       >
-        ✕
+        <svg className="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
   );
