@@ -136,13 +136,13 @@ function AdminUsersContent() {
         }
       } else if (formModal.user.id) {
         await api.put(`/users/${formModal.user.id}`, {
-          name: formModal.user.name,
-          email: formModal.user.email,
-          matricula: formModal.user.matricula,
-          tagId: formModal.user.tagId,
+          name: formModal.user.name.trim(),
+          email: formModal.user.email.trim().toLowerCase(),
+          matricula: formModal.user.matricula?.trim() || null,
+          tagId: formModal.user.tagId || null,
           isActive: formModal.user.isActive,
         });
-        addToast({ title: "Atualizado", message: "Usuário salvo", variant: "success" });
+        addToast({ title: "Atualizado", message: "Usuário salvo com sucesso", variant: "success" });
       }
       setFormModal(null);
       setErrors({});

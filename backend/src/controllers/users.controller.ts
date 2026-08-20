@@ -70,12 +70,17 @@ export const updateUser = async (req: Request, res: Response) => {
 
     const validatedData = updateUserSchema.parse(req.body);
 
-    // If the requesting user is not an admin, they cannot update admin-restricted fields
-    if (req.user?.role !== 'admin') {
+    // Usuários com papel admin ou com a permissão 'gerenciar_usuarios' podem alterar campos administrativos
+    const canManageUsers = req.user?.role === 'admin' || req.user?.userPermissions?.['gerenciar_usuarios'] === true;
+    if (!canManageUsers) {
       delete validatedData.email;
       delete validatedData.tagId;
       delete validatedData.role;
       delete validatedData.isActive;
+    }
+
+    if (validatedData.tagId === '' || validatedData.tagId === 'none') {
+      validatedData.tagId = null;
     }
 
     if (validatedData.email) {
