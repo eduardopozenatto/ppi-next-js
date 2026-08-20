@@ -140,12 +140,15 @@ export const deleteTag = async (req: Request, res: Response) => {
     const id = getParam(req.params.id);
     if (!id) return res.status(400).json({ success: false, message: 'ID não fornecido' });
 
-    const tagInUse = await prisma.user.findFirst({
+    const userCount = await prisma.user.count({
       where: { tagId: id },
     });
 
-    if (tagInUse) {
-      return res.status(409).json({ success: false, message: 'Não é possível excluir uma tag que está em uso por usuários' });
+    if (userCount > 0) {
+      return res.status(409).json({
+        success: false,
+        message: `Não é possível excluir: existem ${userCount} usuário(s) vinculados a esta tag. Altere ou remova a tag desses usuários antes de excluí-la.`,
+      });
     }
 
     await prisma.tag.delete({

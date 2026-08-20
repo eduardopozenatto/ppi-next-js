@@ -99,7 +99,19 @@ async function main() {
     },
   });
 
-  console.log('   ✓ Tags:', [tagAluno.name, tagEstagiario.name, tagLaboratorista.name].join(', '));
+  const tagProfessor = await prisma.tag.upsert({
+    where: { name: 'Professor' },
+    update: {},
+    create: {
+      id: 'tag-4',
+      name: 'Professor',
+      color: '#8a3ffc',
+      description: 'Acesso para docentes e servidores (LDAP) para busca e empréstimos',
+      permissions: ALUNO_PERMISSIONS,
+    },
+  });
+
+  console.log('   ✓ Tags:', [tagAluno.name, tagEstagiario.name, tagLaboratorista.name, tagProfessor.name].join(', '));
 
   // ─── Categories (frontend/mocks/settings.ts MOCK_CATEGORIES + Alimentação) ─
   const categories = await Promise.all([

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { api } from "@/lib/api/client";
 import { Tag, TagPermissions } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
@@ -203,9 +204,13 @@ export function TagsList() {
                 <div className="flex items-center gap-3">
                   <span className="h-3 w-3 rounded-full" style={{ backgroundColor: tag.color }} aria-hidden="true" />
                   <h3 className="font-semibold text-[var(--color-text)]">{tag.name}</h3>
-                  <span className="rounded-full bg-[var(--color-bg-subtle)] px-2 py-0.5 text-xs font-medium text-[var(--color-text-subtle)]">
+                  <Link
+                    href={`/admin/users?tag=${tag.id}`}
+                    className="rounded-full bg-[var(--color-bg-subtle)] px-2.5 py-0.5 text-xs font-medium text-[var(--color-text-subtle)] transition-colors hover:bg-[var(--color-primary)]/10 hover:text-[var(--color-primary)] hover:underline"
+                    title="Filtrar usuários com esta tag"
+                  >
                     {tag.userCount || 0} usuários
-                  </span>
+                  </Link>
                 </div>
                 <div className="flex items-center gap-2">
                   <button
@@ -346,31 +351,52 @@ export function TagsList() {
 
       {/* Delete Modal */}
       {deleteModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4" onClick={() => setDeleteModal(null)}>
-          <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
-            <h2 className="text-lg font-semibold text-[var(--color-text)]">Confirmar Exclusão</h2>
-            <p className="mt-2 text-sm text-[var(--color-text-subtle)]">
-              Tem certeza que deseja excluir a tag &quot;{deleteModal.name}&quot;?
-            </p>
-            {(deleteModal.userCount ?? 0) > 0 && (
-              <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
-                ⚠ {deleteModal.userCount} usuário(s) utilizam esta tag. Ao excluir, eles ficarão sem tag base. Deseja continuar?
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-fade-in" onClick={() => setDeleteModal(null)}>
+          <div className="w-full max-w-md rounded-2xl bg-[var(--color-bg)] p-6 shadow-xl space-y-4 animate-slide-up" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+            <div>
+              <h2 className="text-lg font-bold text-[var(--color-text)]">Exclusão de Tag</h2>
+              <p className="mt-1 text-sm text-[var(--color-text-subtle)]">
+                Perfil: <strong className="text-[var(--color-text)]">&quot;{deleteModal.name}&quot;</strong>
+              </p>
+            </div>
+
+            {deleteModal.name.toLowerCase() === currentUserTagName ? (
+              <div className="rounded-xl border border-red-200 bg-red-50 p-4 text-xs font-medium text-red-700 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-300">
+                Esta é a sua própria tag de acesso. A exclusão está bloqueada para sua segurança.
+              </div>
+            ) : (deleteModal.userCount ?? 0) > 0 ? (
+              <div className="space-y-3">
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-xs font-medium text-amber-800 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300">
+                  <p className="font-bold text-sm mb-1">⚠ Exclusão Bloqueada</p>
+                  Existem <strong>{deleteModal.userCount} usuário(s)</strong> vinculados a este perfil. Para poder excluí-lo, você deve primeiro reatribuir ou remover a tag desses usuários na tela de Usuários.
+                </div>
+                <Link
+                  href={`/admin/users?tag=${deleteModal.id}`}
+                  onClick={() => setDeleteModal(null)}
+                  className="flex w-full items-center justify-center gap-2 rounded-xl bg-[var(--color-primary)] px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-90 shadow-sm"
+                >
+                  Ver Usuários com esta Tag
+                </Link>
+              </div>
+            ) : (
+              <p className="text-sm text-[var(--color-text)]">
+                Tem certeza que deseja excluir a tag &quot;{deleteModal.name}&quot;? Esta ação não poderá ser desfeita.
               </p>
             )}
-            {deleteModal.name.toLowerCase() === currentUserTagName && (
-              <p className="mt-2 text-sm font-medium text-[var(--color-danger)]">
-                Esta é sua tag de acesso. A exclusão será bloqueada.
-              </p>
-            )}
-            <div className="mt-6 flex justify-end gap-3">
-              <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>Cancelar</Button>
-              <button
-                type="button"
-                onClick={handleDelete}
-                className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
-              >
-                {(deleteModal.userCount ?? 0) > 0 ? "Excluir mesmo assim" : "Excluir Tag"}
-              </button>
+
+            <div className="flex justify-end gap-3 pt-2">
+              <Button type="button" variant="secondary" onClick={() => setDeleteModal(null)}>
+                {(deleteModal.userCount ?? 0) > 0 ? "Fechar" : "Cancelar"}
+              </Button>
+              {deleteModal.name.toLowerCase() !== currentUserTagName && (deleteModal.userCount ?? 0) === 0 && (
+                <button
+                  type="button"
+                  onClick={handleDelete}
+                  className="rounded-xl bg-[var(--color-danger)] px-4 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-red-700"
+                >
+                  Excluir Tag
+                </button>
+              )}
             </div>
           </div>
         </div>

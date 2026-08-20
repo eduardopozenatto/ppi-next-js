@@ -214,9 +214,17 @@ export async function login(
       });
 
       if (!user) {
-        const defaultTag = await prisma.tag.findFirst({
-          where: { name: { equals: 'Aluno', mode: 'insensitive' } },
+        const isLdap = tipo === 'L';
+        const targetTagName = isLdap ? 'Professor' : 'Aluno';
+        let defaultTag = await prisma.tag.findFirst({
+          where: { name: { equals: targetTagName, mode: 'insensitive' } },
         });
+
+        if (!defaultTag && isLdap) {
+          defaultTag = await prisma.tag.findFirst({
+            where: { name: { equals: 'Docente', mode: 'insensitive' } },
+          });
+        }
 
         const randomPassword = await hashPassword(
           Math.random().toString(36).slice(-8) + Date.now().toString()
