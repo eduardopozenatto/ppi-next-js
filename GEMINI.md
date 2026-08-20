@@ -3,9 +3,9 @@
 ## Commit Messages & Documentation Style
 
 1. **Commit Messages**:
+   - Commits MUST always be written in Portuguese (pt-BR), precise, clear, and in standard developer format (e.g., `feat(auth): vincula tag professor ao auto-provisionamento ldap`, `fix(users): libera edicao de email no modal de usuario`).
    - NEVER use phrases or keywords that disclose, imply, or suggest AI involvement or text humanization (e.g. avoid "Human readme text", "refatoração para linguagem humana", "AI generated", "AI review", "humanized documentation").
-   - Always write clean, professional git commit messages standard for human developers (e.g., `docs: update setup guidelines and route map in READMEs`, `fix(auth): resolve user registration validation`).
 
 2. **Language**:
-   - All user-facing application text must be in Portuguese (pt-BR).
+   - All user-facing application text and commit messages must be in Portuguese (pt-BR).
    - Technical documentation can be in pt-BR or English, maintaining a direct, clear tone.

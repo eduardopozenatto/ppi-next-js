@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
@@ -16,17 +17,25 @@ const EMPTY_USER: Omit<User, "id" | "createdAt"> = {
   name: "", email: "", role: "user", matricula: "", tagId: "", isActive: true,
 };
 
-export default function AdminUsersPage() {
+function AdminUsersContent() {
+  const searchParams = useSearchParams();
+  const tagParam = searchParams.get("tag");
   const [users, setUsers] = useState<User[]>([]);
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
-  const [filterTag, setFilterTag] = useState("all");
+  const [filterTag, setFilterTag] = useState(tagParam || "all");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; user: Omit<User, "id" | "createdAt"> & { id?: string } } | null>(null);
   const [deleteModal, setDeleteModal] = useState<User | null>(null);
   const [createdTempPasswordModal, setCreatedTempPasswordModal] = useState<{ name: string; email: string; tempPassword: string } | null>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { addToast } = useToast();
+
+  useEffect(() => {
+    if (tagParam) {
+      setFilterTag(tagParam);
+    }
+  }, [tagParam]);
 
   async function fetchUsersAndTags() {
     try {
@@ -51,7 +60,7 @@ export default function AdminUsersPage() {
 
   const filtered = users.filter((u) => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()) || (u.matricula ?? "").includes(search);
-    const matchTag = filterTag === "all" || u.tagId === filterTag;
+    const matchTag = filterTag === "all" ? true : filterTag === "none" ? !u.tagId : u.tagId === filterTag;
     return matchSearch && matchTag;
   });
 
@@ -156,6 +165,7 @@ export default function AdminUsersPage() {
           className="rounded-lg border border-[var(--color-border)] bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)] focus:border-[var(--color-primary)] focus:outline-none"
         >
           <option value="all">Todos os perfis</option>
+          <option value="none">Sem perfil / Sem tag</option>
           {tags.map((t) => <option key={t.id} value={t.id}>{t.name}</option>)}
         </select>
       </div>
@@ -243,7 +253,7 @@ export default function AdminUsersPage() {
               </div>
               <div>
                 <label htmlFor="user-email" className="mb-1 block text-sm font-medium text-[var(--color-text)]">E-mail *</label>
-                <input id="user-email" type="email" value={formModal.user.email} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, email: e.target.value } })} className={inputClass("email")} disabled={formModal.mode === "edit"} />
+                <input id="user-email" type="email" value={formModal.user.email} onChange={(e) => setFormModal({ ...formModal, user: { ...formModal.user, email: e.target.value } })} className={inputClass("email")} />
                 {errors.email && <p className="mt-1 text-xs text-[var(--color-danger)]">{errors.email}</p>}
               </div>
               <div>
@@ -333,5 +343,13 @@ export default function AdminUsersPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function AdminUsersPage() {
+  return (
+    <Suspense fallback={<div className="p-6 text-sm text-[var(--color-text-subtle)]">Carregando usuários...</div>}>
+      <AdminUsersContent />
+    </Suspense>
   );
 }
