@@ -6,13 +6,28 @@ import { updateNotificationSchema } from '../schemas/notification.schema';
 
 export const getNotifications = async (req: Request, res: Response) => {
   try {
-    const page = Number(getParam(req.query.page)) || 1;
-    const limit = Number(getParam(req.query.limit)) || 10;
-    
-    // Auth middleware ensures req.user exists
     const userId = req.user!.id;
 
-    const where = { userId };
+    // Fast unread count support
+    if (getParam(req.query.unread_count) === 'true') {
+      const unread = await prisma.notification.count({
+        where: { userId, read: false },
+      });
+      return res.json({ success: true, message: 'Contagem de não lidas', data: { unread } });
+    }
+
+    const page = Number(getParam(req.query.page)) || 1;
+    const limit = Number(getParam(req.query.limit)) || 50;
+    const unreadOnly = getParam(req.query.unreadOnly) === 'true';
+    const type = getParam(req.query.type);
+
+    const where: any = { userId };
+    if (unreadOnly) {
+      where.read = false;
+    }
+    if (type) {
+      where.type = type;
+    }
 
     const notifications = await prisma.notification.findMany({
       where,
@@ -27,6 +42,22 @@ export const getNotifications = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('[getNotifications]', error);
     return res.status(500).json({ success: false, message: 'Erro interno ao buscar notificações', errors: [String(error)] });
+  }
+};
+
+export const markAllAsRead = async (req: Request, res: Response) => {
+  try {
+    const userId = req.user!.id;
+
+    await prisma.notification.updateMany({
+      where: { userId, read: false },
+      data: { read: true },
+    });
+
+    return res.json({ success: true, message: 'Todas as notificações foram marcadas como lidas' });
+  } catch (error) {
+    console.error('[markAllAsRead]', error);
+    return res.status(500).json({ success: false, message: 'Erro interno ao marcar notificações', errors: [String(error)] });
   }
 };
 
