@@ -5,7 +5,7 @@
   "description": "LabControl REST API — backend for lab inventory and loan management",
   "scripts": {
     "dev": "tsx watch src/server.ts",
-    "build": "prisma db push && prisma generate && tsc",
+    "build": "prisma generate && tsc",
     "start": "node dist/server.js",
     "lint": "tsc --noEmit",
     "db:migrate": "prisma migrate dev",

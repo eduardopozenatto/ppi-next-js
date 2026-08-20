@@ -127,6 +127,18 @@ export async function ensureInitialSeedData(): Promise<void> {
       },
     });
 
+    await prisma.tag.upsert({
+      where: { name: 'Professor' },
+      update: {},
+      create: {
+        id: 'tag-4',
+        name: 'Professor',
+        color: '#8a3ffc',
+        description: 'Acesso para docentes e servidores (LDAP) para busca e empréstimos',
+        permissions: ALUNO_PERMISSIONS,
+      },
+    });
+
     const defaultPassword = await hashPassword('1234');
 
     await prisma.user.upsert({
