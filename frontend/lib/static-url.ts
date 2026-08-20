@@ -21,11 +21,18 @@ import { BASE_URL } from "@/lib/api/client";
  * // → null
  */
 export function getStaticUrl(relativePath: string | null | undefined): string | null {
-  if (!relativePath) return null;
+  if (!relativePath || !relativePath.trim()) return null;
 
-  // Already a full URL — return as-is
-  if (relativePath.startsWith("http://") || relativePath.startsWith("https://")) {
-    return relativePath;
+  const trimmed = relativePath.trim();
+
+  // Already a full URL, blob or data URL — return as-is
+  if (
+    trimmed.startsWith("http://") ||
+    trimmed.startsWith("https://") ||
+    trimmed.startsWith("data:") ||
+    trimmed.startsWith("blob:")
+  ) {
+    return trimmed;
   }
 
   // BASE_URL is "http://localhost:3001/api" — we need "http://localhost:3001"

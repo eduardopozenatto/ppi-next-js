@@ -14,6 +14,28 @@ import { useCart } from "@/contexts/CartContext";
 import type { ApiResponse } from "@/types/api";
 import type { LabNotification } from "@/types/notification";
 
+function SidebarUserAvatar({ name, avatarUrl }: { name: string; avatarUrl?: string | null }) {
+  const [imgError, setImgError] = useState(false);
+  const src = getStaticUrl(avatarUrl);
+
+  if (!src || imgError) {
+    return (
+      <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[var(--color-primary)] font-bold text-white shadow-xs text-sm">
+        {name?.charAt(0).toUpperCase() || "U"}
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      onError={() => setImgError(true)}
+      className="h-10 w-10 shrink-0 rounded-xl object-cover border border-[var(--color-border)]"
+    />
+  );
+}
+
 export function AppSidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
@@ -82,23 +104,7 @@ export function AppSidebar() {
         <ThemeToggle />
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)]/60 p-3 sm:mx-1">
           <div className="flex items-center gap-3">
-            {user.avatarUrl ? (
-              <img
-                src={getStaticUrl(user.avatarUrl) ?? ""}
-                alt={user.name}
-                className="h-10 w-10 shrink-0 rounded-xl object-cover"
-              />
-            ) : (
-              <div className="flex shrink-0 rounded-xl bg-[var(--color-bg-subtle)] p-2">
-                <Image
-                  src="/buttonIcons/exit-account.svg"
-                  alt=""
-                  width={22}
-                  height={22}
-                  aria-hidden
-                />
-              </div>
-            )}
+            <SidebarUserAvatar name={user.name} avatarUrl={user.avatarUrl} />
             <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-[var(--color-text)]">{user.name}</p>
               <p className={cn("truncate text-xs font-medium capitalize sm:text-sm", user.tag?.colorClass || "text-[var(--color-text-muted)]")}>

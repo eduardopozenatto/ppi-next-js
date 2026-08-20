@@ -47,6 +47,7 @@ export function ProfileSummary() {
   const [confirmingPhone, setConfirmingPhone] = useState(false);
   const [changingPassword, setChangingPassword] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+  const [avatarLoadError, setAvatarLoadError] = useState(false);
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
 
   if (!user) return null;
@@ -251,14 +252,15 @@ export function ProfileSummary() {
       <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Foto de perfil</h3>
         <div className="flex items-center gap-5">
-          {avatarSrc ? (
+          {avatarSrc && !avatarLoadError ? (
             <img
               src={avatarSrc}
               alt={user.name}
+              onError={() => setAvatarLoadError(true)}
               className="h-20 w-20 shrink-0 rounded-full object-cover border-2 border-[var(--color-border)]"
             />
           ) : (
-            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-2xl font-bold text-white">
+            <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-full bg-[var(--color-primary)] text-2xl font-bold text-white shadow-sm">
               {user.name.charAt(0).toUpperCase()}
             </div>
           )}

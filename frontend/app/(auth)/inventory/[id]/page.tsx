@@ -22,6 +22,7 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
   const [item, setItem] = useState<LabInventoryListItem | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [imgError, setImgError] = useState(false);
   const [selectedQty, setSelectedQty] = useState(1);
 
   const { addItem, totalCount } = useCart();
@@ -54,7 +55,8 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
     );
   }
 
-  const src = getStaticUrl(item.image) || "/buttonIcons/box.svg";
+  const rawSrc = getStaticUrl(item.image);
+  const src = imgError || !rawSrc ? "/buttonIcons/box.svg" : rawSrc;
 
   return (
     <div>
@@ -85,8 +87,16 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
       />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,25rem)_1fr] lg:items-start">
-        <div className="relative aspect-square w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] lg:max-w-none">
-          <Image src={src} alt={item.name} fill className="object-cover" sizes="(max-width: 1024px) 100vw, 400px" unoptimized />
+        <div className="relative flex items-center justify-center aspect-square w-full max-w-md justify-self-center overflow-hidden rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] lg:max-w-none">
+          <Image
+            src={src}
+            alt={item.name}
+            fill
+            className={src.endsWith(".svg") ? "object-contain p-16 opacity-70" : "object-cover"}
+            sizes="(max-width: 1024px) 100vw, 400px"
+            unoptimized
+            onError={() => setImgError(true)}
+          />
         </div>
         <div className="rounded-2xl border border-[var(--color-border)] bg-[var(--color-bg)] p-6 shadow-sm">
           <h2 className="text-sm font-semibold text-[var(--color-text)]">Descrição</h2>

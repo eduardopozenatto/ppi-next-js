@@ -144,14 +144,17 @@ export function InventoryCatalogGrid({
             {isImageVisible && (
               <Link
                 href={`/inventory/${item.id}`}
-                className="block shrink-0 bg-[var(--color-bg-subtle)] sm:w-32 md:w-36 transition-all duration-200"
+                className="flex items-center justify-center shrink-0 bg-[var(--color-bg-subtle)] sm:w-32 md:w-36 transition-all duration-200 overflow-hidden"
               >
                 <Image
                   src={src}
                   alt={`Imagem do item: ${item.name}`}
                   width={300}
                   height={300}
-                  className="h-36 w-full object-cover sm:h-full"
+                  className={cn(
+                    "h-36 w-full sm:h-full transition-all duration-200",
+                    src.endsWith(".svg") ? "object-contain p-6 opacity-70" : "object-cover"
+                  )}
                   unoptimized
                   onError={() => setImgErrorMap((prev) => ({ ...prev, [item.id]: true }))}
                 />

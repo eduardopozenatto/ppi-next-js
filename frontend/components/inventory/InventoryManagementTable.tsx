@@ -22,6 +22,30 @@ type EditableItem = {
   isActive: boolean;
 };
 
+function ItemThumbnail({ name, image }: { name: string; image?: string | null }) {
+  const [imgError, setImgError] = useState(false);
+  const src = getStaticUrl(image);
+
+  if (!src || imgError) {
+    return (
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[var(--color-bg-subtle)] text-[10px] font-bold text-[var(--color-text-subtle)] border border-[var(--color-border)]">
+        <svg className="h-4 w-4 text-[var(--color-text-subtle)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        </svg>
+      </div>
+    );
+  }
+
+  return (
+    <img
+      src={src}
+      alt={name}
+      onError={() => setImgError(true)}
+      className="h-8 w-8 shrink-0 rounded-lg object-cover border border-[var(--color-border)]"
+    />
+  );
+}
+
 export function InventoryManagementTable() {
   const [rows, setRows] = useState<LabInventoryListItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -168,17 +192,7 @@ export function InventoryManagementTable() {
               <tr key={item.id} className="hover:bg-[var(--color-bg-subtle)]/60">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    {item.image ? (
-                      <img
-                        src={getStaticUrl(item.image) ?? ""}
-                        alt={item.name}
-                        className="h-8 w-8 shrink-0 rounded object-cover"
-                      />
-                    ) : (
-                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded bg-[var(--color-bg-subtle)] text-[10px] font-bold text-[var(--color-text-subtle)]">
-                        ITEM
-                      </div>
-                    )}
+                    <ItemThumbnail name={item.name} image={item.image} />
                     <span className="font-medium text-[var(--color-text)]">{item.name}</span>
                   </div>
                 </td>
@@ -268,7 +282,12 @@ export function InventoryManagementTable() {
                 <label className="mb-1 block text-sm font-medium text-[var(--color-text)]">Imagem</label>
                 {imagePreview ? (
                   <div className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3">
-                    <img src={imagePreview} alt="Preview" className="h-20 w-20 shrink-0 rounded-lg object-cover" />
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      onError={() => setImagePreview(null)}
+                      className="h-20 w-20 shrink-0 rounded-lg object-cover border border-[var(--color-border)]"
+                    />
                     <div className="flex flex-col gap-2">
                       <button type="button" onClick={() => fileInputRef.current?.click()} className="self-start text-sm font-semibold text-[var(--color-primary)] hover:underline">
                         Trocar imagem
@@ -286,7 +305,10 @@ export function InventoryManagementTable() {
                     onClick={() => fileInputRef.current?.click()}
                     className="flex w-full flex-col items-center gap-2 rounded-xl border-2 border-dashed border-[var(--color-border)] bg-[var(--color-bg-subtle)] px-4 py-6 text-sm text-[var(--color-text-subtle)] transition-colors hover:border-[var(--color-primary)]"
                   >
-                    <span className="text-2xl">📷</span>
+                    <svg className="h-7 w-7 text-[var(--color-text-subtle)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
                     <span>Clique para selecionar</span>
                   </button>
                 )}
