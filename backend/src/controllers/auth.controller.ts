@@ -20,6 +20,7 @@ import { sendResetCodeEmail } from '../utils/email';
 import { sendSmsCode } from '../utils/sms';
 import { z } from 'zod';
 import { env } from '../config/env';
+import { storageService } from '../services/storage.service';
 
 export async function register(
   req: Request,
@@ -397,7 +398,7 @@ export async function uploadAvatarHandler(
       throw new AppError('Usuário não autenticado', 401);
     }
 
-    const avatarUrl = `uploads/avatars/${req.file.filename}`;
+    const avatarUrl = await storageService.uploadAvatar(req.file);
 
     await prisma.user.update({
       where: { id: req.user.id },

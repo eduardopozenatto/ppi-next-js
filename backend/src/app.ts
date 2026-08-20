@@ -12,7 +12,11 @@ import apiRouter from './routes/index';
 const app: Express = express();
 
 // ─── Ensure Upload Directories Exist ──────────
+const uploadsDir = path.join(__dirname, '../public/uploads');
 const avatarsDir = path.join(__dirname, '../public/uploads/avatars');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 if (!fs.existsSync(avatarsDir)) {
   fs.mkdirSync(avatarsDir, { recursive: true });
 }

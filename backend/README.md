@@ -46,6 +46,12 @@ SMTP_FROM="LabControl" <noreply@labcontrol.app>
 TWILIO_ACCOUNT_SID=
 TWILIO_AUTH_TOKEN=
 TWILIO_PHONE_NUMBER=
+
+# Armazenamento em Nuvem Supabase Storage (Opcional - para Render / Produção)
+SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
+SUPABASE_SERVICE_ROLE_KEY=
+SUPABASE_BUCKET_AVATARS=avatars
+SUPABASE_BUCKET_ITEMS=items
 ```
 
 ---

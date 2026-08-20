@@ -24,6 +24,11 @@ const envSchema = z.object({
   TWILIO_ACCOUNT_SID: z.string().optional(),
   TWILIO_AUTH_TOKEN: z.string().optional(),
   TWILIO_PHONE_NUMBER: z.string().optional(),
+  SUPABASE_URL: z.string().optional(),
+  SUPABASE_KEY: z.string().optional(),
+  SUPABASE_SERVICE_ROLE_KEY: z.string().optional(),
+  SUPABASE_BUCKET_AVATARS: z.string().default('avatars'),
+  SUPABASE_BUCKET_ITEMS: z.string().default('items'),
 });
 
 const parsed = envSchema.safeParse(process.env);

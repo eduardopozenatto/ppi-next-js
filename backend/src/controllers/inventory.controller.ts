@@ -8,6 +8,7 @@ import {
   inventoryQuerySchema,
 } from '../schemas/inventory.schema';
 import { z } from 'zod';
+import { storageService } from '../services/storage.service';
 
 /**
  * Helper to safely extract a single string param from Express 5 params.
@@ -236,8 +237,7 @@ export async function uploadImage(
       throw new AppError('Nenhum arquivo enviado', 400);
     }
     const id = getParam(req.params.id);
-    // req.file.filename é mantido pelo multer
-    const imagePath = `uploads/${req.file.filename}`;
+    const imagePath = await storageService.uploadItemImage(req.file);
 
     const updatedItem = await prisma.inventoryItem.update({
       where: { id },
