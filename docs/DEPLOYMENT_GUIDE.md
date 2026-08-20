@@ -17,7 +17,7 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 
 ---
 
-## 🗄️ 2. Passo a Passo — Banco de Dados (Supabase)
+## 🗄️ 2. Passo a Passo — Banco de Dados e Armazenamento (Supabase)
 
 1. Acesse [supabase.com](https://supabase.com) e crie uma conta gratuita.
 2. Crie um novo projeto chamado `labcontrol-db` na região **South America (São Paulo)**.
@@ -28,7 +28,12 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
    postgresql://postgres.xxxxxxxx:[SUA-SENHA]@aws-0-sa-east-1.pooler.supabase.com:6543/postgres
    ```
    *(⚠️ IMPORTANTE: Usar o Pooler na porta 6543 evita o erro `ENETUNREACH` no Render).*
-6. No terminal dentro da pasta `backend/`, execute as migrações:
+6. No menu lateral do Supabase, acesse **Storage 📦 ➔ New Bucket**:
+   - Crie o bucket `avatars` e marque a opção **Public bucket**.
+   - Crie o bucket `items` e marque a opção **Public bucket**.
+   *(Isso garante que as fotos de perfil e de equipamentos nunca sumam quando o container do Render reiniciar).*
+7. Em **Project Settings ⚙️ ➔ API**, copie a **Project URL** e a chave secreta **service_role** (ou `anon` key).
+8. No terminal dentro da pasta `backend/`, execute as migrações:
    ```bash
    npx prisma db push
    ```
@@ -47,6 +52,8 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
    - **Start Command**: `npm start`
 4. Em **Environment Variables**, insira:
    - `DATABASE_URL`: *(A URL do Supabase Connection Pooler obtida no Passo 2 na porta 6543)*
+   - `SUPABASE_URL`: `https://xxxxxxxxxxxx.supabase.co` *(Project URL do Supabase)*
+   - `SUPABASE_SERVICE_ROLE_KEY`: *(Chave service_role secreta obtida no Supabase)*
    - `JWT_SECRET`: *(Uma chave secreta com no mínimo 16 caracteres)*
    - `NODE_ENV`: `production`
    - `PORT`: `3001`
