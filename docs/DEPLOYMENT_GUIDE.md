@@ -40,6 +40,14 @@ Este documento descreve a arquitetura de publicação do **LabControl**, o passo
 
 ---
 
+### Contas de demonstração em bases existentes
+
+Antes de atualizar uma base que recebeu o seed antigo, confirme que uma conta administrativa legítima consegue entrar e acessar a gestão de usuários. Identifique as contas de demonstração que ainda estão ativas, incluindo as administrativas. Desative as contas que não serão usadas e troque a senha das que precisarem ser mantidas. Preserve os registros e os vínculos de histórico dessas contas. Se houve uso de credenciais compartilhadas, trate as sessões existentes conforme a política de acesso da instituição.
+
+A carga de demonstração é exclusiva do banco descartável `labcontrol_demo` em PostgreSQL local via TCP. Após aplicar as migrações e gerar o cliente, configure `DATABASE_URL` com a conexão local, sem parâmetros de consulta ou fragmento, e execute `pnpm exec prisma db seed -- --demo` em `backend/`. O comando recusa a execução em produção.
+
+---
+
 ## 🚀 3. Passo a Passo — Backend (Render)
 
 1. Acesse [render.com](https://render.com) e conecte sua conta do GitHub.
