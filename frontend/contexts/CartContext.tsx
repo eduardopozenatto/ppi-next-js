@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useMemo, useState, useSyncExternalStore, type ReactNode } from "react";
 
 export interface CartItem {
   id: string;
@@ -23,35 +23,54 @@ interface CartContextType {
 
 const STORAGE_KEY = "labcontrol-cart";
 
+function subscribeToStoredCart(onChange: () => void) {
+  function handleStorage(event: StorageEvent) {
+    if (event.key === STORAGE_KEY || event.key === null) onChange();
+  }
+
+  window.addEventListener("storage", handleStorage);
+  return () => window.removeEventListener("storage", handleStorage);
+}
+
+function getStoredCart() {
+  try {
+    return window.localStorage.getItem(STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function getServerCart() {
+  return null;
+}
+
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
-  const [items, setItems] = useState<CartItem[]>([]);
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  // Load cart from localStorage on mount
-  useEffect(() => {
+  const storedCart = useSyncExternalStore(subscribeToStoredCart, getStoredCart, getServerCart);
+  const storedItems = useMemo<CartItem[]>(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
-        setItems(JSON.parse(stored));
-      }
+      const parsed = storedCart ? JSON.parse(storedCart) : null;
+      return Array.isArray(parsed) ? parsed : [];
     } catch {
-      // Ignore localStorage errors
-    } finally {
-      setIsLoaded(true);
+      return [];
     }
-  }, []);
+  }, [storedCart]);
+  const [localItems, setLocalItems] = useState<CartItem[] | null>(null);
+  const items = localItems ?? storedItems;
 
-  // Save cart to localStorage on changes
   useEffect(() => {
-    if (!isLoaded) return;
+    if (localItems === null) return;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(localItems));
     } catch {
       // Ignore localStorage errors
     }
-  }, [items, isLoaded]);
+  }, [localItems]);
+
+  function setItems(update: (previous: CartItem[]) => CartItem[]) {
+    setLocalItems((previous) => update(previous ?? storedItems));
+  }
 
   function addItem(
     item: { id: string; name: string; category: string; availableQuantity: number; image?: string },
@@ -97,7 +116,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }
 
   function clearCart() {
-    setItems([]);
+    setLocalItems([]);
   }
 
   const totalCount = items.reduce((acc, i) => acc + i.quantity, 0);

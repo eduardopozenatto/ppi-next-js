@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useCallback, useState, useRef, useEffect } from "react";
 import { Tag, TagPermissions, UserPermissionOverride } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
 import { useToast } from "@/components/shared/Toast";
@@ -44,24 +44,25 @@ export function PermissionsList() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  async function fetchData() {
-    try {
-      const [usersRes, tagsRes] = await Promise.all([
-        // Assuming limit=100 for now to display all, could be paginated
-        api.get<PaginatedResponse<UserWithOverrides>>("/users?limit=100"),
-        api.get<ApiResponse<Tag[]>>("/tags"),
-      ]);
-      setUsers(usersRes.data ?? []);
-      setTags(tagsRes.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar dados", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchData = useCallback(() => (
+    Promise.all([
+      // Assuming limit=100 for now to display all, could be paginated
+      api.get<PaginatedResponse<UserWithOverrides>>("/users?limit=100"),
+      api.get<ApiResponse<Tag[]>>("/tags"),
+    ])
+      .then(([usersRes, tagsRes]) => {
+        setUsers(usersRes.data ?? []);
+        setTags(tagsRes.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar dados", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchData(); }, []);
+  useEffect(() => {
+    void fetchData();
+  }, [fetchData]);
 
   function getOverrideCount(userId: string) {
     const user = users.find((u) => u.id === userId);

@@ -10,6 +10,10 @@ interface UseFetchResult<T> {
   refetch: () => Promise<void>;
 }
 
+function extractData<T>(response: unknown): T {
+  return (response as { data: T }).data;
+}
+
 /**
  * Generic hook for fetching data from the API.
  *
@@ -20,33 +24,52 @@ interface UseFetchResult<T> {
  */
 export function useFetch<T>(
   path: string | null,
-  extractor: (res: unknown) => T = (res) => (res as { data: T }).data,
+  extractor: (res: unknown) => T = extractData,
 ): UseFetchResult<T> {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<{
+    path: string | null;
+    data: T | null;
+    loading: boolean;
+    error: string | null;
+  }>({ path, data: null, loading: Boolean(path), error: null });
 
-  const fetchData = useCallback(async () => {
-    if (!path) {
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await api.get<unknown>(path);
-      setData(extractor(res));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Erro ao carregar dados");
-    } finally {
-      setLoading(false);
-    }
+  if (result.path !== path) {
+    setResult({ ...result, path, loading: Boolean(path), error: path ? null : result.error });
+  }
+
+  const fetchData = useCallback((isCurrent: () => boolean = () => true) => {
+    if (!path) return Promise.resolve();
+
+    return api.get<unknown>(path)
+      .then((response) => {
+        if (!isCurrent()) return;
+        const data = extractor(response);
+        setResult((previous) => previous.path === path
+          ? { path, data, loading: false, error: null }
+          : previous);
+      })
+      .catch((err: unknown) => {
+        if (!isCurrent()) return;
+        const error = err instanceof Error ? err.message : "Erro ao carregar dados";
+        setResult((previous) => previous.path === path
+          ? { ...previous, loading: false, error }
+          : previous);
+      });
+    // Inline extractors must not trigger requests when only their identity changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path]);
 
   useEffect(() => {
-    fetchData();
+    let current = true;
+    void fetchData(() => current);
+    return () => { current = false; };
   }, [fetchData]);
 
-  return { data, loading, error, refetch: fetchData };
+  const refetch = useCallback(() => {
+    if (!path) return Promise.resolve();
+    setResult((previous) => ({ ...previous, loading: true, error: null }));
+    return fetchData();
+  }, [fetchData, path]);
+
+  return { data: result.data, loading: result.loading, error: result.error, refetch };
 }

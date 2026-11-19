@@ -101,19 +101,19 @@ export default function NotificationsPage() {
   const [markingAll, setMarkingAll] = useState(false);
   const { addToast } = useToast();
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const res = await api.get<ApiResponse<LabNotification[]>>("/notifications?limit=100");
-      setNotifications(res.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar notificações", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }, [addToast]);
+  const fetchNotifications = useCallback(() => (
+    api.get<ApiResponse<LabNotification[]>>("/notifications?limit=100")
+      .then((res) => {
+        setNotifications(res.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar notificações", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
   useEffect(() => {
-    fetchNotifications();
+    void fetchNotifications();
   }, [fetchNotifications]);
 
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);

@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { Button } from "@/components/Button/Button";
@@ -29,8 +30,10 @@ function UserAvatarCell({ name, avatarUrl }: { name: string; avatarUrl?: string 
   }
 
   return (
-    <img
+    <Image
       src={src}
+      width={36}
+      height={36}
       alt={name}
       onError={() => setImgError(true)}
       className="h-9 w-9 shrink-0 rounded-full object-cover border border-[var(--color-border)]"
@@ -45,6 +48,7 @@ function AdminUsersContent() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [previousTagParam, setPreviousTagParam] = useState(tagParam);
   const [filterTag, setFilterTag] = useState(tagParam || "all");
   const [formModal, setFormModal] = useState<{ mode: "create" | "edit"; user: Omit<User, "id" | "createdAt"> & { id?: string } } | null>(null);
   const [deleteModal, setDeleteModal] = useState<User | null>(null);
@@ -52,32 +56,29 @@ function AdminUsersContent() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const { addToast } = useToast();
 
-  useEffect(() => {
-    if (tagParam) {
-      setFilterTag(tagParam);
-    }
-  }, [tagParam]);
-
-  async function fetchUsersAndTags() {
-    try {
-      const [usersRes, tagsRes] = await Promise.all([
-        api.get<ApiResponse<User[]>>("/users"),
-        api.get<ApiResponse<Tag[]>>("/tags"),
-      ]);
-      setUsers(usersRes.data ?? []);
-      setTags(tagsRes.data ?? []);
-      if (formModal?.mode === "create" && tagsRes.data?.[0]) {
-         EMPTY_USER.tagId = tagsRes.data[0].id;
-      }
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar usuários e perfis", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
+  if (tagParam !== previousTagParam) {
+    setPreviousTagParam(tagParam);
+    if (tagParam) setFilterTag(tagParam);
   }
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchUsersAndTags(); }, []);
+  const fetchUsersAndTags = useCallback(() => (
+    Promise.all([
+      api.get<ApiResponse<User[]>>("/users"),
+      api.get<ApiResponse<Tag[]>>("/tags"),
+    ])
+      .then(([usersRes, tagsRes]) => {
+        setUsers(usersRes.data ?? []);
+        setTags(tagsRes.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar usuários e perfis", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
+
+  useEffect(() => {
+    void fetchUsersAndTags();
+  }, [fetchUsersAndTags]);
 
   const filtered = users.filter((u) => {
     const matchSearch = u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase()) || (u.matricula ?? "").includes(search);

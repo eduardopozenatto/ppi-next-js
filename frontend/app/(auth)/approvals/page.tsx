@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { LoanStatusBadge } from "@/components/loans/LoanStatusBadge";
 import { PageHeader } from "@/components/shared/PageHeader";
 import { EmptyState } from "@/components/shared/EmptyState";
@@ -31,19 +31,20 @@ export default function ApprovalsPage() {
   const approved = loans.filter((l) => l.status === "active" || l.status === "overdue");
   const rejected = loans.filter((l) => l.status === "cancelled");
 
-  async function fetchLoans() {
-    try {
-      const res = await api.get<ApiResponse<Loan[]>>("/loans");
-      setLoans(res.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar empréstimos", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchLoans = useCallback(() => (
+    api.get<ApiResponse<Loan[]>>("/loans")
+      .then((res) => {
+        setLoans(res.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar empréstimos", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchLoans(); }, []);
+  useEffect(() => {
+    void fetchLoans();
+  }, [fetchLoans]);
 
   async function handleApprove() {
     if (!dueDate) { setDueDateError(true); return; }

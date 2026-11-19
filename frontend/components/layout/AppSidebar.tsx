@@ -27,8 +27,10 @@ function SidebarUserAvatar({ name, avatarUrl }: { name: string; avatarUrl?: stri
   }
 
   return (
-    <img
+    <Image
       src={src}
+      width={40}
+      height={40}
       alt={name}
       onError={() => setImgError(true)}
       className="h-10 w-10 shrink-0 rounded-xl object-cover border border-[var(--color-border)]"
@@ -112,10 +114,7 @@ export function AppSidebar() {
               </p>
               <button
                 type="button"
-                onClick={() => {
-                  logout();
-                  window.location.href = "/login";
-                }}
+                onClick={logout}
                 className="mt-1 text-xs font-semibold text-[var(--color-primary)] hover:underline"
               >
                 Sair

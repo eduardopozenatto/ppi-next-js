@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { api } from "@/lib/api/client";
 import { Category } from "@/types/settings";
 import { Button } from "@/components/Button/Button";
@@ -32,19 +32,20 @@ export function CategoriesList() {
   const [deleteModal, setDeleteModal] = useState<Category | null>(null);
   const [error, setError] = useState("");
 
-  async function fetchCategories() {
-    try {
-      const res = await api.get<ApiResponse<Category[]>>("/categories");
-      setCategories(res.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar categorias", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchCategories = useCallback(() => (
+    api.get<ApiResponse<Category[]>>("/categories")
+      .then((res) => {
+        setCategories(res.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar categorias", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchCategories(); }, []);
+  useEffect(() => {
+    void fetchCategories();
+  }, [fetchCategories]);
 
   const filteredCategories = categories.filter((cat) =>
     cat.name.toLowerCase().includes(search.toLowerCase())

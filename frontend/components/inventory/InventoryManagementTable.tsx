@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import Image from "next/image";
+import { useCallback, useEffect, useState, useRef } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { api, BASE_URL } from "@/lib/api/client";
@@ -37,8 +38,10 @@ function ItemThumbnail({ name, image }: { name: string; image?: string | null })
   }
 
   return (
-    <img
+    <Image
       src={src}
+      width={32}
+      height={32}
       alt={name}
       onError={() => setImgError(true)}
       className="h-8 w-8 shrink-0 rounded-lg object-cover border border-[var(--color-border)]"
@@ -58,23 +61,24 @@ export function InventoryManagementTable() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { addToast } = useToast();
 
-  async function fetchItems() {
-    try {
-      const [invRes, catRes] = await Promise.all([
-        api.get<ApiResponse<LabInventoryListItem[]>>("/inventory?limit=100&includeInactive=true"),
-        api.get<ApiResponse<Category[]>>("/categories"),
-      ]);
-      setRows(invRes.data ?? []);
-      setCategories(catRes.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchItems = useCallback(() => (
+    Promise.all([
+      api.get<ApiResponse<LabInventoryListItem[]>>("/inventory?limit=100&includeInactive=true"),
+      api.get<ApiResponse<Category[]>>("/categories"),
+    ])
+      .then(([invRes, catRes]) => {
+        setRows(invRes.data ?? []);
+        setCategories(catRes.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar estoque", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchItems(); }, []);
+  useEffect(() => {
+    void fetchItems();
+  }, [fetchItems]);
 
   function openEditModal(item: LabInventoryListItem) {
     const cat = categories.find((c) => c.name === item.category);
@@ -282,8 +286,10 @@ export function InventoryManagementTable() {
                 <label className="mb-1 block text-sm font-medium text-[var(--color-text)]">Imagem</label>
                 {imagePreview ? (
                   <div className="flex items-center gap-4 rounded-xl border border-[var(--color-border)] bg-[var(--color-bg-subtle)] p-3">
-                    <img
+                    <Image
                       src={imagePreview}
+                      width={80}
+                      height={80}
                       alt="Preview"
                       onError={() => setImagePreview(null)}
                       className="h-20 w-20 shrink-0 rounded-lg object-cover border border-[var(--color-border)]"

@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useState, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/Button/Button";
@@ -253,8 +254,10 @@ export function ProfileSummary() {
         <h3 className="mb-4 font-semibold text-[var(--color-text)]">Foto de perfil</h3>
         <div className="flex items-center gap-5">
           {avatarSrc && !avatarLoadError ? (
-            <img
+            <Image
               src={avatarSrc}
+              width={80}
+              height={80}
               alt={user.name}
               onError={() => setAvatarLoadError(true)}
               className="h-20 w-20 shrink-0 rounded-full object-cover border-2 border-[var(--color-border)]"

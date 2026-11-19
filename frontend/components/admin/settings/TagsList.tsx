@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { api } from "@/lib/api/client";
 import { Tag, TagPermissions } from "@/types/settings";
@@ -35,19 +35,20 @@ export function TagsList() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [hexInput, setHexInput] = useState("");
 
-  async function fetchTags() {
-    try {
-      const res = await api.get<ApiResponse<Tag[]>>("/tags");
-      setTags(res.data ?? []);
-    } catch {
-      addToast({ title: "Erro", message: "Falha ao carregar perfis", variant: "error" });
-    } finally {
-      setLoading(false);
-    }
-  }
+  const fetchTags = useCallback(() => (
+    api.get<ApiResponse<Tag[]>>("/tags")
+      .then((res) => {
+        setTags(res.data ?? []);
+      })
+      .catch(() => {
+        addToast({ title: "Erro", message: "Falha ao carregar perfis", variant: "error" });
+      })
+      .finally(() => setLoading(false))
+  ), [addToast]);
 
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  useEffect(() => { fetchTags(); }, []);
+  useEffect(() => {
+    void fetchTags();
+  }, [fetchTags]);
 
   const filtered = tags.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()));
 
