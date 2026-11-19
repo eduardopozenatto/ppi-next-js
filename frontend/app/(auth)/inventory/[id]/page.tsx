@@ -92,7 +92,10 @@ export default function InventoryDetailPage({ params }: InventoryDetailPageProps
             src={src}
             alt={item.name}
             fill
-            className={src.endsWith(".svg") ? "object-contain p-16 opacity-70" : "object-cover"}
+            className={cn(
+              src.endsWith(".svg") ? "object-contain p-16 opacity-70" : "object-cover",
+              src === "/buttonIcons/box.svg" && "theme-icon",
+            )}
             sizes="(max-width: 1024px) 100vw, 400px"
             unoptimized
             onError={() => setImgError(true)}

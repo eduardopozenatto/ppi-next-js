@@ -94,11 +94,25 @@ export function NewInventoryItemForm() {
       if (imageFile && itemId) {
         const formData = new FormData();
         formData.append("image", imageFile);
-        await fetch(`${BASE_URL}/inventory/${itemId}/image`, {
-          method: "POST",
-          credentials: "include",
-          body: formData,
-        });
+        try {
+          const response = await fetch(`${BASE_URL}/inventory/${itemId}/image`, {
+            method: "POST",
+            credentials: "include",
+            body: formData,
+          });
+          if (!response.ok) {
+            const error = await response.json().catch(() => null);
+            throw new Error(error?.message || "Falha ao enviar a foto.");
+          }
+        } catch (err) {
+          addToast({
+            title: "Item salvo sem foto",
+            message: `${err instanceof Error ? err.message : "Falha ao enviar a foto."} Envie a foto novamente na edição do item.`,
+            variant: "error",
+          });
+          router.push("/inventory");
+          return;
+        }
       }
 
       addToast({ title: "Criado", message: "Item salvo no estoque.", variant: "success" });

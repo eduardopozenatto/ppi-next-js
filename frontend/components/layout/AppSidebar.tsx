@@ -152,7 +152,7 @@ function SidebarLink({
         alt=""
         width={20}
         height={20}
-        className={cn("shrink-0 opacity-80", active && "brightness-0 invert")}
+        className={cn("shrink-0 opacity-80", active ? "brightness-0 invert [.dark_&]:invert-0" : "theme-icon")}
         aria-hidden
       />
       <span className="truncate text-sm font-medium sm:text-[0.9375rem]">{item.label}</span>

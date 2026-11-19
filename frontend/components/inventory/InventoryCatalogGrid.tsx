@@ -153,7 +153,8 @@ export function InventoryCatalogGrid({
                   height={300}
                   className={cn(
                     "h-36 w-full sm:h-full transition-all duration-200",
-                    src.endsWith(".svg") ? "object-contain p-6 opacity-70" : "object-cover"
+                    src.endsWith(".svg") ? "object-contain p-6 opacity-70" : "object-cover",
+                    src === "/buttonIcons/box.svg" && "theme-icon",
                   )}
                   unoptimized
                   onError={() => setImgErrorMap((prev) => ({ ...prev, [item.id]: true }))}

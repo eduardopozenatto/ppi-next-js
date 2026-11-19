@@ -33,6 +33,10 @@ html.dark {
   --color-surface-elevated: #1e293b;
 }
 
+html.dark .theme-icon {
+  filter: brightness(0) invert(1);
+}
+
 *,
 *::before,
 *::after {

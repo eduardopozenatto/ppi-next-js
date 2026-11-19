@@ -45,14 +45,14 @@ export function CatalogSearchBar({
           aria-haspopup="true"
           aria-controls="catalog-category-panel"
         >
-          <Image src="/filter.svg" alt="" width={16} height={16} className="opacity-70" aria-hidden />
+          <Image src="/filter.svg" alt="" width={16} height={16} className="theme-icon opacity-70" aria-hidden />
           <span className="truncate">{categoryName}</span>
           <Image
             src="/angle-down.svg"
             alt=""
             width={14}
             height={14}
-            className={cn("opacity-60 transition-transform duration-200", open && "rotate-180")}
+            className={cn("theme-icon opacity-60 transition-transform duration-200", open && "rotate-180")}
             aria-hidden
           />
         </button>
