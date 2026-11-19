@@ -1,5 +1,5 @@
-import { Pool } from 'pg';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { z } from 'zod';
 import { PrismaClient } from '../src/generated/prisma/client';
 import {
   UserRole,
@@ -7,11 +7,6 @@ import {
   NotificationType,
 } from '../src/generated/prisma/enums';
 import { hashPassword } from '../src/utils/crypto';
-
-// ─── Create a standalone Prisma client for seeding ────
-const pool = new Pool({ connectionString: process.env['DATABASE_URL'] });
-const adapter = new PrismaPg(pool);
-const prisma = new PrismaClient({ adapter });
 
 // ─── Permission sets matching frontend/mocks/session-user.ts ───
 
@@ -57,17 +52,11 @@ const LABORATORISTA_PERMISSIONS = {
   gerenciar_permissoes: true,
 };
 
-async function main() {
-  console.log('🌱 Seeding LabControl database...\n');
-  
-  const defaultPassword = await hashPassword('1234');
-
-  // ─── Tags (frontend/mocks/settings.ts MOCK_TAGS) ─────────
+async function seedTags(prisma: Pick<PrismaClient, 'tag'>) {
   const tagAluno = await prisma.tag.upsert({
     where: { name: 'Aluno' },
     update: {},
     create: {
-      id: 'tag-1',
       name: 'Aluno',
       color: '#0f62fe',
       description: 'Acesso básico para busca e solicitação de empréstimos',
@@ -79,7 +68,6 @@ async function main() {
     where: { name: 'Estagiário' },
     update: {},
     create: {
-      id: 'tag-2',
       name: 'Estagiário',
       color: '#f1c21b',
       description: 'Auxilia na gestão de estoque e relatórios',
@@ -91,7 +79,6 @@ async function main() {
     where: { name: 'Laboratorista' },
     update: {},
     create: {
-      id: 'tag-3',
       name: 'Laboratorista',
       color: '#24a148',
       description: 'Acesso admin completo a todos os módulos do sistema',
@@ -103,7 +90,6 @@ async function main() {
     where: { name: 'Professor' },
     update: {},
     create: {
-      id: 'tag-4',
       name: 'Professor',
       color: '#8a3ffc',
       description: 'Acesso para docentes e servidores (LDAP) para busca e empréstimos',
@@ -111,6 +97,61 @@ async function main() {
     },
   });
 
+  return { tagAluno, tagEstagiario, tagLaboratorista, tagProfessor };
+}
+
+const adminInputSchema = z.object({
+  name: z.string().trim().min(2),
+  email: z.string().trim().email().toLowerCase(),
+  password: z.string().min(16).refine((password) => (
+    password.trim().length >= 16 && Buffer.byteLength(password, 'utf8') <= 72
+  )),
+});
+
+class SeedError extends Error {}
+
+async function provisionAdmin(prisma: PrismaClient, input: z.infer<typeof adminInputSchema>) {
+  const password = await hashPassword(input.password);
+
+  await prisma.$transaction(async (tx) => {
+    const existing = await tx.user.findFirst({
+      where: { email: { equals: input.email, mode: 'insensitive' } },
+      select: { id: true },
+    });
+    if (existing) {
+      throw new SeedError('Já existe uma conta para o e-mail informado.');
+    }
+
+    const { tagLaboratorista } = await seedTags(tx);
+    const permissions = tagLaboratorista.permissions;
+    if (
+      permissions === null ||
+      typeof permissions !== 'object' ||
+      Array.isArray(permissions) ||
+      !Object.keys(LABORATORISTA_PERMISSIONS).every((key) => permissions[key] === true)
+    ) {
+      throw new SeedError('A tag Laboratorista precisa ter as permissões padrão para criar o administrador.');
+    }
+
+    await tx.user.create({
+      data: {
+        name: input.name,
+        email: input.email,
+        password,
+        role: UserRole.admin,
+        isActive: true,
+        tagId: tagLaboratorista.id,
+      },
+    });
+  });
+
+  console.log('Administrador criado.');
+}
+
+async function seedDemo(prisma: PrismaClient) {
+  console.log('Preparando a base de demonstração.');
+  const defaultPassword = await hashPassword('1234');
+  const { tagAluno, tagEstagiario, tagLaboratorista, tagProfessor } = await seedTags(prisma);
   console.log('   ✓ Tags:', [tagAluno.name, tagEstagiario.name, tagLaboratorista.name, tagProfessor.name].join(', '));
 
   // ─── Categories (frontend/mocks/settings.ts MOCK_CATEGORIES + Alimentação) ─
@@ -145,10 +186,9 @@ async function main() {
   console.log('   ✓ Categories:', categories.map((c) => c.name).join(', '));
 
   // ─── Users (merged from mocks/session-user.ts + mocks/users.ts) ─
-  // Passwords are plain text — will be hashed in Phase 6 (BAUTH-01)
   const admin = await prisma.user.upsert({
     where: { email: 'labcontrol.admin@gmail.com' },
-    update: { password: defaultPassword },
+    update: {},
     create: {
       id: 'admin-1',
       name: 'Prof. Eduardo Pozenatto',
@@ -163,7 +203,7 @@ async function main() {
 
   const carlos = await prisma.user.upsert({
     where: { email: 'carlos.aluno.lab@gmail.com' },
-    update: { password: defaultPassword },
+    update: {},
     create: {
       id: 'user-1',
       name: 'Carlos Silva',
@@ -177,7 +217,7 @@ async function main() {
 
   const bruno = await prisma.user.upsert({
     where: { email: 'bruno@discente.uf.br' },
-    update: { password: defaultPassword },
+    update: {},
     create: {
       id: 'user-2',
       name: 'Bruno Lima',
@@ -191,7 +231,7 @@ async function main() {
 
   const maria = await prisma.user.upsert({
     where: { email: 'maria.estagiaria@gmail.com' },
-    update: { password: defaultPassword },
+    update: {},
     create: {
       id: 'user-3',
       name: 'Maria Santos',
@@ -205,7 +245,7 @@ async function main() {
 
   const ana = await prisma.user.upsert({
     where: { email: 'ana@discente.uf.br' },
-    update: { password: defaultPassword },
+    update: {},
     create: {
       id: 'user-4',
       name: 'Ana Costa',
@@ -503,12 +543,45 @@ async function main() {
   console.log('\n✅ Seed complete!');
 }
 
-main()
-  .catch((e) => {
-    console.error('❌ Seed failed:', e);
-    process.exit(1);
-  })
-  .finally(async () => {
+async function main() {
+  const [mode, ...extraArgs] = process.argv.slice(2);
+  if ((mode !== '--admin' && mode !== '--demo') || extraArgs.length) {
+    throw new SeedError('Informe exatamente um modo de seed: --admin ou --demo.');
+  }
+  if (mode === '--demo' && process.env.NODE_ENV === 'production') {
+    throw new SeedError('O seed de demonstração está desabilitado em produção.');
+  }
+
+  const connectionString = process.env.DATABASE_URL?.trim();
+  if (!connectionString) {
+    throw new SeedError('Defina DATABASE_URL para o banco de destino.');
+  }
+
+  const admin = mode === '--admin'
+    ? adminInputSchema.safeParse({
+      name: process.env.LABCONTROL_ADMIN_NAME,
+      email: process.env.LABCONTROL_ADMIN_EMAIL,
+      password: process.env.LABCONTROL_ADMIN_PASSWORD,
+    })
+    : undefined;
+  if (admin && !admin.success) {
+    throw new SeedError('Confira LABCONTROL_ADMIN_NAME, LABCONTROL_ADMIN_EMAIL e LABCONTROL_ADMIN_PASSWORD.');
+  }
+
+  const adapter = new PrismaPg({ connectionString, connectionTimeoutMillis: 10000 });
+  const prisma = new PrismaClient({ adapter });
+  try {
+    if (admin?.success) {
+      await provisionAdmin(prisma, admin.data);
+    } else {
+      await seedDemo(prisma);
+    }
+  } finally {
     await prisma.$disconnect();
-    await pool.end();
-  });
+  }
+}
+
+main().catch((error: unknown) => {
+  console.error(error instanceof SeedError ? error.message : 'Falha ao executar o seed do LabControl.');
+  process.exitCode = 1;
+});

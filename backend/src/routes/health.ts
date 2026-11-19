@@ -6,24 +6,38 @@ const router: RouterType = Router();
 
 /**
  * GET /api/health
- * Returns server health status with database connectivity check.
- * Response: ApiResponse<{ status: "ok" | "degraded", database: "connected" | "disconnected" }>
+ * Reports database connectivity and readiness to read user onboarding flags.
  */
 router.get('/', async (_req, res) => {
   try {
     await prisma.$queryRaw`SELECT 1`;
-    sendSuccess(
-      res,
-      { status: 'ok', database: 'connected' },
-      'Server is healthy'
-    );
   } catch {
     sendSuccess(
       res,
-      { status: 'degraded', database: 'disconnected' },
+      { status: 'degraded', database: 'disconnected', readiness: 'not_ready' },
       'Server running but database unavailable'
     );
+    return;
   }
+
+  try {
+    await prisma.user.findFirst({
+      select: { mustChangePassword: true, mustCompleteProfile: true },
+    });
+  } catch {
+    sendSuccess(
+      res,
+      { status: 'ok', database: 'connected', readiness: 'not_ready' },
+      'Server running but user data unavailable'
+    );
+    return;
+  }
+
+  sendSuccess(
+    res,
+    { status: 'ok', database: 'connected', readiness: 'ready' },
+    'Server is healthy'
+  );
 });
 
 export default router;
