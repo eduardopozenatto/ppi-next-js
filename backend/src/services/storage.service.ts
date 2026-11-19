@@ -1,5 +1,6 @@
 import fs from 'fs';
 import { env } from '../config/env';
+import { AppError } from '../middlewares/errorHandler';
 
 export interface UploadResult {
   url: string;
@@ -52,22 +53,22 @@ export class StorageService {
    * Upload de imagem de item de inventário
    */
   public async uploadItemImage(file: Express.Multer.File): Promise<string> {
-    if (this.isCloudStorageEnabled()) {
-      try {
-        const cloudUrl = await this.uploadToSupabase(file, this.itemsBucket, `items/${file.filename}`);
-        // Remove arquivo temporário local após upload com sucesso para a nuvem
-        if (file.path && fs.existsSync(file.path)) {
-          fs.unlink(file.path, () => {});
-        }
-        return cloudUrl;
-      } catch (err) {
-        console.error('[StorageService] Erro ao enviar imagem do item para o Supabase Storage:', err);
-        // Fallback para arquivo local já salvo pelo multer
-        return `uploads/${file.filename}`;
-      }
+    if (!this.isCloudStorageEnabled() && env.NODE_ENV !== 'production') {
+      return `uploads/${file.filename}`;
     }
 
-    return `uploads/${file.filename}`;
+    try {
+      if (!this.isCloudStorageEnabled()) {
+        throw new AppError('O armazenamento de fotos dos itens não está configurado.', 503);
+      }
+      return await this.uploadToSupabase(file, this.itemsBucket, `items/${file.filename}`);
+    } catch (err) {
+      if (err instanceof AppError) throw err;
+      console.error('[StorageService] Erro ao enviar imagem do item para o Supabase Storage:', err);
+      throw new AppError('Não foi possível salvar a foto do item. Tente novamente.', 502);
+    } finally {
+      if (file.path) await fs.promises.unlink(file.path).catch(() => {});
+    }
   }
 
   /**
