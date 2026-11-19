@@ -5,8 +5,10 @@ import { sendPaginated, sendSuccess, sendCreated } from '../utils/response';
 import {
   createLoanSchema,
   updateLoanStatusSchema,
+  updateOwnLoanSchema,
   loanQuerySchema,
 } from '../schemas/loan.schema';
+import type { Prisma } from '../generated/prisma/client';
 import { z } from 'zod';
 import { LoanStatus } from '../generated/prisma/enums';
 
@@ -213,6 +215,68 @@ export async function createLoan(
   }
 }
 
+async function releaseReservation(
+  tx: Prisma.TransactionClient,
+  items: { inventoryItemId: string; quantity: number }[],
+): Promise<void> {
+  for (const item of items) {
+    await tx.inventoryItem.update({
+      where: { id: item.inventoryItemId },
+      data: { availableQuantity: { increment: item.quantity } },
+    });
+  }
+}
+
+async function changeOwnPendingLoan(req: Request, data: Prisma.LoanUpdateManyMutationInput) {
+  const borrowerId = req.user?.id;
+  if (!borrowerId) throw new AppError('Usuário não autenticado', 401);
+
+  const where = { id: getParam(req.params.id), borrowerId };
+  await prisma.$transaction(async (tx) => {
+    const { count } = await tx.loan.updateMany({
+      where: { ...where, status: LoanStatus.pending },
+      data,
+    });
+
+    if (!count) {
+      const ownLoan = await tx.loan.findFirst({ where, select: { id: true } });
+      if (!ownLoan) throw new AppError('Empréstimo não encontrado', 404);
+      throw new AppError('Este empréstimo não está mais pendente', 409);
+    }
+
+    if (data.status === LoanStatus.cancelled) {
+      const items = await tx.loanItem.findMany({
+        where: { loanId: where.id },
+        select: { inventoryItemId: true, quantity: true },
+      });
+      await releaseReservation(tx, items);
+    }
+  });
+}
+
+export async function editOwnPendingLoan(req: Request, res: Response, next: NextFunction): Promise<void> {
+  const result = updateOwnLoanSchema.safeParse(req.body);
+  if (!result.success) {
+    next(new AppError('Dados de entrada inválidos', 400, result.error.flatten().fieldErrors));
+    return;
+  }
+  try {
+    await changeOwnPendingLoan(req, result.data);
+    sendSuccess(res, null, 'Empréstimo atualizado');
+  } catch (err) {
+    next(err);
+  }
+}
+
+export async function cancelOwnPendingLoan(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    await changeOwnPendingLoan(req, { status: LoanStatus.cancelled });
+    sendSuccess(res, null, 'Empréstimo cancelado');
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function updateLoanStatus(
   req: Request,
   res: Response,
@@ -238,12 +302,32 @@ export async function updateLoanStatus(
         throw new AppError('O empréstimo já está neste estado', 400);
       }
 
-      const updatePayload: any = { status, labObservation };
+      if (loan.status === LoanStatus.cancelled) {
+        throw new AppError('Este empréstimo foi cancelado', 409);
+      }
+
+      const updatePayload: Prisma.LoanUpdateManyMutationInput = { status, labObservation };
 
       // Se aprovando e dueDate fornecida pelo admin, atualizar a data de devolução
       if (status === LoanStatus.active && dueDate) {
         updatePayload.dueDate = new Date(dueDate);
       }
+
+      if (
+        status === LoanStatus.returned &&
+        (loan.status === LoanStatus.active || loan.status === LoanStatus.overdue)
+      ) {
+        const returnedDate = new Date();
+        updatePayload.returnedDate = returnedDate;
+        if (loan.dueDate < returnedDate) updatePayload.returnedLate = true;
+      }
+
+      // Disputa a transição antes de movimentar o estoque, inclusive contra cancelamento pelo titular.
+      const { count } = await tx.loan.updateMany({
+        where: { id, status: loan.status },
+        data: updatePayload,
+      });
+      if (!count) throw new AppError('O estado do empréstimo mudou. Atualize e tente novamente.', 409);
 
       // Regras de negócio de estoque:
       if (loan.status === LoanStatus.pending) {
@@ -258,12 +342,7 @@ export async function updateLoanStatus(
         }
         // Se pending -> rejected/cancelled: readiciona a availableQuantity retida (desmarca reserva)
         else if (status === LoanStatus.cancelled || status === LoanStatus.returned) {
-          for (const item of loan.items) {
-            await tx.inventoryItem.update({
-              where: { id: item.inventoryItemId },
-              data: { availableQuantity: { increment: item.quantity } },
-            });
-          }
+          await releaseReservation(tx, loan.items);
         }
       } else if (loan.status === LoanStatus.active || loan.status === LoanStatus.overdue) {
         // Se active -> returned: aumenta available, reduz loaned
@@ -276,11 +355,6 @@ export async function updateLoanStatus(
                 loanedQuantity: { decrement: item.quantity },
               },
             });
-          }
-          updatePayload.returnedDate = new Date();
-          // Calcula atraso
-          if (loan.dueDate < new Date()) {
-            updatePayload.returnedLate = true;
           }
         }
         // Se active -> cancelled: como não houve retirada no meio do caminho ou desistiu
@@ -297,19 +371,14 @@ export async function updateLoanStatus(
         }
       }
 
-      const updatedLoan = await tx.loan.update({
-        where: { id },
-        data: updatePayload,
-      });
-
       // Fase 8: Notificações
       if (status === LoanStatus.active) {
         await tx.notification.create({
           data: {
             title: 'Empréstimo Aprovado',
-            body: `Seu pedido de empréstimo (ID: ${updatedLoan.id.slice(0, 8)}) foi aprovado.`,
+            body: `Seu pedido de empréstimo (ID: ${loan.id.slice(0, 8)}) foi aprovado.`,
             type: 'approval',
-            userId: updatedLoan.borrowerId,
+            userId: loan.borrowerId,
           },
         });
       } else if (status === LoanStatus.cancelled || status === LoanStatus.returned) {
@@ -318,9 +387,9 @@ export async function updateLoanStatus(
            await tx.notification.create({
             data: {
               title: 'Empréstimo Rejeitado',
-              body: `Seu pedido de empréstimo (ID: ${updatedLoan.id.slice(0, 8)}) foi rejeitado. Observação: ${labObservation || 'Nenhuma'}`,
+              body: `Seu pedido de empréstimo (ID: ${loan.id.slice(0, 8)}) foi rejeitado. Observação: ${labObservation || 'Nenhuma'}`,
               type: 'rejection',
-              userId: updatedLoan.borrowerId,
+              userId: loan.borrowerId,
             },
           });
         }

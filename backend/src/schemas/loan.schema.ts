@@ -34,6 +34,10 @@ export const updateLoanStatusSchema = z.object({
   dueDate: z.string().datetime({ message: 'Data de devolução inválida' }).optional(),
 });
 
+export const updateOwnLoanSchema = z.strictObject({
+  notes: z.string(),
+});
+
 export const loanQuerySchema = z.object({
   status: z.nativeEnum(LoanStatus).optional(),
   page: z.union([z.string(), z.number()]).transform(Number).default(1),

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useForm } from "react-hook-form";
+import { Controller, useForm } from "react-hook-form";
 import { Button } from "@/components/Button/Button";
 import { Input } from "@/components/Input/Input";
 import { api } from "@/lib/api/client";
@@ -19,25 +19,19 @@ export function NewLoanForm() {
   const searchParams = useSearchParams();
   const presetItem = searchParams.get("item") ?? "";
   
-  const [inventoryOptions, setInventoryOptions] = useState<LabInventoryListItem[]>([]);
+  const [inventory, setInventory] = useState<{
+    preset: string;
+    options: LabInventoryListItem[];
+    presetUnavailable: boolean;
+  } | null>(null);
+  const inventoryLoading = inventory?.preset !== presetItem;
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { addToast } = useToast();
   const { user } = useAuth();
   const isAdmin = user?.tag?.name?.toLowerCase() === "laboratorista" || user?.userPermissions?.aprovar_emprestimos;
 
-  useEffect(() => {
-    async function loadItems() {
-      try {
-        const res = await api.get<ApiResponse<LabInventoryListItem[]>>("/inventory");
-        setInventoryOptions(res.data ?? []);
-      } catch {
-        addToast({ title: "Erro", message: "Falha ao carregar itens de estoque", variant: "error" });
-      }
-    }
-    loadItems();
-  }, [addToast]);
-
   const {
+    control,
     register,
     handleSubmit,
     setValue,
@@ -47,12 +41,45 @@ export function NewLoanForm() {
     defaultValues: {
       borrowerName: user?.name ?? "",
       borrowerEmail: user?.email ?? "",
-      itemId: presetItem,
+      itemId: "",
       quantity: 1,
       dueDate: "",
       notes: "",
     },
   });
+
+  useEffect(() => {
+    let current = true;
+
+    async function loadItems() {
+      const listed = await api.get<ApiResponse<LabInventoryListItem[]>>("/inventory")
+        .catch(() => null);
+      if (!current) return;
+      const options = listed?.data ?? [];
+      let selected = options.find((item) => item.id === presetItem);
+
+      if (presetItem && !selected) {
+        const detail = await api.get<ApiResponse<LabInventoryListItem>>(
+          `/inventory/${encodeURIComponent(presetItem)}`,
+        ).catch(() => null);
+        if (!current) return;
+        if (detail?.data?.isActive) {
+          selected = detail.data;
+          options.unshift(selected);
+        }
+      }
+
+      const selectedId = selected?.isActive && selected.availableQuantity > 0 ? selected.id : "";
+      setInventory({ preset: presetItem, options, presetUnavailable: Boolean(presetItem && !selectedId) });
+      setValue("itemId", selectedId);
+      if (!listed && !selectedId) {
+        addToast({ title: "Erro", message: "Falha ao carregar itens de estoque", variant: "error" });
+      }
+    }
+
+    void loadItems();
+    return () => { current = false; };
+  }, [addToast, presetItem, setValue]);
 
   useEffect(() => {
     if (user) {
@@ -62,6 +89,7 @@ export function NewLoanForm() {
   }, [user, setValue]);
 
   async function onSubmit(data: NewLoanFormValues) {
+    if (inventoryLoading) return;
     setIsSubmitting(true);
     try {
       // O formulário de "Novo Empréstimo Manual" envia borrowerName e borrowerEmail,
@@ -92,21 +120,34 @@ export function NewLoanForm() {
         <label htmlFor="itemId" className="mb-1.5 block text-sm font-medium text-[var(--color-text)]">
           Item do laboratório
         </label>
-        <select
-          id="itemId"
-          className={cn(
-            "min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3.5 py-2.5 text-base text-[var(--color-text)] shadow-sm",
-            "focus-visible:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/25"
+        <Controller
+          name="itemId"
+          control={control}
+          render={({ field }) => (
+            <select
+              {...field}
+              id="itemId"
+              value={inventoryLoading ? "" : field.value}
+              disabled={inventoryLoading}
+              className={cn(
+                "min-h-11 w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-surface-elevated)] px-3.5 py-2.5 text-base text-[var(--color-text)] shadow-sm",
+                "focus-visible:border-[var(--color-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-primary)]/25"
+              )}
+            >
+              <option value="">{inventoryLoading ? "Carregando itens…" : "Selecione…"}</option>
+              {!inventoryLoading && inventory?.options.map((item) => (
+                <option key={item.id} value={item.id} disabled={item.availableQuantity < 1}>
+                  {item.name} ({item.availableQuantity} disp.)
+                </option>
+              ))}
+            </select>
           )}
-          {...register("itemId")}
-        >
-          <option value="">Selecione…</option>
-          {inventoryOptions.map((item) => (
-            <option key={item.id} value={item.id} disabled={item.availableQuantity < 1}>
-              {item.name} ({item.availableQuantity} disp.)
-            </option>
-          ))}
-        </select>
+        />
+        {!inventoryLoading && inventory?.presetUnavailable && (
+          <p className="mt-1 text-sm text-[var(--color-text-subtle)]" role="status">
+            O item selecionado no catálogo está indisponível. Selecione outro item.
+          </p>
+        )}
         {errors.itemId ? (
           <p className="mt-1 text-sm text-[var(--color-danger)]">{errors.itemId.message}</p>
         ) : null}
@@ -156,7 +197,7 @@ export function NewLoanForm() {
         <Button type="button" variant="secondary" onClick={() => router.back()}>
           Cancelar
         </Button>
-        <Button type="submit" variant="primary" disabled={isSubmitting}>
+        <Button type="submit" variant="primary" disabled={inventoryLoading || isSubmitting}>
           {isSubmitting ? "Enviando..." : "Submeter pedido"}
         </Button>
       </div>

@@ -2,6 +2,8 @@ import { Router, type Router as RouterType } from 'express';
 import {
   listLoans,
   createLoan,
+  editOwnPendingLoan,
+  cancelOwnPendingLoan,
   updateLoanStatus,
 } from '../controllers/loans.controller';
 import { requireAuth, requirePermission } from '../middlewares/auth';
@@ -12,6 +14,8 @@ router.use(requireAuth);
 
 router.get('/', listLoans);
 router.post('/', requirePermission('pedir_emprestimos'), createLoan);
+router.patch('/:id', editOwnPendingLoan);
+router.post('/:id/cancel', cancelOwnPendingLoan);
 router.put('/:id/status', requirePermission('aprovar_emprestimos'), updateLoanStatus);
 
 export default router;

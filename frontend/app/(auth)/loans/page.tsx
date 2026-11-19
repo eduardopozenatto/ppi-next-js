@@ -8,6 +8,7 @@ import { Button } from "@/components/Button/Button";
 import { formatDate } from "@/lib/utils";
 import { api } from "@/lib/api/client";
 import { useToast } from "@/components/shared/Toast";
+import { useAuth } from "@/hooks/useAuth";
 import type { ApiResponse } from "@/types/api";
 import type { Loan } from "@/types/loan";
 
@@ -21,6 +22,7 @@ export default function LoansListPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [loading, setLoading] = useState(true);
   const { addToast } = useToast();
+  const { user } = useAuth();
   const [editModal, setEditModal] = useState<Loan | null>(null);
   const [cancelModal, setCancelModal] = useState<Loan | null>(null);
   const [editMessage, setEditMessage] = useState("");
@@ -52,7 +54,7 @@ export default function LoansListPage() {
   async function handleSaveEdit() {
     if (!editModal) return;
     try {
-      await api.put(`/loans/${editModal.id}/status`, { notes: editMessage });
+      await api.patch(`/loans/${editModal.id}`, { notes: editMessage });
       addToast({ title: "Salvo", message: "Empréstimo atualizado", variant: "success" });
       setEditModal(null);
       await fetchLoans();
@@ -64,7 +66,7 @@ export default function LoansListPage() {
   async function handleCancel() {
     if (!cancelModal) return;
     try {
-      await api.put(`/loans/${cancelModal.id}/status`, { status: "cancelled" });
+      await api.post(`/loans/${cancelModal.id}/cancel`);
       addToast({ title: "Cancelado", message: "Empréstimo cancelado", variant: "info" });
       setCancelModal(null);
       await fetchLoans();
@@ -175,7 +177,7 @@ export default function LoansListPage() {
               )}
 
               {/* Actions for Pending status */}
-              {loan.status === "pending" && (
+              {loan.status === "pending" && user && String(loan.borrowerId) === String(user.id) && (
                 <div className="mt-4 flex gap-2">
                   <Button type="button" variant="secondary" onClick={() => handleEdit(loan)}>
                     ✎ Editar
