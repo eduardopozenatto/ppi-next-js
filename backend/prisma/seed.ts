@@ -1,6 +1,6 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import { z } from 'zod';
-import { PrismaClient } from '../src/generated/prisma/client';
+import { PrismaClient, type Prisma } from '../src/generated/prisma/client';
 import {
   UserRole,
   LoanStatus,
@@ -148,7 +148,54 @@ async function provisionAdmin(prisma: PrismaClient, input: z.infer<typeof adminI
   console.log('Administrador criado.');
 }
 
-async function seedDemo(prisma: PrismaClient) {
+function validateDemoDestination(connectionString: string) {
+  const message = 'O seed de demonstração exige o banco local labcontrol_demo sem opções na URL.';
+  let destination: URL;
+  try {
+    destination = new URL(connectionString);
+  } catch {
+    throw new SeedError(message);
+  }
+  if (
+    !['postgresql:', 'postgres:'].includes(destination.protocol) ||
+    !['localhost', '127.0.0.1', '[::1]'].includes(destination.hostname) ||
+    destination.pathname !== '/labcontrol_demo' ||
+    destination.search ||
+    destination.hash
+  ) {
+    throw new SeedError(message);
+  }
+}
+
+async function upsertDemoUser(prisma: Prisma.TransactionClient, fixture: Prisma.UserUncheckedCreateInput & { id: string }) {
+  const matches = await prisma.user.findMany({
+    where: {
+      OR: [
+        { id: fixture.id },
+        { email: { equals: fixture.email, mode: 'insensitive' } },
+      ],
+    },
+    select: { id: true, email: true },
+  });
+  if (matches.some((user) => user.id !== fixture.id || user.email !== fixture.email)) {
+    throw new SeedError('Uma conta existente conflita com os dados de demonstração.');
+  }
+  return prisma.user.upsert({
+    where: { id: fixture.id, email: fixture.email },
+    update: {},
+    create: fixture,
+  });
+}
+
+async function seedDemo(prisma: Prisma.TransactionClient) {
+  const [destination] = await prisma.$queryRaw<{ database: string; loopback: boolean | null }[]>`
+    SELECT current_database()::text AS database,
+           inet_server_addr() IN ('127.0.0.1'::inet, '::1'::inet) AS loopback
+  `;
+  if (destination?.database !== 'labcontrol_demo' || destination.loopback !== true) {
+    throw new SeedError('A conexão não chegou ao banco local labcontrol_demo.');
+  }
+
   console.log('Preparando a base de demonstração.');
   const defaultPassword = await hashPassword('1234');
   const { tagAluno, tagEstagiario, tagLaboratorista, tagProfessor } = await seedTags(prisma);
@@ -186,76 +233,56 @@ async function seedDemo(prisma: PrismaClient) {
   console.log('   ✓ Categories:', categories.map((c) => c.name).join(', '));
 
   // ─── Users (merged from mocks/session-user.ts + mocks/users.ts) ─
-  const admin = await prisma.user.upsert({
-    where: { email: 'labcontrol.admin@gmail.com' },
-    update: {},
-    create: {
-      id: 'admin-1',
-      name: 'Prof. Eduardo Pozenatto',
-      email: 'labcontrol.admin@gmail.com',
-      password: defaultPassword,
-      matricula: 'SIAPE-9876',
-      role: UserRole.admin,
-      phone: '(54) 99876-5432',
-      tagId: tagLaboratorista.id,
-    },
+  const admin = await upsertDemoUser(prisma, {
+    id: 'admin-1',
+    name: 'Prof. Eduardo Pozenatto',
+    email: 'labcontrol.admin@gmail.com',
+    password: defaultPassword,
+    matricula: 'SIAPE-9876',
+    role: UserRole.admin,
+    phone: '(54) 99876-5432',
+    tagId: tagLaboratorista.id,
   });
 
-  const carlos = await prisma.user.upsert({
-    where: { email: 'carlos.aluno.lab@gmail.com' },
-    update: {},
-    create: {
-      id: 'user-1',
-      name: 'Carlos Silva',
-      email: 'carlos.aluno.lab@gmail.com',
-      password: defaultPassword,
-      matricula: '2021001234',
-      role: UserRole.user,
-      tagId: tagAluno.id,
-    },
+  const carlos = await upsertDemoUser(prisma, {
+    id: 'user-1',
+    name: 'Carlos Silva',
+    email: 'carlos.aluno.lab@gmail.com',
+    password: defaultPassword,
+    matricula: '2021001234',
+    role: UserRole.user,
+    tagId: tagAluno.id,
   });
 
-  const bruno = await prisma.user.upsert({
-    where: { email: 'bruno@discente.uf.br' },
-    update: {},
-    create: {
-      id: 'user-2',
-      name: 'Bruno Lima',
-      email: 'bruno@discente.uf.br',
-      password: defaultPassword,
-      matricula: '2021005678',
-      role: UserRole.user,
-      tagId: tagAluno.id,
-    },
+  const bruno = await upsertDemoUser(prisma, {
+    id: 'user-2',
+    name: 'Bruno Lima',
+    email: 'bruno@discente.uf.br',
+    password: defaultPassword,
+    matricula: '2021005678',
+    role: UserRole.user,
+    tagId: tagAluno.id,
   });
 
-  const maria = await prisma.user.upsert({
-    where: { email: 'maria.estagiaria@gmail.com' },
-    update: {},
-    create: {
-      id: 'user-3',
-      name: 'Maria Santos',
-      email: 'maria.estagiaria@gmail.com',
-      password: defaultPassword,
-      matricula: '2022001122',
-      role: UserRole.user,
-      tagId: tagEstagiario.id,
-    },
+  const maria = await upsertDemoUser(prisma, {
+    id: 'user-3',
+    name: 'Maria Santos',
+    email: 'maria.estagiaria@gmail.com',
+    password: defaultPassword,
+    matricula: '2022001122',
+    role: UserRole.user,
+    tagId: tagEstagiario.id,
   });
 
-  const ana = await prisma.user.upsert({
-    where: { email: 'ana@discente.uf.br' },
-    update: {},
-    create: {
-      id: 'user-4',
-      name: 'Ana Costa',
-      email: 'ana@discente.uf.br',
-      password: defaultPassword,
-      matricula: '2023003344',
-      role: UserRole.user,
-      tagId: tagAluno.id,
-      isActive: false,
-    },
+  const ana = await upsertDemoUser(prisma, {
+    id: 'user-4',
+    name: 'Ana Costa',
+    email: 'ana@discente.uf.br',
+    password: defaultPassword,
+    matricula: '2023003344',
+    role: UserRole.user,
+    tagId: tagAluno.id,
+    isActive: false,
   });
 
   console.log('   ✓ Users:', [admin.name, carlos.name, bruno.name, maria.name, ana.name].join(', '));
@@ -539,8 +566,6 @@ async function seedDemo(prisma: PrismaClient) {
   });
 
   console.log('   ✓ Notifications: 5 notifications');
-
-  console.log('\n✅ Seed complete!');
 }
 
 async function main() {
@@ -555,6 +580,10 @@ async function main() {
   const connectionString = process.env.DATABASE_URL?.trim();
   if (!connectionString) {
     throw new SeedError('Defina DATABASE_URL para o banco de destino.');
+  }
+
+  if (mode === '--demo') {
+    validateDemoDestination(connectionString);
   }
 
   const admin = mode === '--admin'
@@ -574,7 +603,11 @@ async function main() {
     if (admin?.success) {
       await provisionAdmin(prisma, admin.data);
     } else {
-      await seedDemo(prisma);
+      await prisma.$transaction(seedDemo, {
+        isolationLevel: 'Serializable',
+        timeout: 30000,
+      });
+      console.log('Carga de demonstração concluída.');
     }
   } finally {
     await prisma.$disconnect();
